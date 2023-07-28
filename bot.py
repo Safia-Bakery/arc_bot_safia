@@ -36,8 +36,8 @@ manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻'
 import datetime
 
 import requests
-BASE_URL = 'http://10.0.1.72:8000/'
-backend_location = '/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+BASE_URL = 'http://backend.service.safiabakery.uz/'
+backend_location = '/var/www/safia/arc_backend/'
 
 PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING= range(13)
 
@@ -299,7 +299,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM").build()
+    application = Application.builder().token("6247686133:AAG-7Z9ZMpaEanMd1VlyiKO4S2Xbm_jp8BE").build()
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
