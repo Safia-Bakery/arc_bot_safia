@@ -25,8 +25,6 @@ from telegram.ext import (
     MessageHandler,
     filters,
     CallbackContext
-    
-
 )
 import os 
 from io import BytesIO
@@ -36,7 +34,7 @@ manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻'
 import datetime
 
 import requests
-BASE_URL = 'http://backend.service.safiabakery.uz/'
+BASE_URL = 'https://backend.service.safiabakery.uz/'
 backend_location = '/var/www/safia/arc_backend/'
 
 PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING= range(13)
@@ -96,11 +94,11 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the location and asks for some info about the user."""
     text_manu = update.message.text
     if text_manu.lower() !='подать заявку📝':
-        await update.message.reply_text(f"Iltimos boshqa menu tanlang bu hali aktiv emas",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
+        await update.message.reply_text(f"inactive button",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
         return MANU
     else:
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦']]
-        await update.message.reply_text(f"Iltimos buzulish tipini tanlang.",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
 
         return TYPE
 
@@ -108,17 +106,21 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def type(update: Update, context: ContextTypes.DEFAULT_TYPE):
     type_name = update.message.text
-    if type_name.lower() !='арс🛠':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦']]
+    if type_name.lower() !='арс🛠' and type_name !='⬅️ Назад':
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
         
-        await update.message.reply_text(f"Siz tanlagan menu hozir aktiv emas",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        await update.message.reply_text(f"inactive button",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
         return TYPE
+    elif type_name=='⬅️ Назад':
+        await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
+        return MANU
     else:
         context.user_data['type'] = 'arc'
         request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         fillials = request_db
         reply_keyboard = transform_list(request_db,3,'name')
-        await update.message.reply_text(f"Filliallarni tanlang",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
 
         return BRANCHES
 
@@ -126,68 +128,105 @@ async def type(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the info about the user and ends the conversation."""
+    if update.message.text == '⬅️ Назад':
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        
+        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        return TYPE
     context.user_data['branch'] = update.message.text
     request_db = requests.get(f"{BASE_URL}get/category/tg").json()
     categoryies = request_db
     reply_keyboard = transform_list(request_db,3,'name')
-    await update.message.reply_text(f"Iltimos kategoriyani tanlang",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    reply_keyboard.insert(0,['⬅️ Назад'])
+    await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
 
     return CATEGORY
 
 
 
 async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    
+    if update.message.text == '⬅️ Назад':
+        request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        reply_keyboard = transform_list(request_db,3,'name')
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+
+        return BRANCHES
+    reply_keyboard = [['⬅️ Назад']]
     context.user_data['category']=update.message.text
-    await update.message.reply_text('Iltimos qanday narsa ekanligini tasvirlang',reply_markup=ReplyKeyboardRemove())
-    return DESCRIPTION
-
-
-
-async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['description'] = update.message.text
-    await update.message.reply_text('Iltimos product nomini kiriting')
+    await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
     return PRODUCT
 
 
 
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message.text == '⬅️ Назад':
+        request_db = requests.get(f"{BASE_URL}get/category/tg").json()
+        reply_keyboard = transform_list(request_db,3,'name')
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+
+        return CATEGORY
+    reply_keyboard = [['⬅️ Назад']]
     context.user_data['product'] = update.message.text
-    await update.message.reply_text('menga file yuboring qanday narsani tuzatish kerakligiini bilish uchun')
+    await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    return DESCRIPTION
+
+
+
+async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    reply_keyboard = [['⬅️ Назад']]
+    if update.message.text == '⬅️ Назад':
+        await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        return PRODUCT
+    reply_keyboard = [['⬅️ Назад']]
+    context.user_data['description'] = update.message.text
+    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
     return FILES
 
 
 
 async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['file_url']=f"files/{update.message.document.file_name}"
-    #ile = update.message.document.get_file()
-    #with open(file, 'rb') as f:
-    #    print(f)
-    #update.message.document().get_file()
-    file_id = update.message.document.file_id
-    file_name = update.message.document.file_name
-    new_file = await context.bot.get_file(file_id=file_id)
+    if update.message.text:
+        if update.message.text=='⬅️ Назад':
+            reply_keyboard = [['⬅️ Назад']]
+            await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+            return DESCRIPTION
+            
+    else:
+        context.user_data['file_url']=f"files/{update.message.document.file_name}"
+        #ile = update.message.document.get_file()
+        #with open(file, 'rb') as f:
+        #    print(f)
+        #update.message.document().get_file()
+        file_id = update.message.document.file_id
+        file_name = update.message.document.file_name
+        new_file = await context.bot.get_file(file_id=file_id)
+        
+        file_content = await new_file.download_as_bytearray()
+        files_open = {'files':file_content}
+        data = {'description':context.user_data['description'],
+                'product':context.user_data['product'],
+                'category':context.user_data['category'],
+                'fillial':context.user_data['branch'],
+                'type':context.user_data['type'],
+                'telegram_id':update.message.from_user.id,
+                'file_name':file_name}
+        #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data)
+
+        #file_name = update.message.document.file_name
+        #with open(f"files/{file_name}", 'wb') as f:
+        #    context.bot.get_file(update.message.document).download(out=f)
+        responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open)
+        #print(context.user_data)
+        await update.message.reply_text(f"Спасибо, ваша заявка принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
+        return MANU
     
-    file_content = await new_file.download_as_bytearray()
-    files_open = {'files':file_content}
-    data = {'description':context.user_data['description'],
-            'product':context.user_data['product'],
-            'category':context.user_data['category'],
-            'fillial':context.user_data['branch'],
-            'type':context.user_data['type'],
-            'telegram_id':update.message.from_user.id,
-            'file_name':file_name}
-    #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data)
-    
-    #file_name = update.message.document.file_name
-    #with open(f"files/{file_name}", 'wb') as f:
-    #    context.bot.get_file(update.message.document).download(out=f)
-    responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open)
-    await update.message.reply_text('File qabul qilindi va ',reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
-    #print(context.user_data)
-    return MANU
 
 
+
+
+#-------------------------------BRIGADA MANU-----------------------------------------
 
 
 
@@ -277,6 +316,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 
+
+
 async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_check = requests.get(f"{BASE_URL}tg/check/user?telegram_id={update.message.from_user.id}")
     if user_check.status_code == 200:
@@ -289,7 +330,6 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(
         "Siz Manu page ga yonaltirildingiz", reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True)
         )
-    
         return BRIG_MANU
 
 
@@ -299,7 +339,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6247686133:AAG-7Z9ZMpaEanMd1VlyiKO4S2Xbm_jp8BE").build()
+    application = Application.builder().token("6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM").build()
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
@@ -311,7 +351,7 @@ def main() -> None:
             CATEGORY:[MessageHandler(filters.TEXT,category)],
             DESCRIPTION:[MessageHandler(filters.TEXT,description)],
             PRODUCT:[MessageHandler(filters.TEXT,product)],
-            FILES:[MessageHandler(filters.Document.ALL,files)],
+            FILES:[MessageHandler(filters.Document.ALL | filters.TEXT,files)],
             BRIG_MANU:[MessageHandler(filters.TEXT,brig_manu)],
             BRANCHES: [MessageHandler(filters.TEXT & ~filters.COMMAND, branches)],
             TYPE:[MessageHandler(filters.TEXT,type)],
