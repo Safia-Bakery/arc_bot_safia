@@ -339,7 +339,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM").build()
+    application = Application.builder().token("6247686133:AAG-7Z9ZMpaEanMd1VlyiKO4S2Xbm_jp8BE").build()
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
