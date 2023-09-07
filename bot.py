@@ -18,7 +18,7 @@ import re
 from telegram.constants import ParseMode
 from sqlalchemy.orm import Session
 BOTTOKEN = "6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM"
-from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup
+from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -50,12 +50,12 @@ marketing_cat_dict ={
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
-#backend_location = 'var/www/safia/arc_backend/'
-backend_location=''
+backend_location = 'var/www/safia/arc_backend/'
+#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
-BASE_URL = 'http://10.0.3.238:8000/'
+BASE_URL = 'https://backend.service.safiabakery.uz/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE= range(17)
+PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE= range(19)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -133,11 +133,45 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if text_manu =='Информацияℹ️':
         await update.message.reply_text(f"🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\n🔘 Отдел: АРС Учтепа -  ************\n\n🔘 Отдел: Маркетинг -  +998(88)333-00-23\n\n🔘 Отдел: Инвентарь -  ************\n\n🔘 Отдел: IT -  +998(78)113-77-11",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
+    if text_manu =='Настройки⚙️':
+        await update.message.reply_text(f"Пожалуйста выберите сферу в которой вы работаете",reply_markup=ReplyKeyboardMarkup([['Поменять сферу','⬅️ Назад']],resize_keyboard=True),)
+        return CHANGESPHERE
     else:
         await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
 
 
+
+
+async def changesphere(update:Update,context:ContextTypes.DEFAULT_TYPE):
+    sphere_text = update.message.text
+    if sphere_text=="⬅️ Назад":
+        await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
+    elif sphere_text == 'Поменять сферу':
+        await update.message.reply_text(f"Пожалуйста выберите сферу в которой вы работаете",reply_markup=ReplyKeyboardMarkup(buttons_sphere,resize_keyboard=True))
+        return CHOSENSPHERE
+    else:
+        await update.message.reply_text(f"Пожалуйста выберите сферу в которой вы работаете",reply_markup=ReplyKeyboardMarkup([['Поменять сферу','⬅️ Назад']],resize_keyboard=True),)
+        return CHANGESPHERE
+
+async def chosensphere(update:Update,context:ContextTypes.DEFAULT_TYPE):
+    chosen_sphere = update.message.text
+    if chosen_sphere=="⬅️ Назад":
+        await update.message.reply_text(f"Поменять сферу",reply_markup=ReplyKeyboardMarkup([['Поменять сферу','⬅️ Назад']],resize_keyboard=True),)
+        return CHANGESPHERE
+    if chosen_sphere =="Фабрика":
+        context.user_data['sphere_status']=2
+        await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
+
+    elif chosen_sphere=='Розница':
+        context.user_data['sphere_status']=1
+        await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
+    else:
+        await update.message.reply_text(f"choose one",reply_markup=ReplyKeyboardMarkup(buttons_sphere,resize_keyboard=True),)
+        return CHOSENSPHERE
 
 async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     type_name = update.message.text
@@ -315,7 +349,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             files_open = {'files':file_content}
-        with open(f"files/{file_name}",'wb+') as f:
+        with open(f"{backend_location}/files/{file_name}",'wb+') as f:
             f.write(file_content)
             f.close()
         #data = {'description':context.user_data['description'],
@@ -349,10 +383,15 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         f"🔰Категория проблемы: {add_request.category.name}\n"\
                         f"⚙️ Название оборудования: {add_request.product}\n"\
                         f"💬Комментарии: {add_request.description}"
+        keyboard = [
+        ]
+        if add_request.file:
+            for i in add_request.file:
+                keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{i.url}"})
         if add_request.category.sphere_status==1 and add_request.category.department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-978227595',message_text=text)
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-978227595',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-963512504',message_text=text)
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-963512504',message_text=text,buttons=keyboard)
         await update.message.reply_text(f"Спасибо, ваша заявка №{add_request.id} по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
 
@@ -408,7 +447,13 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [['Завершить ✅'],['Забрать на ремонт 🛠'],['⬅️ Назад']]
     if request_db.status == 2:
         reply_keyboard = [['Завершить ✅'],['⬅️ Назад']]
-    
+
+    keyboard = [
+    ]
+    if request_db.file:
+        for i in request_db.file:
+            keyboard.append([InlineKeyboardButton('Посмотреть фото/видео',url=f"{BASE_URL}{i.url}")])
+
     #parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
     
     formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
@@ -416,10 +461,11 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
                                     f"🔰Категория проблемы: {request_db.category.name}\n"\
                                     f"⚙️ Название оборудования: {request_db.product}\n"\
-                                    f"💬Комментарии: {request_db.description}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    if request_db.file:
-        for i in request_db.file:
-            await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
+                                    f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
+    await update.message.reply_text(f"📑Заявка № {request_db.id}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    #if request_db.file:
+    #    for i in request_db.file:
+    #        await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
     return FINISHING
 
 
@@ -585,11 +631,14 @@ def main() -> None:
             CLOSEBUTTON:[MessageHandler(filters.StatusUpdate.WEB_APP_DATA & ~filters.COMMAND,closebutton)],
             MARKETINGCAT:[MessageHandler(filters.TEXT& ~filters.COMMAND,marketingcat)],
             MARKETINGSTBUTTON:[MessageHandler(filters.TEXT& ~filters.COMMAND,marketingstbutton)],
-            SPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,sphere)]
+            SPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,sphere)],
+            CHANGESPHERE:[MessageHandler(filters.TEXT&~filters.COMMAND,changesphere)],
+            CHOSENSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,chosensphere)]
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
-                   CommandHandler('start',start)]
+                   CommandHandler('start',start)],
+
         
     )
 

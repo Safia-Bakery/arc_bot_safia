@@ -60,11 +60,12 @@ def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> 
     return encoded_jwt
 
 
-def sendtotelegram(bot_token,chat_id,message_text):
+def sendtotelegram(bot_token,chat_id,message_text,buttons):
     keyboard = {
         'inline_keyboard': [
             [{'text': 'Yes', 'callback_data': '-1'}],
-            [{'text': 'No', 'callback_data': '-2'}]
+            [{'text': 'No', 'callback_data': '-2'}],
+            buttons
         ]
     }
 

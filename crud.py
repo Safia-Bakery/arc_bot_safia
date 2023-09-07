@@ -140,3 +140,9 @@ def getfillialname(db:Session,name):
     return query
 
 
+def update_user_sphere(db:Session,tel_id,sphere_status):
+    query = db.query(models.Users).filter(models.Users.telegram_id==tel_id).first()
+    query.sphere_status=sphere_status
+    db.commit()
+    db.refresh(query)
+    return query
