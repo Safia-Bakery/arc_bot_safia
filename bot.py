@@ -13,10 +13,12 @@ Send /start to initiate the conversation.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
-
-
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update,KeyboardButton,InlineKeyboardMarkup
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+import json
+import re
+from telegram.constants import ParseMode
+from sqlalchemy.orm import Session
+BOTTOKEN = "6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM"
+from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -24,24 +26,47 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     filters,
-    CallbackContext
+    CallbackQueryHandler
+
 )
-import os 
-from io import BytesIO
+from datetime import datetime
+from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram
+import requests
+
+import crud
+
+from database import engine,session
+#Base.metadata.create_all(bind=engine)
+
+marketing_cat_dict ={
+    'Проектная работа для дизайнеров':1,
+    'Локальный маркетинг':2,
+    'Промо-продукция':3,
+    'POS-Материалы':4,
+    'Комплекты':5
+}
 
 
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
-import datetime
+buttons_sphere = [['Фабрика','Розница']]
+sphere_dict = {'Фабрика':2,'Розница':1}
+#backend_location = 'var/www/safia/arc_backend/'
+backend_location=''
 
-import requests
-BASE_URL = 'https://backend.service.safiabakery.uz/'
-backend_location = '/var/www/safia/arc_backend/'
+BASE_URL = 'http://10.0.3.238:8000/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING= range(13)
+PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE= range(17)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the conversation and asks the user about their gender."""
+    user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+    #user_data = requests.post(f"{BASE_URL}tg/login",json={'telegram_id':update.message.from_user.id})
+
+    if user:
+        context.user_data['sphere_status']=user.sphere_status
+        await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
     await update.message.reply_text(
         "Здравствуйте. Давайте сначала познакомимся ☺️\nКак Вас зовут? (в формате Ф.И.О)",
         
@@ -61,7 +86,7 @@ async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(
         f"📱 Какой у Вас номер, {update.message.text}? Отправьте или введите ваш номер телефона.",
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True,input_field_placeholder="Поделиться контактом",resize_keyboard=True
+            reply_keyboard, input_field_placeholder="Поделиться контактом",resize_keyboard=True
         ),
     )
 
@@ -70,59 +95,118 @@ async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the selected gender and asks for a photo."""
     context.user_data['phone_number'] = update.message.contact.phone_number.replace('+','')
-    body = {'phone_number':context.user_data['phone_number'],'telegram_id':update.message.from_user.id,'full_name':context.user_data['full_name']}
-    requests_data = requests.post(f"{BASE_URL}tg/create/user",json=body)
-    await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
 
-    
+    await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(buttons_sphere,resize_keyboard=True))
+    return SPHERE
+
+
+
+async def sphere(update:Update,context:ContextTypes.DEFAULT_TYPE)->int:
+
+    if update.message.text in buttons_sphere[0]:
+        context.user_data['sphere_status']=sphere_dict[update.message.text]
+
+    dat = crud.create_user(db=session,full_name=context.user_data['full_name'],phone_number=str(context.user_data['phone_number']).replace('+',''),telegram_id=update.message.from_user.id,sphere_status=int(context.user_data['sphere_status']))
+    #requests_data = requests.post(f"{BASE_URL}tg/create/user",json=body)
+    await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return MANU
-
-
-
-
-
-
-
-
-
-def transform_list(lst, size, key):
-    return [[f"{item[key]}" for item in lst[i:i+size]] for i in range(0, len(lst), size)]
-
 
 
 async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the location and asks for some info about the user."""
     text_manu = update.message.text
-    if text_manu.lower() !='подать заявку📝':
-        await update.message.reply_text(f"inactive button",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
-        return MANU
-    else:
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
-        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
-
+    if text_manu.lower() =='подать заявку📝':
+        if int(context.user_data['sphere_status'])==2:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        elif int(context.user_data['sphere_status'])==1:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
 
+    
+    elif text_manu =='Обучение🧑‍💻':
+        #await context.bot.send_video(chat_id=update.message.chat_id,video=open('/Users/gayratbekakhmedov/projects/backend/arc_bot/Untitled.mp4','rb'), supports_streaming=True)
+        await update.message.reply_text(text="<a href='https://telegra.ph/Obuchenie-09-06-2'>Обучение🧑‍💻</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True),parse_mode = ParseMode.HTML)
+        return MANU
+    if text_manu =='Информацияℹ️':
+        await update.message.reply_text(f"🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\n🔘 Отдел: АРС Учтепа -  ************\n\n🔘 Отдел: Маркетинг -  +998(88)333-00-23\n\n🔘 Отдел: Инвентарь -  ************\n\n🔘 Отдел: IT -  +998(78)113-77-11",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
+    else:
+        await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
 
-async def type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+
+async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     type_name = update.message.text
-    if type_name.lower() !='арс🛠' and type_name !='⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
-        
-        await update.message.reply_text(f"inactive button",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
-        return TYPE
-    elif type_name=='⬅️ Назад':
-        await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
-        return MANU
-    else:
-        context.user_data['type'] = 'arc'
-        request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        fillials = request_db
+    if type_name.lower() =='арс🛠':
+        context.user_data['type'] = 1
+        if context.user_data['sphere_status']==1:
+            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=session)
+            #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
         return BRANCHES
+    elif type_name=='⬅️ Назад':
+        await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
+    elif type_name=='Маркетинг📈':
+        context.user_data['type'] = 2
+
+        request_db = crud.get_branch_list_location(db=session)
+        reply_keyboard = transform_list(request_db,3,'name')
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
+        return MARKETINGSTBUTTON
+    else:
+        if int(context.user_data['sphere_status'])==2:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        elif int(context.user_data['sphere_status'])==1:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return TYPE
+
+
+
+async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
+    if update.message.text == '⬅️ Назад':
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        
+        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return TYPE
+    context.user_data['branch'] = update.message.text
+    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+    await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    return MARKETINGCAT
+
+
+
+async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
+    type_name = update.message.text
+
+    if update.message.text == '⬅️ Назад':
+        request_db = crud.get_branch_list_location(db=session)
+        reply_keyboard = transform_list(request_db,3,'name')
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
+        return MARKETINGSTBUTTON
+    id_cat = marketing_cat_dict[type_name]
+    request_db = crud.get_category_list(db=session,sub_id=id_cat,sphere_status=context.user_data['sphere_status'])
+    reply_keyboard = transform_list(request_db,3,'name')
+    reply_keyboard.append(['⬅️ Назад'])
+    await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    return CATEGORY
 
 
 
@@ -130,15 +214,17 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the info about the user and ends the conversation."""
     if update.message.text == '⬅️ Назад':
         reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
-        
-        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+
+        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
     context.user_data['branch'] = update.message.text
-    request_db = requests.get(f"{BASE_URL}get/category/tg").json()
+
+    request_db =  crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'])
     categoryies = request_db
     reply_keyboard = transform_list(request_db,3,'name')
-    reply_keyboard.insert(0,['⬅️ Назад'])
-    await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+
+    reply_keyboard.append(['⬅️ Назад'])
+    await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
     return CATEGORY
 
@@ -146,30 +232,43 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
-        request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        reply_keyboard = transform_list(request_db,3,'name')
-        reply_keyboard.insert(0,['⬅️ Назад'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        if context.user_data['type']==1:
+            if context.user_data['sphere_status']==1:
+                request_db = crud.get_branch_list(db=session,sphere_status=1)
+            else:
+                request_db = crud.getfillialchildfabrica(db=session)
+            reply_keyboard = transform_list(request_db,3,'name')
+            reply_keyboard.insert(0,['⬅️ Назад'])
+            await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
-        return BRANCHES
-    reply_keyboard = [['⬅️ Назад']]
+            return BRANCHES
+        else:
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return MARKETINGCAT
     context.user_data['category']=update.message.text
-    await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
-    return PRODUCT
+    if int(context.user_data['type'])==1:
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return PRODUCT
+    elif int(context.user_data['type'])==2:
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return DESCRIPTION
 
 
 
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
-        request_db = requests.get(f"{BASE_URL}get/category/tg").json()
+        request_db = crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'])
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
-        await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
         return CATEGORY
     reply_keyboard = [['⬅️ Назад']]
     context.user_data['product'] = update.message.text
-    await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return DESCRIPTION
 
 
@@ -177,11 +276,15 @@ async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = [['⬅️ Назад']]
     if update.message.text == '⬅️ Назад':
-        await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
-        return PRODUCT
-    reply_keyboard = [['⬅️ Назад']]
+        if int(context.user_data['type'])==1:
+            await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return PRODUCT
+        if int(context.user_data['type'])==2:
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return MARKETINGCAT
     context.user_data['description'] = update.message.text
-    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return FILES
 
 
@@ -190,38 +293,69 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text:
         if update.message.text=='⬅️ Назад':
             reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+            await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return DESCRIPTION
-            
+
     else:
-        context.user_data['file_url']=f"files/{update.message.document.file_name}"
+        
         #ile = update.message.document.get_file()
         #with open(file, 'rb') as f:
         #    print(f)
         #update.message.document().get_file()
-        file_id = update.message.document.file_id
-        file_name = update.message.document.file_name
-        new_file = await context.bot.get_file(file_id=file_id)
-        
-        file_content = await new_file.download_as_bytearray()
-        files_open = {'files':file_content}
-        data = {'description':context.user_data['description'],
-                'product':context.user_data['product'],
-                'category':context.user_data['category'],
-                'fillial':context.user_data['branch'],
-                'type':context.user_data['type'],
-                'telegram_id':update.message.from_user.id,
-                'file_name':file_name}
+        if update.message.document:
+           #context.user_data['file_url']=f"files/{update.message.document.file_name}"
+            file_id = update.message.document.file_id
+            file_name = update.message.document.file_name
+            new_file = await context.bot.get_file(file_id=file_id)
+            
+            file_content = await new_file.download_as_bytearray()
+            files_open = {'files':file_content}
+        if update.message.photo:
+            file_name = f"{update.message.photo[-1].file_id}.jpg"
+            getFile = await context.bot.getFile(update.message.photo[-1].file_id)
+            file_content = await getFile.download_as_bytearray()
+            files_open = {'files':file_content}
+        with open(f"files/{file_name}",'wb+') as f:
+            f.write(file_content)
+            f.close()
+        #data = {'description':context.user_data['description'],
+        #        'product':context.user_data['product'],
+        #        'category':context.user_data['category'],
+        #        'fillial':context.user_data['branch'],
+        #        'type':int(context.user_data['type']),
+        #        'telegram_id':update.message.from_user.id,
+        #        'file_name':file_name,
+        #        'factory':int(context.user_data['sphere_status'])}
         #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data)
 
         #file_name = update.message.document.file_name
         #with open(f"files/{file_name}", 'wb') as f:
         #    context.bot.get_file(update.message.document).download(out=f)
-        responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open)
-        #print(context.user_data)
-        await update.message.reply_text(f"Спасибо, ваша заявка принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True))
+        #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open).json()
+        category_query = crud.getcategoryname(db=session,name=context.user_data['category'])
+        fillial_query = crud.getchildbranch(db=session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+        user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        list_data = [None,'АРС🛠','Маркетигну📈']
+        if context.user_data['type']==2:
+            product=None
+        if context.user_data['type']==1:
+            product=context.user_data['product']
+        add_request = crud.add_request(db=session,is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
+        
+        crud.create_files(db=session,request_id=add_request.id,filename=f"files/{file_name}")
+        formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
+        text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {add_request.fillial.parentfillial.name}\n"\
+                        f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
+                        f"🔰Категория проблемы: {add_request.category.name}\n"\
+                        f"⚙️ Название оборудования: {add_request.product}\n"\
+                        f"💬Комментарии: {add_request.description}"
+        if add_request.category.sphere_status==1 and add_request.category.department==1:
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-978227595',message_text=text)
+        if add_request.category.sphere_status==2 and add_request.category.department==1:
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-963512504',message_text=text)
+        await update.message.reply_text(f"Спасибо, ваша заявка №{add_request.id} по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
-    
+
 
 
 
@@ -233,47 +367,59 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def brig_manu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_choose = update.message.text
     user_id = update.message.from_user.id
-    if user_choose == 'zakazlar':
-        request_db = requests.get(f"{BASE_URL}tg/branch/get/request?telegram_id={user_id}").json()
+    if user_choose == 'Мои заказы 📋':
+        user = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        request_db = crud.tg_get_request_list(db=session,brigada_id=user.brigada_id)
+        message_brig = generate_text(request_db)
+
         reply_keyboard = transform_list(request_db,3,'id')
         if not reply_keyboard:
-            reply_keyboard = [['zakazlar'],['filliallar']]
+            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
             await update.message.reply_text(
-            f"sizga biriktirilgan zakazlar yoq", reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+            f"У вашей бригады на данный момент нет заявок !", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return BRIG_MANU
-        await update.message.reply_text(f"ushu sizning elonglaringiz",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(message_brig,reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return ORDERSTG
-    elif user_choose == 'filliallar':
-        request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+    elif user_choose == 'Адреса Филиалов📍':
+        request_db = crud.get_branch_list_location(db=session)
         reply_keyboard = transform_list(request_db,3,'name')
-        await update.message.reply_text(f"Filliallarni tanlang",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return LOCATION_BRANCH
     else:
-        reply_keyboard = [['zakazlar'],['filliallar']]
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
-        f"Manu", reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+        f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
 
 
 isTrue = {0:'No',1:'Yes'}
 
 async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uservalue = int(update.message.text)
+    uservalue = update.message.text
+    if uservalue == '⬅️ Назад':
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRIG_MANU
+    uservalue = int(uservalue)
     context.user_data['last_request'] = uservalue
-    request_db = requests.get(f"{BASE_URL}tg/get/request?id={uservalue}").json()
-    reply_keyboard = [['tugatish'],['olib ketish'],['ortga']]
-    if request_db['status'] == 2:
-        reply_keyboard = [['tugatish'],['ortga']]
+    request_db = crud.get_request_id(db=session,id=uservalue)
+    reply_keyboard = [['Завершить ✅'],['Забрать на ремонт 🛠'],['⬅️ Назад']]
+    if request_db.status == 2:
+        reply_keyboard = [['Завершить ✅'],['⬅️ Назад']]
     
+    #parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
     
-    await update.message.reply_text(f"📑Заявка № {request_db['id']}\n\n📍Филиал: {request_db['fillial']['name']}\n"\
-                                    f"🔰Категория проблемы: {request_db['category']['name']}\n\n"\
-                                    f"🕘Дата поступления заявки: {request_db['started_at']}\n"\
-                                    f"🆘Срочность:  {isTrue[request_db['urgent']]}\n\n"\
-                                    f"💬Комментарии: {request_db['description']}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
-    if request_db['file']:
-        for i in request_db['file']:
-            await update.message.reply_document(document=open(f"{backend_location}{i['url']}",'rb'))
+    formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
+    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {request_db.fillial.parentfillial.name}\n"\
+                                    f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
+                                    f"🔰Категория проблемы: {request_db.category.name}\n"\
+                                    f"⚙️ Название оборудования: {request_db.product}\n"\
+                                    f"💬Комментарии: {request_db.description}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    if request_db.file:
+        for i in request_db.file:
+            await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
     return FINISHING
 
 
@@ -281,24 +427,48 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_button = update.message.text
-    if user_button=='tugatish':
-        requests.put(f"{BASE_URL}tg/request",json={'request_id':int(context.user_data['last_request']),'status':3})
-    if user_button=='olib ketish':
-        requests.put(f"{BASE_URL}tg/request",json={'request_id':int(context.user_data['last_request']),'status':2})
+    if user_button=='Завершить ✅':
+    
+        user_data = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        access_token  = create_access_token(user_data.username)
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        await update.message.reply_text(
+        f"Пожалуйста внесите расход на заявку №{context.user_data['last_request']}",
+        reply_markup=ReplyKeyboardMarkup.from_button(
+            KeyboardButton(
+                text="Внести расход",
+                web_app=WebAppInfo(url=f"https://service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={access_token}"),
+            ),resize_keyboard=True)
+        )
+        return CLOSEBUTTON
+    
+    
+        #requests.put(f"{BASE_URL}tg/request",json={'request_id':int(context.user_data['last_request']),'status':3})
+    if user_button=='Забрать на ремонт 🛠':
+        crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=2)
         
         
     
-    reply_keyboard = [['zakazlar'],['filliallar']]
+    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_text(
-    f"Manu", reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
+async def closebutton(update:Update,context:ContextTypes.DEFAULT_TYPE):
+    data = json.loads(update.effective_message.web_app_data.data)
+    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    return BRIG_MANU
 
 async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     chosen_branch  = update.message.text
-    repsonsedata = requests.post(f"{BASE_URL}tg/get/branch",data={'branch_name':chosen_branch}).json()
-    reply_keyboard = [['zakazlar'],['filliallar']]
-    await update.message.reply_html(text=f"{repsonsedata['name'].capitalize()} - <a href='https://maps.google.com/?q={repsonsedata['latitude']},{repsonsedata['longtitude']}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True))
+    if chosen_branch == '⬅️ Назад':
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRIG_MANU
+    repsonsedata = crud.getfillialname(db=session,name=chosen_branch)
+    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
     
     
@@ -308,7 +478,7 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancels and ends the conversation."""
     await update.message.reply_text(
-        "Siz Manu page ga yonaltirildingiz", reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True)
+        "Главное меню", reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True)
     )
     
     return MANU
@@ -319,48 +489,107 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_check = requests.get(f"{BASE_URL}tg/check/user?telegram_id={update.message.from_user.id}")
-    if user_check.status_code == 200:
-        reply_keyboard = [['zakazlar'],['filliallar']]
+    user_check_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+    #user_check = requests.get(f"{BASE_URL}tg/check/user?telegram_id={update.message.from_user.id}")
+    if user_check_query.brigada_id:
+
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
-        f"sizning brigadangiz {user_check.json()['brigada_name']}", reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True,resize_keyboard=True)
+        f"🧑‍🔧Ваша команда - {user_check_query.brigader.name}", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True)
         )
         return BRIG_MANU
     else:
         await update.message.reply_text(
-        "Siz Manu page ga yonaltirildingiz", reply_markup=ReplyKeyboardMarkup(manu_buttons,one_time_keyboard=True,resize_keyboard=True)
+        "Главное меню", reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True)
         )
-        return BRIG_MANU
+        return MANU
 
 
+async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYPE,):
+    
+    query = update.callback_query
+    selected_option = int(query.data)
+    message = query.message
+    blank_reply_murkup = [[]]
+    text_of_order = query.message.text
+    requests_id = re.findall(r'\d+',text_of_order)[0]
+
+    #if selected_option is less than 0 it is about yes or no
+    user = crud.get_user_tel_id(db=session,id=query.from_user.id)
+    one_request = crud.get_request(db=session,id=requests_id)
+    if one_request.status!= 0 and user:
+        await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+
+    elif one_request.status ==0 and user:
+
+        if selected_option <0:
+            if selected_option == -1:
+                db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status)
+                reply_murkup = data_transform(db_query)
+                await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
+            if selected_option== -2:
+                request_rejected = crud.reject_request(db=session,status=4,id=requests_id)
+                await context.bot.send_message(chat_id=request_rejected.user.telegram_id,text=f"Ваша заявка по Арс🛠  {request_rejected.id}  была отменена по причине: < причина >")
+                await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+
+        #if this value is about more than one it is about it is brigada id
+        else:
+            request_list = crud.accept_request(db = session,id=requests_id,brigada_id=selected_option,user_manager = user.full_name)
+            await query.message.edit_text(text=f"{text_of_order} \n\nкоманда🚙: {request_list.brigada.name}",reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+            try:
+                brigada_id = request_list.brigada.id
+                brigader_telid = crud.get_brigada_id(session,id=brigada_id)
+            except:
+                pass
+            if request_list.category.department==1:
+                try:
+                    await context.bot.send_message(chat_id=brigader_telid.user[0].telegram_id,text=f"{request_list.brigada.name} вам назначена заявка, №{request_list.id} {request_list.fillial.name}")
+                except:
+                    pass
+                try:
+                    await context.bot.send_message(chat_id=request_list.user.telegram_id,text=f"Уважаемый {request_list.user.full_name}, на вашу заявку №{request_list.id} назначена команда🚙: {request_list.brigada.name}")
+                except:
+                    pass
+            else:
+                try:
+                    await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки №{request_list.id} по Маркетингу: В процессе.")
+                except:
+                    pass
+            
 
 
 
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6247686133:AAG-7Z9ZMpaEanMd1VlyiKO4S2Xbm_jp8BE").build()
-
+    callback_query_handler = CallbackQueryHandler(handle_callback_query)
+    application = Application.builder().token(BOTTOKEN).build()
+    application.add_handler(callback_query_handler)
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             PHONE: [MessageHandler(filters.CONTACT, phone)],
-            FULLNAME: [MessageHandler(filters.TEXT, fullname)],
+            FULLNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, fullname)],
             MANU: [MessageHandler(filters.TEXT & ~filters.COMMAND, manu)],
-            CATEGORY:[MessageHandler(filters.TEXT,category)],
-            DESCRIPTION:[MessageHandler(filters.TEXT,description)],
-            PRODUCT:[MessageHandler(filters.TEXT,product)],
-            FILES:[MessageHandler(filters.Document.ALL | filters.TEXT,files)],
-            BRIG_MANU:[MessageHandler(filters.TEXT,brig_manu)],
+            CATEGORY:[MessageHandler(filters.TEXT & ~filters.COMMAND,category)],
+            DESCRIPTION:[MessageHandler(filters.TEXT & ~filters.COMMAND,description)],
+            PRODUCT:[MessageHandler(filters.TEXT & ~filters.COMMAND,product)],
+            FILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT & ~filters.COMMAND,files)],
+            BRIG_MANU:[MessageHandler(filters.TEXT & ~filters.COMMAND,brig_manu)],
             BRANCHES: [MessageHandler(filters.TEXT & ~filters.COMMAND, branches)],
-            TYPE:[MessageHandler(filters.TEXT,type)],
-            ORDERSTG:[MessageHandler(filters.TEXT,orderstg)],
-            LOCATION_BRANCH:[MessageHandler(filters.TEXT,location_branch)],
-            FINISHING:[MessageHandler(filters.TEXT,finishing)],
+            TYPE:[MessageHandler(filters.TEXT & ~filters.COMMAND,types)],
+            ORDERSTG:[MessageHandler(filters.TEXT & ~filters.COMMAND,orderstg)],
+            LOCATION_BRANCH:[MessageHandler(filters.TEXT & ~filters.COMMAND,location_branch)],
+            FINISHING:[MessageHandler(filters.TEXT & ~filters.COMMAND,finishing)],
+            CLOSEBUTTON:[MessageHandler(filters.StatusUpdate.WEB_APP_DATA & ~filters.COMMAND,closebutton)],
+            MARKETINGCAT:[MessageHandler(filters.TEXT& ~filters.COMMAND,marketingcat)],
+            MARKETINGSTBUTTON:[MessageHandler(filters.TEXT& ~filters.COMMAND,marketingstbutton)],
+            SPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,sphere)]
         },
         fallbacks=[CommandHandler("cancel", cancel),
-                   CommandHandler('check',check)]
+                   CommandHandler('check',check),
+                   CommandHandler('start',start)]
         
     )
 
