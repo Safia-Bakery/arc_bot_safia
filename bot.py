@@ -17,7 +17,7 @@ import json
 import re
 from telegram.constants import ParseMode
 from sqlalchemy.orm import Session
-BOTTOKEN = "6354204561:AAEBZAdnnJvijq8hZYU4wQAaDCVIXY3CpYM"
+
 from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton
 from telegram.ext import (
     Application,
@@ -34,10 +34,13 @@ from microser import get_db,transform_list,generate_text,data_transform,create_a
 import requests
 
 import crud
+import os 
+from dotenv import load_dotenv
+load_dotenv()
 
 from database import engine,session
 #Base.metadata.create_all(bind=engine)
-
+BOTTOKEN = os.environ.get('BOT_TOKEN')
 marketing_cat_dict ={
     'Проектная работа для дизайнеров':1,
     'Локальный маркетинг':2,
