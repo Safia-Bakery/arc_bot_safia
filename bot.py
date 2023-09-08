@@ -392,9 +392,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             for i in add_request.file:
                 keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{i.url}"})
         if add_request.category.sphere_status==1 and add_request.category.department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1920671327',message_text=text,buttons=keyboard)
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1831677963',message_text=text,buttons=keyboard)
+                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
         await update.message.reply_text(f"Спасибо, ваша заявка №{add_request.id} по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
 
