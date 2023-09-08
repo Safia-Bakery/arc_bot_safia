@@ -165,11 +165,13 @@ async def chosensphere(update:Update,context:ContextTypes.DEFAULT_TYPE):
         return CHANGESPHERE
     if chosen_sphere =="Фабрика":
         context.user_data['sphere_status']=2
+        crud.update_user_sphere(db=session,tel_id=update.message.from_user.id,sphere_status=2)
         await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
 
     elif chosen_sphere=='Розница':
         context.user_data['sphere_status']=1
+        crud.update_user_sphere(db=session,tel_id=update.message.from_user.id,sphere_status=1)
         await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     else:
