@@ -26,7 +26,7 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     filters,
-    CallbackQueryHandler
+    CallbackQueryHandler,PicklePersistence
 
 )
 from datetime import datetime
@@ -60,6 +60,7 @@ BASE_URL = 'https://backend.service.safiabakery.uz/'
 
 PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE= range(19)
 
+persistence = PicklePersistence(filepath='hello.pickle')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the conversation and asks the user about their gender."""
@@ -614,7 +615,8 @@ def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
     callback_query_handler = CallbackQueryHandler(handle_callback_query)
-    application = Application.builder().token(BOTTOKEN).build()
+    persistence = PicklePersistence(filepath="conversationbot")
+    application = Application.builder().token(BOTTOKEN).persistence(persistence).build()
     application.add_handler(callback_query_handler)
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
@@ -643,6 +645,9 @@ def main() -> None:
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
                    CommandHandler('start',start)],
+        allow_reentry=True,
+        name="my_conversation",
+        persistent=True,
 
         
     )
