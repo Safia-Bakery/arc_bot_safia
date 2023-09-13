@@ -512,6 +512,7 @@ async def closebutton(update:Update,context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
+
 async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     chosen_branch  = update.message.text
     if chosen_branch == '⬅️ Назад':
