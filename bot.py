@@ -518,7 +518,7 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     if chosen_branch == '⬅️ Назад':
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRIG_MANU
+        return BRIG_MANU 
     repsonsedata = crud.getfillialname(db=session,name=chosen_branch)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
