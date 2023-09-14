@@ -258,7 +258,12 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the info about the user and ends the conversation."""
     user_text = update.message.text
     if update.message.text == '⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        if context.user_data['sphere_status']==1:
+
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        if context.user_data['sphere_status']==2:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+        
 
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
