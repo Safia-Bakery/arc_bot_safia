@@ -49,6 +49,7 @@ marketing_cat_dict ={
     'Комплекты':5
 }
 
+offsett = 70
 
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
@@ -182,16 +183,19 @@ async def chosensphere(update:Update,context:ContextTypes.DEFAULT_TYPE):
 async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     type_name = update.message.text
     if type_name.lower() =='арс🛠':
+        context.user_data['page_number'] =0
         context.user_data['type'] = 1
         if context.user_data['sphere_status']==1:
             request_db = crud.get_branch_list(db=session,sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
-            request_db = crud.getfillialchildfabrica(db=session)
+            request_db = crud.getfillialchildfabrica(db=session,offset=0)
             #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ 
+        reply_keyboard = transform_list(request_db,2,'name')
 
-        reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
         return BRANCHES
@@ -252,11 +256,38 @@ async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
 async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the info about the user and ends the conversation."""
+    user_text = update.message.text
     if update.message.text == '⬅️ Назад':
         reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
 
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
+    if user_text=='Следующий>>>':
+        context.user_data['page_number']=int(context.user_data['page_number'])+1
+        request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
+        return BRANCHES
+    if user_text=='<<<Предыдущий':
+        if int(context.user_data['page_number']) >0:
+            context.user_data['page_number']=int(context.user_data['page_number'])-1
+        else:
+            context.user_data['page_number']=0
+        request_db = crud.getfillialchildfabrica(db=session,offset=(context.user_data['page_number'])*offsett)
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
+        return BRANCHES
+
+
+
     context.user_data['branch'] = update.message.text
 
     request_db =  crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'])
@@ -274,11 +305,14 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if context.user_data['type']==1:
             if context.user_data['sphere_status']==1:
+                
                 request_db = crud.get_branch_list(db=session,sphere_status=1)
             else:
-                request_db = crud.getfillialchildfabrica(db=session)
+                context.user_data['page_number']=0
+                request_db = crud.getfillialchildfabrica(db=session,offset=0)
             reply_keyboard = transform_list(request_db,3,'name')
             reply_keyboard.insert(0,['⬅️ Назад'])
+            reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
             await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
             return BRANCHES

@@ -22,9 +22,9 @@ def get_db():
 def transform_list(lst, size, key):
     if key=='id':
     
-        return [[f"{item.id}" for item in lst[i:i+size]] for i in range(0, len(lst), size)]
+        return [[f"{item.id}" for item in lst[i:i+size]] for i in range(0, len(lst), size)][:60]
     if key=='name':
-        return [[f"{item.name}" for item in lst[i:i+size]] for i in range(0, len(lst), size)]
+        return [[f"{item.name}" for item in lst[i:i+size]] for i in range(0, len(lst), size)][:60]
 
 
 def generate_text(lst):
