@@ -18,7 +18,7 @@ import re
 from telegram.constants import ParseMode
 from sqlalchemy.orm import Session
 
-from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton
+from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton,ReplyKeyboardRemove
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -59,7 +59,7 @@ backend_location = '/var/www/safia/arc_backend/'
 
 BASE_URL = 'https://backend.service.safiabakery.uz/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE= range(19)
+PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT= range(20)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -269,7 +269,12 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return TYPE
     if user_text=='Следующий>>>':
         context.user_data['page_number']=int(context.user_data['page_number'])+1
-        request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
+        if context.user_data['sphere_status']==1:
+            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
+        #request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -282,7 +287,11 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             context.user_data['page_number']=int(context.user_data['page_number'])-1
         else:
             context.user_data['page_number']=0
-        request_db = crud.getfillialchildfabrica(db=session,offset=(context.user_data['page_number'])*offsett)
+        if context.user_data['sphere_status']==1:
+            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -394,9 +403,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             files_open = {'files':file_content}
-        with open(f"{backend_location}files/{file_name}",'wb+') as f:
-            f.write(file_content)
-            f.close()
+        #with open(f"{backend_location}files/{file_name}",'wb+') as f:
+        #    f.write(file_content)
+        #    f.close()
         #data = {'description':context.user_data['description'],
         #        'product':context.user_data['product'],
         #        'category':context.user_data['category'],
@@ -439,6 +448,20 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
         await update.message.reply_text(f"Спасибо, ваша заявка №{add_request.id} по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
+    
+
+
+
+
+async def addcomment(update:Update,context:ContextTypes.DEFAULT_TYPE):
+    user_option = update.message.text 
+    print('come to add comment')
+    user_id = update.message.from_user.id
+    user = crud.get_user_tel_id(db=session,id=user_id)
+    crud.addcomment(db=session,user_id=user.id,comment=user_option,request_id=context.user_data['request_id'])
+    await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+    return MANU
+
 
 
 
@@ -508,9 +531,9 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     f"⚙️ Название оборудования: {request_db.product}\n"\
                                     f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
     await update.message.reply_text(f"📑Заявка № {request_db.id}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    #if request_db.file:
-    #    for i in request_db.file:
-    #        await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
+    if request_db.file:
+        for i in request_db.file:
+            await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
     return FINISHING
 
 
@@ -597,23 +620,24 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return MANU
 
 
-async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYPE,):
-    
+async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+
     query = update.callback_query
     selected_option = int(query.data)
     message = query.message
     blank_reply_murkup = [[]]
     text_of_order = query.message.text
     requests_id = re.findall(r'\d+',text_of_order)[0]
+    context.user_data['request_id'] = requests_id
 
     #if selected_option is less than 0 it is about yes or no
     user = crud.get_user_tel_id(db=session,id=query.from_user.id)
     one_request = crud.get_request(db=session,id=requests_id)
-    if one_request.status!= 0 and user:
-        await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+    if one_request.status== 3 and int(selected_option)==4:
+        await context.bot.send_message(query.from_user.id,'please enter comment',reply_markup=ReplyKeyboardRemove())
+        return ADDCOMMENT
 
     elif one_request.status ==0 and user:
-
         if selected_option <0:
             if selected_option == -1:
                 db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status)
@@ -647,7 +671,8 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки №{request_list.id} по Маркетингу: В процессе.")
                 except:
                     pass
-            
+    else:
+        await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
 
 
@@ -658,7 +683,7 @@ def main() -> None:
     persistence = PicklePersistence(filepath="conversationbot")
     application = Application.builder().token(BOTTOKEN).persistence(persistence).build()
     application.add_handler(callback_query_handler)
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    #add states phone fullname category desction and others 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
@@ -680,7 +705,8 @@ def main() -> None:
             MARKETINGSTBUTTON:[MessageHandler(filters.TEXT& ~filters.COMMAND,marketingstbutton)],
             SPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,sphere)],
             CHANGESPHERE:[MessageHandler(filters.TEXT&~filters.COMMAND,changesphere)],
-            CHOSENSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,chosensphere)]
+            CHOSENSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,chosensphere)],
+            ADDCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,addcomment)]
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),

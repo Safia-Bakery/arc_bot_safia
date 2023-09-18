@@ -28,7 +28,7 @@ def accept_request(db:Session,id,brigada_id,user_manager):
         return query
     else:
         return False
-    
+
 
 def reject_request(db:Session,status,id):
     query = db.query(models.Requests).filter(models.Requests.id==id).first()
@@ -129,8 +129,7 @@ def tg_update_requst_st(db:Session,requestid,status):
     if status == 3:
         query.finished_at = datetime.now(timezonetash)
     query.status = status
-    
-    db.commit()
+    db.commit() 
     db.refresh(query)
     return query
 
@@ -143,6 +142,13 @@ def getfillialname(db:Session,name):
 def update_user_sphere(db:Session,tel_id,sphere_status):
     query = db.query(models.Users).filter(models.Users.telegram_id==tel_id).first()
     query.sphere_status=sphere_status
+    db.commit()
+    db.refresh(query)
+    return query
+
+def addcomment(db:Session,user_id,comment,request_id):
+    query = models.Comments(user_id=user_id,request_id=request_id,comment=comment)
+    db.add(query)
     db.commit()
     db.refresh(query)
     return query
