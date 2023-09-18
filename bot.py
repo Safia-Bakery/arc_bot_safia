@@ -403,9 +403,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             files_open = {'files':file_content}
-        #with open(f"{backend_location}files/{file_name}",'wb+') as f:
-        #    f.write(file_content)
-        #    f.close()
+        with open(f"{backend_location}files/{file_name}",'wb+') as f:
+            f.write(file_content)
+            f.close()
         #data = {'description':context.user_data['description'],
         #        'product':context.user_data['product'],
         #        'category':context.user_data['category'],
