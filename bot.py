@@ -693,7 +693,7 @@ def main() -> None:
             CATEGORY:[MessageHandler(filters.TEXT & ~filters.COMMAND,category)],
             DESCRIPTION:[MessageHandler(filters.TEXT & ~filters.COMMAND,description)],
             PRODUCT:[MessageHandler(filters.TEXT & ~filters.COMMAND,product)],
-            FILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT & ~filters.COMMAND,files)],
+            FILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,files)],
             BRIG_MANU:[MessageHandler(filters.TEXT & ~filters.COMMAND,brig_manu)],
             BRANCHES: [MessageHandler(filters.TEXT & ~filters.COMMAND, branches)],
             TYPE:[MessageHandler(filters.TEXT & ~filters.COMMAND,types)],
