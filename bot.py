@@ -46,7 +46,9 @@ marketing_cat_dict ={
     'Локальный маркетинг':2,
     'Промо-продукция':3,
     'POS-Материалы':4,
-    'Комплекты':5
+    'Комплекты':5,
+    'Нестандартные рекламные решения':6,
+    'Внешний вид филиала':7
 }
 
 offsett = 70
@@ -229,7 +231,7 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
     context.user_data['branch'] = update.message.text
-    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
     await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return MARKETINGCAT
 
@@ -531,9 +533,9 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     f"⚙️ Название оборудования: {request_db.product}\n"\
                                     f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
     await update.message.reply_text(f"📑Заявка № {request_db.id}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    if request_db.file:
-        for i in request_db.file:
-            await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
+    #if request_db.file:
+    #    for i in request_db.file:
+    #        await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
     return FINISHING
 
 
