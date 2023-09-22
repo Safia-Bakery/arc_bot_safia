@@ -333,7 +333,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             return BRANCHES
         else:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['category']=update.message.text
