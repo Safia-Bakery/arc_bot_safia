@@ -62,6 +62,7 @@ def get_branch_list(db:Session,sphere_status):
     return db.query(models.ParentFillials).join(models.Fillials).filter(models.ParentFillials.status==1,models.Fillials.origin==sphere_status).order_by(models.ParentFillials.name).all()
 
 
+
 def getfillialchildfabrica(db:Session,offset):
     query = db.query(models.Fillials).join(models.ParentFillials).filter(models.ParentFillials.is_fabrica==1).limit(70).offset(offset).all()
     return query
