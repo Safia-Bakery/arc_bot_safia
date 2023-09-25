@@ -457,7 +457,6 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def addcomment(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_option = update.message.text 
-    print('come to add comment')
     user_id = update.message.from_user.id
     user = crud.get_user_tel_id(db=session,id=user_id)
     crud.addcomment(db=session,user_id=user.id,comment=user_option,request_id=context.user_data['request_id'])
@@ -546,14 +545,13 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     if user_button=='Завершить ✅':
     
         user_data = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
-        access_token  = create_access_token(user_data.username)
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
         f"Пожалуйста внесите расход на заявку №{context.user_data['last_request']}",
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Внести расход",
-                web_app=WebAppInfo(url=f"https://service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={access_token}"),
+                web_app=WebAppInfo(url=f"https://service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={create_access_token(user_data.username)}"),
             ),resize_keyboard=True)
         )
         return CLOSEBUTTON
