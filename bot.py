@@ -212,6 +212,9 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MARKETINGSTBUTTON
     elif type_name=="Запрос машины":
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
+        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return TYPE
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
         if context.user_data['sphere_status']==1:
