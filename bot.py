@@ -96,7 +96,6 @@ async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard, input_field_placeholder="Поделиться контактом",resize_keyboard=True
         ),
     )
-
     return PHONE
 
 async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -127,7 +126,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -211,8 +210,24 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-
         return MARKETINGSTBUTTON
+    elif type_name=="Запрос машины":
+        context.user_data['page_number'] =0
+        context.user_data['type'] = 6
+        if context.user_data['sphere_status']==1:
+            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=session,offset=0)
+            #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ 
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
+        return BRANCHES
     else:
         if int(context.user_data['sphere_status'])==2:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
@@ -332,6 +347,8 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
             return BRANCHES
+        if context.user_data['type']==3:
+            pass
         else:
             reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))

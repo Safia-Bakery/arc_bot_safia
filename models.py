@@ -1,3 +1,4 @@
+
 from sqlalchemy import Column, Integer, String,ForeignKey,Float,DateTime,Boolean,BIGINT,Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -8,6 +9,15 @@ import pytz
 import uuid
 timezonetash = pytz.timezone("Asia/Tashkent")
 Base = declarative_base()
+
+
+"""
+if there is sub id in category the category is attached to marketing department 
+if there is not sub id it is responsible for arc, fabrica arc and other departments
+if sub 
+"""
+
+
 
 class ParentPage(Base):
     __tablename__='parentpage'
@@ -180,6 +190,8 @@ class Requests(Base):
     comments = relationship('Comments',back_populates='request')
     user_manager = Column(String,nullable=True)
     is_bot = Column(Integer,default=1)
+    size = Column(String,nullable=True)
+    arrival_date = Column(DateTime,nullable=True)
 
 
 class Comments(Base):
@@ -286,5 +298,5 @@ class Tools(Base):
     expanditure = relationship('Expanditure',back_populates='tool')
     total_price = Column(Float,nullable=True)
     amount_left = Column(Float,nullable=True)
-    sklad_id = Column(ARRAY(UUID),default=[])
+    sklad_id = Column(ARRAY(UUID(as_uuid=True)),default=[])
     last_update = Column(DateTime(timezone=True))
