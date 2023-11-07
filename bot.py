@@ -216,7 +216,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         #return TYPE
 
         context.user_data['page_number'] =0
-        context.user_data['type'] = 6
+        context.user_data['type'] = 5
         if context.user_data['sphere_status']==1:
             request_db = crud.get_branch_list(db=session,sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
@@ -323,7 +323,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
     context.user_data['branch'] = update.message.text
-    if context.user_data['type']==6:
+    if context.user_data['type']==5:
         sphere_status =None
     else:
         sphere_status=context.user_data['sphere_status']
@@ -352,7 +352,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
             await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return BRANCHES
-        elif int(context.user_data['type'])==6:
+        elif int(context.user_data['type'])==5:
             if context.user_data['sphere_status']==1:
                 
                 request_db = crud.get_branch_list(db=session,sphere_status=1)
@@ -374,7 +374,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return PRODUCT
-    elif int(context.user_data['type'])==6:
+    elif int(context.user_data['type'])==5:
         current_date = datetime.date.today()
         current_month = current_date.month-1
         next_month = current_date.replace(day=1) + datetime.timedelta(days=32)
