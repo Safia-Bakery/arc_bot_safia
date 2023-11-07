@@ -190,7 +190,6 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
     data = crud.add_car_request(db=session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=arrival_date,comment=entered_data)
     if context.user_data['image_car'] is not None:
-        print('none')
         crud.create_files(db=session,request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка №{data.id} по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     #await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
