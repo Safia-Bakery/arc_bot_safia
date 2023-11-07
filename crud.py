@@ -72,11 +72,12 @@ def get_branch_list_location(db:Session):
     return db.query(models.ParentFillials).filter(models.ParentFillials.status==1).order_by(models.ParentFillials.name).all()
 
 
-def get_category_list(db:Session,sphere_status,sub_id:Optional[int]=None):
+def get_category_list(db:Session,sphere_status,department,sub_id:Optional[int]=None):
     query = db.query(models.Category)
+    if sphere_status is not None:
+        query = query.filter(models.Category.sphere_status==sphere_status)
     
-    query = query.filter(models.Category.sub_id==sub_id)
-    query = query.filter(models.Category.status==1,models.Category.sphere_status==sphere_status).all()
+    query = query.filter(models.Category.status==1,models.Category.department==department).all()
     return query
 
 
@@ -89,7 +90,7 @@ def getcategoryname(db:Session,name):
 def getchildbranch(db:Session,fillial,type,factory):
     query = db.query(models.Fillials).join(models.ParentFillials)
     if factory == 1:
-        if type==1:
+        if type==1 or type==6:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"),models.Fillials.origin==1)
         elif type==2:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"))
@@ -105,6 +106,13 @@ def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,pro
     db.refresh(db_add_request)
     return db_add_request
 
+
+def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment):
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment)
+    db.add(db_add_request)
+    db.commit()
+    db.refresh(db_add_request)
+    return db_add_request
 
 
 def create_files(db:Session,request_id,filename):

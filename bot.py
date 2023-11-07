@@ -29,15 +29,14 @@ from telegram.ext import (
     CallbackQueryHandler,PicklePersistence
 
 )
-from datetime import datetime
+import datetime
 from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram
 import requests
-
 import crud
 import os 
 from dotenv import load_dotenv
+from cars import *
 load_dotenv()
-
 from database import engine,session
 #Base.metadata.create_all(bind=engine)
 BOTTOKEN = os.environ.get('BOT_TOKEN')
@@ -61,7 +60,7 @@ backend_location = '/var/www/safia/arc_backend/'
 
 BASE_URL = 'https://backend.service.safiabakery.uz/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT= range(20)
+PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT,CHOOSEMONTH,CHOOSEDAY,CHOOSESIZE,INPUTIMAGECAR,COMMENTCAR,CHOOSEHOUR= range(26)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -123,7 +122,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text_manu = update.message.text
     if text_manu.lower() =='подать заявку📝':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
@@ -204,7 +203,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     elif type_name=='Маркетинг📈':
-        context.user_data['type'] = 2
+        context.user_data['type'] = 3
 
         request_db = crud.get_branch_list_location(db=session)
         reply_keyboard = transform_list(request_db,3,'name')
@@ -212,9 +211,10 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MARKETINGSTBUTTON
     elif type_name=="Запрос машины":
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
-        await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return TYPE
+        #reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
+        #await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        #return TYPE
+
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
         if context.user_data['sphere_status']==1:
@@ -233,10 +233,10 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRANCHES
     else:
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины'],['⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -244,7 +244,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     if update.message.text == '⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
         
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
@@ -266,7 +266,7 @@ async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
         return MARKETINGSTBUTTON
     id_cat = marketing_cat_dict[type_name]
-    request_db = crud.get_category_list(db=session,sub_id=id_cat,sphere_status=context.user_data['sphere_status'])
+    request_db = crud.get_category_list(db=session,sub_id=id_cat,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
     reply_keyboard = transform_list(request_db,3,'name')
     reply_keyboard.append(['⬅️ Назад'])
     await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -280,9 +280,9 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if context.user_data['sphere_status']==1:
 
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины','⬅️ Назад']]
         if context.user_data['sphere_status']==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины'],['⬅️ Назад']]
         
 
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -323,13 +323,16 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
     context.user_data['branch'] = update.message.text
-
-    request_db =  crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'])
+    if context.user_data['type']==6:
+        sphere_status =None
+    else:
+        sphere_status=context.user_data['sphere_status']
+    request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
     categoryies = request_db
     reply_keyboard = transform_list(request_db,3,'name')
 
     reply_keyboard.append(['⬅️ Назад'])
-    await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
     return CATEGORY
 
@@ -348,10 +351,20 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard.insert(0,['⬅️ Назад'])
             reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
             await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return BRANCHES
+        elif int(context.user_data['type'])==6:
+            if context.user_data['sphere_status']==1:
+                
+                request_db = crud.get_branch_list(db=session,sphere_status=1)
+            else:
+                context.user_data['page_number']=0
+                request_db = crud.getfillialchildfabrica(db=session,offset=0)
+            reply_keyboard = transform_list(request_db,3,'name')
+            reply_keyboard.insert(0,['⬅️ Назад'])
+            reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+            await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
             return BRANCHES
-        if context.user_data['type']==3:
-            pass
         else:
             reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -361,7 +374,16 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return PRODUCT
-    elif int(context.user_data['type'])==2:
+    elif int(context.user_data['type'])==6:
+        current_date = datetime.date.today()
+        current_month = current_date.month-1
+        next_month = current_date.replace(day=1) + datetime.timedelta(days=32)
+        next_month = next_month.replace(day=1).month-1
+        months_buttons = [[month_list[current_month],month_list[next_month]],['⬅️ Назад']]
+        await update.message.reply_text('Укажите в какое время вам нужна машина',reply_markup=ReplyKeyboardMarkup(months_buttons,resize_keyboard=True))
+        return CHOOSEMONTH
+    elif int(context.user_data['type'])==3:
+    
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return DESCRIPTION
@@ -370,7 +392,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
-        request_db = crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'])
+        request_db = crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -389,7 +411,7 @@ async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         if int(context.user_data['type'])==1:
             await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return PRODUCT
-        if int(context.user_data['type'])==2:
+        if int(context.user_data['type'])==3:
             reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
@@ -446,7 +468,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         fillial_query = crud.getchildbranch(db=session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         list_data = [None,'АРС🛠','Маркетигну📈']
-        if context.user_data['type']==2:
+        if context.user_data['type']==3:
             product=None
         if context.user_data['type']==1:
             product=context.user_data['product']
@@ -457,7 +479,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {add_request.fillial.parentfillial.name}\n"\
                         f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
                         f"🔰Категория проблемы: {add_request.category.name}\n"\
-                        f"⚙️ Название оборудования: {add_request.product}\n"\
+                        f"⚙️Название оборудования: {add_request.product}\n"\
                         f"💬Комментарии: {add_request.description}"
         keyboard = [
         ]
@@ -613,10 +635,10 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancels and ends the conversation."""
     await update.message.reply_text(
-        "Главное меню", reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True)
+        "bye",reply_markup=ReplyKeyboardRemove()
     )
     
-    return MANU
+    return ConversationHandler.END
 
 
 
@@ -726,7 +748,13 @@ def main() -> None:
             SPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,sphere)],
             CHANGESPHERE:[MessageHandler(filters.TEXT&~filters.COMMAND,changesphere)],
             CHOSENSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,chosensphere)],
-            ADDCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,addcomment)]
+            ADDCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,addcomment)],
+            CHOOSEMONTH:[MessageHandler(filters.TEXT& ~filters.COMMAND,choose_month)],
+            CHOOSEDAY:[MessageHandler(filters.TEXT& ~filters.COMMAND,choose_day)],
+            CHOOSESIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,choose_size)],
+            INPUTIMAGECAR:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,input_image_car)],
+            COMMENTCAR:[MessageHandler(filters.TEXT& ~filters.COMMAND,comment_car)],
+            CHOOSEHOUR:[MessageHandler(filters.TEXT& ~filters.COMMAND,choose_current_hour)]
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
