@@ -29,7 +29,7 @@ month_button = [[ "January", "February", "March", ],
 async def choose_month(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chosen_data = update.message.text
     if chosen_data=='⬅️ Назад':
-            if context.user_data['type']==6:
+            if context.user_data['type']==5:
                 sphere_status =None
             else:
                 sphere_status=context.user_data['sphere_status']

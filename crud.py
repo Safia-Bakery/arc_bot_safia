@@ -90,7 +90,7 @@ def getcategoryname(db:Session,name):
 def getchildbranch(db:Session,fillial,type,factory):
     query = db.query(models.Fillials).join(models.ParentFillials)
     if factory == 1:
-        if type==1 or type==6:
+        if type==1 or type==5:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"),models.Fillials.origin==1)
         elif type==2:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"))
