@@ -125,10 +125,10 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
             num=24
             date_list = date_list = [list(map(lambda x: f"{x:02d}:00", range(start, min(start + 3, num + 1)))) for start in range(time_hour, num + 1, 3)]
         date_list.append(['⬅️ Назад'])
-        await update.message.reply_text('please choose hour',reply_markup=ReplyKeyboardMarkup(date_list,resize_keyboard=True))
+        await update.message.reply_text('Пожалуйста выберите время',reply_markup=ReplyKeyboardMarkup(date_list,resize_keyboard=True))
         return CHOOSEHOUR
     context.user_data["size_delivery"]=chosen_data
-    await update.message.reply_text('Пожалуйста выберите время',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
+    await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
     return INPUTIMAGECAR
 
 
