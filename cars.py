@@ -72,7 +72,7 @@ async def choose_day(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         await update.message.reply_text('Укажите в какое время вам нужна машина',reply_markup=ReplyKeyboardMarkup(months_buttons,resize_keyboard=True))
         return CHOOSEMONTH
     
-    if int(chosen_day) <=context.user_data['month_index']:
+    if int(chosen_day) <=context.user_data['choose_month']:
         context.user_data['choose_day']= chosen_day
         if int(chosen_day)==int(current_date.day):
             time_hour = datetime.datetime.now().hour
