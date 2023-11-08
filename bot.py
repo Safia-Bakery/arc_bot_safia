@@ -467,7 +467,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         category_query = crud.getcategoryname(db=session,name=context.user_data['category'])
         fillial_query = crud.getchildbranch(db=session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
-        list_data = [None,'АРС🛠','Маркетигну📈']
+        list_data = [None,'АРС🛠',None,'Маркетигну📈']
         if context.user_data['type']==3:
             product=None
         if context.user_data['type']==1:
@@ -504,11 +504,6 @@ async def addcomment(update:Update,context:ContextTypes.DEFAULT_TYPE):
     crud.addcomment(db=session,user_id=user.id,comment=user_option,request_id=context.user_data['request_id'])
     await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return MANU
-
-
-
-
-
 
 #-------------------------------BRIGADA MANU-----------------------------------------
 
