@@ -76,6 +76,8 @@ def get_category_list(db:Session,sphere_status,department,sub_id:Optional[int]=N
     query = db.query(models.Category)
     if sphere_status is not None:
         query = query.filter(models.Category.sphere_status==sphere_status)
+    if sub_id is not None:
+        query  = query.filter(models.Category.sub_id==sub_id)
     
     query = query.filter(models.Category.status==1,models.Category.department==department).all()
     return query
