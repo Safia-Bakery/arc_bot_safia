@@ -117,6 +117,15 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
     return db_add_request
 
 
+
+def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery):
+    db_add_request = models.Requests(fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size)
+    db.add(db_add_request)
+    db.commit()
+    db.refresh(db_add_request)
+    return db_add_request
+
+
 def create_files(db:Session,request_id,filename):
     db_add_file = models.Files(request_id=request_id,url=filename)
     db.add(db_add_file)
