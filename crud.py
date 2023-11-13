@@ -92,9 +92,9 @@ def getcategoryname(db:Session,name):
 def getchildbranch(db:Session,fillial,type,factory):
     query = db.query(models.Fillials).join(models.ParentFillials)
     if factory == 1:
-        if type==1 or type==5:
+        if type==1:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"),models.Fillials.origin==1)
-        elif type==2:
+        else:
             query = query.filter(models.ParentFillials.name.like(f"%{fillial}%"))
         query = query.first()
     elif factory==2:
@@ -118,8 +118,8 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
 
 
 
-def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery):
-    db_add_request = models.Requests(fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size)
+def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery,category_id):
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size)
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)
@@ -171,4 +171,12 @@ def addcomment(db:Session,user_id,comment,request_id):
     db.add(query)
     db.commit()
     db.refresh(query)
+    return query
+
+def get_work_time(db:Session):
+    query = db.query(models.Working).first()
+    return query
+
+def get_category_department(db:Session,department_id):
+    query = db.query(models.Category).filter(models.Category.department==department_id).first()
     return query

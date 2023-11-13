@@ -4,10 +4,11 @@ from datetime import datetime,timedelta
 from typing import Union, Any
 from jose import jwt
 import requests
-import os 
+import os
+import pytz
 from dotenv import load_dotenv
 load_dotenv()
-
+timezonetash = pytz.timezone("Asia/Tashkent")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60*24  # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')   # should be kept secret
@@ -86,3 +87,17 @@ def sendtotelegram(bot_token,chat_id,message_text,buttons):
     else:
         return False
     
+
+def is_time_between(start_time, end_time, current_time=None):
+    if current_time is None:
+        current_time = datetime.now(timezonetash).time()
+    
+    # Convert time strings to time objects
+    start = start_time#datetime.strptime(start_time, '%H:%M').time()
+    end = end_time#datetime.strptime(end_time, '%H:%M').time()
+
+    # Check if current time is between start and end time
+    if start <= current_time <= end:
+        return True
+    else:
+        return False

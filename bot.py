@@ -30,13 +30,14 @@ from telegram.ext import (
 
 )
 import datetime
-from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram
+from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between
 import requests
 import crud
 import os 
 from dotenv import load_dotenv
 import cars
 import food
+
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
 load_dotenv()
@@ -58,10 +59,10 @@ offsett = 70
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
-backend_location = '/var/www/safia/arc_backend/'
+backend_location = '/var/www/arc_backend/'
 #backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
-BASE_URL = 'https://backend.service.safiabakery.uz/'
+BASE_URL = 'https://api.service.safiabakery.uz/'
 
 PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT,CHOOSEMONTH,CHOOSEDAY,CHOOSESIZE,INPUTIMAGECAR,COMMENTCAR,CHOOSEHOUR,MEALSIZE,MEALBREADSIZE= range(28)
 
@@ -237,6 +238,12 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name =='Заказать еду':
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
+        time_work = crud.get_work_time(db=session)
+        if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return TYPE
+        
         request_db = crud.get_branch_list(db=session,sphere_status=1)
         reply_keyboard = transform_list(request_db,2,'name')
 
@@ -389,6 +396,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['category']=update.message.text
+    
     if int(context.user_data['type'])==1:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
