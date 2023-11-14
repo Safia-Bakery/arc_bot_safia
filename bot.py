@@ -615,7 +615,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Внести расход",
-                web_app=WebAppInfo(url=f"https://service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={create_access_token(user_data.username)}"),
+                web_app=WebAppInfo(url=f"https://admin.service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={create_access_token(user_data.username)}"),
             ),resize_keyboard=True)
         )
         return CLOSEBUTTON
