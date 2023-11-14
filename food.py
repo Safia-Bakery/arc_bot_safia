@@ -55,7 +55,7 @@ async def meal_bread_size(update:Update,context:ContextTypes.DEFAULT_TYPE) -> in
         fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
         data = crud.add_meal_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,bread_size=bread_size,meal_size=context.user_data['meal_size'],time_delivery=next_day_noon)
-        await update.message.reply_text(f"Спасибо, ваша заявка №{data.id} по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
+        await update.message.reply_text(f"Спасибо, ваша заявка №{data.id} по Еду принята.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
         return bot.MANU
     except:
         await update.message.reply_text('Укажите количество хлеба',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))

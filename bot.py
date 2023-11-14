@@ -129,7 +129,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -235,12 +235,12 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
         return BRANCHES
-    elif type_name =='Заказать еду':
+    elif type_name =='Заказать еду🥘':
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
         time_work = crud.get_work_time(db=session)
         if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return TYPE
         
@@ -257,7 +257,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -265,7 +265,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     if update.message.text == '⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
         
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
@@ -301,7 +301,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if context.user_data['sphere_status']==1:
 
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
         if context.user_data['sphere_status']==2:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
         
