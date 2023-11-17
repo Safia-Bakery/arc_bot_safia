@@ -115,18 +115,27 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     chosen_data = update.message.text
     if chosen_data=='⬅️ Назад':
 
-        chosen_day = context.user_data['choose_day']
-        current_date = datetime.date.today()
-        if int(chosen_day)==int(current_date.day):
-            time_hour = datetime.datetime.now().hour
-            num = 24
-            date_list =date_list = [list(map(lambda x: f"{x:02d}:00", range(start, min(start + 3, num + 1)))) for start in range(time_hour, num + 1, 3)]
+        #chosen_day = context.user_data['choose_day']
+        #current_date = datetime.date.today()
+        #if int(chosen_day)==int(current_date.day):
+        #    time_hour = datetime.datetime.now().hour
+        #    num = 24
+        #    date_list =date_list = [list(map(lambda x: f"{x:02d}:00", range(start, min(start + 3, num + 1)))) for start in range(time_hour, num + 1, 3)]
+        #else:
+        #    num=24
+        #    date_list = date_list = [list(map(lambda x: f"{x:02d}:00", range(start, min(start + 3, num + 1)))) for start in range(time_hour, num + 1, 3)]
+        #date_list.append(['⬅️ Назад'])
+        #await update.message.reply_text('Пожалуйста выберите время',reply_markup=ReplyKeyboardMarkup(date_list,resize_keyboard=True))
+        #return bot.CHOOSEHOUR
+        if context.user_data['type']==5:
+                sphere_status =None
         else:
-            num=24
-            date_list = date_list = [list(map(lambda x: f"{x:02d}:00", range(start, min(start + 3, num + 1)))) for start in range(time_hour, num + 1, 3)]
-        date_list.append(['⬅️ Назад'])
-        await update.message.reply_text('Пожалуйста выберите время',reply_markup=ReplyKeyboardMarkup(date_list,resize_keyboard=True))
-        return bot.CHOOSEHOUR
+            sphere_status=context.user_data['sphere_status']
+        request_db =  crud.get_category_list(db=bot.session,sphere_status=sphere_status,department=int(context.user_data['type']))
+        reply_keyboard = bot.transform_list(request_db,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.CATEGORY
     context.user_data["size_delivery"]=chosen_data
     await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
     return bot.INPUTIMAGECAR
@@ -173,22 +182,22 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
         return bot.INPUTIMAGECAR
     today_date = datetime.date.today()
-    if context.user_data['choose_month']==1 and today_date.month==12:
-        year_chosen = int(today_date.year)+1
-    else:
-        year_chosen=today_date.year
-    hour_part = str(context.user_data['choose_hour']).split(':')[0]
-    arrival_date = datetime.datetime(year=int(year_chosen),
-                      month=int(context.user_data['choose_month']),
-                      day=int(context.user_data['choose_day']),
-                      hour=int(hour_part),
-                      minute=0
-                      )
+    #if context.user_data['choose_month']==1 and today_date.month==12:
+    #    year_chosen = int(today_date.year)+1
+    #else:
+    #    year_chosen=today_date.year
+    #hour_part = str(context.user_data['choose_hour']).split(':')[0]
+    #arrival_date = datetime.datetime(year=int(year_chosen),
+    #                  month=int(context.user_data['choose_month']),
+    #                  day=int(context.user_data['choose_day']),
+    #                  hour=int(hour_part),
+    #                  minute=0
+    #                  )
     context.user_data['car_comment'] = entered_data
     category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category'])
     fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_car_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=arrival_date,comment=entered_data)
+    data = crud.add_car_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data)
     if context.user_data['image_car'] is not None:
         crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка №{data.id} по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))

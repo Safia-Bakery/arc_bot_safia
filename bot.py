@@ -402,13 +402,15 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return PRODUCT
     elif int(context.user_data['type'])==5:
-        current_date = datetime.date.today()
-        current_month = current_date.month-1
-        next_month = current_date.replace(day=1) + datetime.timedelta(days=32)
-        next_month = next_month.replace(day=1).month-1
-        months_buttons = [[cars.month_list[current_month],cars.month_list[next_month]],['⬅️ Назад']]
-        await update.message.reply_text('Укажите в какое время вам нужна машина',reply_markup=ReplyKeyboardMarkup(months_buttons,resize_keyboard=True))
-        return CHOOSEMONTH
+        #current_date = datetime.date.today()
+        #current_month = current_date.month-1
+        #next_month = current_date.replace(day=1) + datetime.timedelta(days=32)
+        #next_month = next_month.replace(day=1).month-1
+        #months_buttons = [[cars.month_list[current_month],cars.month_list[next_month]],['⬅️ Назад']]
+        #await update.message.reply_text('Укажите в какое время вам нужна машина',reply_markup=ReplyKeyboardMarkup(months_buttons,resize_keyboard=True))
+        await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+        return CHOOSESIZE
+        #return CHOOSEMONTH
     elif int(context.user_data['type'])==3:
     
         reply_keyboard = [['⬅️ Назад']]
