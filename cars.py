@@ -137,7 +137,7 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.CATEGORY
     context.user_data["size_delivery"]=chosen_data
-    await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
+    await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.INPUTIMAGECAR
 
 
@@ -149,10 +149,8 @@ async def input_image_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int
             await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
             return bot.CHOOSESIZE
         else:
-            reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('При желании добавьте комментарии',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-            context.user_data['image_car'] = None
-            return bot.COMMENTCAR
+            await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+            return bot.INPUTIMAGECAR
         
 
     else:
