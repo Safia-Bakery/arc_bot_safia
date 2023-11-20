@@ -136,6 +136,11 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         reply_keyboard.append(['⬅️ Назад'])
         await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.CATEGORY
+    try:
+        int(chosen_data)
+    except:
+        await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+        return bot.CHOOSESIZE
     context.user_data["size_delivery"]=chosen_data
     await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.INPUTIMAGECAR
@@ -177,7 +182,7 @@ async def input_image_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int
 async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     entered_data = update.message.text
     if entered_data =='⬅️ Назад':
-        await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['Пропустить','⬅️ Назад']],resize_keyboard=True))
+        await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
         return bot.INPUTIMAGECAR
     today_date = datetime.date.today()
     #if context.user_data['choose_month']==1 and today_date.month==12:
