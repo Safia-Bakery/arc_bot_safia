@@ -519,7 +519,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
-        await update.message.reply_text(f"Спасибо, ваша заявка №{add_request.id} по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        await update.message.reply_text(f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     
 
@@ -597,7 +597,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     f"🔰Категория проблемы: {request_db.category.name}\n"\
                                     f"⚙️ Название оборудования: {request_db.product}\n"\
                                     f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
-    await update.message.reply_text(f"📑Заявка № {request_db.id}",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    await update.message.reply_text(f"📑Заявка #{request_db.id}s",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     #if request_db.file:
     #    for i in request_db.file:
     #        await update.message.reply_document(document=open(f"{backend_location}{i.url}",'rb'))
