@@ -711,7 +711,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
             if selected_option== -2:
                 request_rejected = crud.reject_request(db=session,status=4,id=requests_id)
-                await context.bot.send_message(chat_id=request_rejected.user.telegram_id,text=f"Ваша заявка по Арс🛠  {request_rejected.id}  была отменена по причине: < причина >")
+                await context.bot.send_message(chat_id=request_rejected.user.telegram_id,text=f"Ваша заявка по Арс🛠  #{request_rejected.id}s  была отменена по причине: < причина >")
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
         #if this value is about more than one it is about it is brigada id
@@ -725,16 +725,16 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 pass
             if request_list.category.department==1:
                 try:
-                    await context.bot.send_message(chat_id=brigader_telid.user[0].telegram_id,text=f"{request_list.brigada.name} вам назначена заявка, №{request_list.id} {request_list.fillial.name}")
+                    await context.bot.send_message(chat_id=brigader_telid.user[0].telegram_id,text=f"{request_list.brigada.name} вам назначена заявка, #{request_list.id}s {request_list.fillial.name}")
                 except:
                     pass
                 try:
-                    await context.bot.send_message(chat_id=request_list.user.telegram_id,text=f"Уважаемый {request_list.user.full_name}, на вашу заявку №{request_list.id} назначена команда🚙: {request_list.brigada.name}")
+                    await context.bot.send_message(chat_id=request_list.user.telegram_id,text=f"Уважаемый {request_list.user.full_name}, на вашу заявку #{request_list.id}s назначена команда🚙: {request_list.brigada.name}")
                 except:
                     pass
             else:
                 try:
-                    await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки №{request_list.id} по Маркетингу: В процессе.")
+                    await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по Маркетингу: В процессе.")
                 except:
                     pass
     else:
