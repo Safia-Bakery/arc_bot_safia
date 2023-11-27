@@ -140,7 +140,7 @@ async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.BRANCHES
     if chosen_data == 'С адреса на адрес':
-        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом откуда нужно забрать 🚩',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
         context.user_data['carssp'] = 'С адреса на адрес'
         return bot.CARSFROMLOC
 
@@ -167,14 +167,14 @@ async def cars_from_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     else:
         map_url = update.message.text
     context.user_data['cars_from_loc'] = map_url
-    await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти 🏁',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.CARSTOLOC
 
 
 async def cars_to_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     chosen_data  = update.message.text
     if chosen_data=='⬅️ Назад':
-        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти')
+        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом откуда нужно забрать 🚩')
         context.user_data['carssp'] = 'С адреса на адрес'
         return bot.CARSFROMLOC
     if update.message.location:
@@ -219,7 +219,7 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
             await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return bot.CATEGORY
         else:
-            await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+            await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти 🏁',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
             return bot.CARSTOLOC
     try:
         int(chosen_data)
