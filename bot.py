@@ -64,7 +64,7 @@ backend_location = '/var/www/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT,CHOOSEMONTH,CHOOSEDAY,CHOOSESIZE,INPUTIMAGECAR,COMMENTCAR,CHOOSEHOUR,MEALSIZE,MEALBREADSIZE= range(28)
+PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT,CHOOSESIZE,INPUTIMAGECAR,COMMENTCAR,MEALSIZE,MEALBREADSIZE,CARSP,CARSFROMLOC,CARSTOLOC= range(28)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -218,23 +218,11 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         #reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','⬅️ Назад']]
         #await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         #return TYPE
-
         context.user_data['page_number'] =0
         context.user_data['type'] = 5
-        if context.user_data['sphere_status']==1:
-            request_db = crud.get_branch_list(db=session,sphere_status=1)
-            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        else:
-            request_db = crud.getfillialchildfabrica(db=session,offset=0)
-            #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
- 
-        reply_keyboard = transform_list(request_db,2,'name')
-
-        reply_keyboard.insert(0,['⬅️ Назад'])
-        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-
-        return BRANCHES
+        order_car = [['Запросить на филиал','С адреса на адрес'],['⬅️ Назад']]
+        await update.message.reply_text('please choose one',reply_markup=ReplyKeyboardMarkup(order_car,resize_keyboard=True))
+        return CARSP
     elif type_name =='Заказать еду🥘':
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
@@ -773,14 +761,17 @@ def main() -> None:
             CHANGESPHERE:[MessageHandler(filters.TEXT&~filters.COMMAND,changesphere)],
             CHOSENSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,chosensphere)],
             ADDCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,addcomment)],
-            CHOOSEMONTH:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_month)],
-            CHOOSEDAY:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_day)],
+            #CHOOSEMONTH:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_month)],
+            #CHOOSEDAY:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_day)],
+            #CHOOSEHOUR:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_current_hour)],
             CHOOSESIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_size)],
             INPUTIMAGECAR:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,cars.input_image_car)],
             COMMENTCAR:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.comment_car)],
-            CHOOSEHOUR:[MessageHandler(filters.TEXT& ~filters.COMMAND,cars.choose_current_hour)],
             MEALSIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,food.meal_size)],
-            MEALBREADSIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,food.meal_bread_size)]
+            MEALBREADSIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,food.meal_bread_size)],
+            CARSP:[MessageHandler(filters.TEXT,cars.car_sphere)],
+            CARSFROMLOC:[MessageHandler(filters.TEXT | filters.LOCATION,cars.cars_from_loc)],
+            CARSTOLOC:[MessageHandler(filters.TEXT | filters.LOCATION,cars.cars_to_loc)]
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),

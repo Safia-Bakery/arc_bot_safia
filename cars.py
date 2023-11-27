@@ -13,6 +13,8 @@ from telegram.ext import (
 
 
 )
+from microser import transform_list
+
 import datetime
 import calendar
 month_list = [
@@ -25,7 +27,7 @@ month_button = [[ "January", "February", "March", ],
                 ["April","May", "June"],
                 ["July", "August","September"],
                 ["October", "November", "December"],['⬅️ Назад']]
-
+"""
 async def choose_month(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chosen_data = update.message.text
     if chosen_data=='⬅️ Назад':
@@ -109,6 +111,85 @@ async def choose_current_hour(update:Update,context:ContextTypes.DEFAULT_TYPE) -
     await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.CHOOSESIZE
 
+"""
+
+async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
+    chosen_data = update.message.text
+    if chosen_data=='⬅️ Назад':
+        if int(context.user_data['sphere_status'])==2:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        elif int(context.user_data['sphere_status'])==1:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.TYPE
+    if chosen_data== 'Запросить на филиал':
+        context.user_data['carssp'] = 'Запросить на филиал'
+        context.user_data
+        if context.user_data['sphere_status']==1:
+            request_db = crud.get_branch_list(db=bot.session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=bot.session,offset=0)
+            #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ 
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.BRANCHES
+    if chosen_data == 'С адреса на адрес':
+        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+        context.user_data['carssp'] = 'С адреса на адрес'
+        return bot.CARSFROMLOC
+
+    else:
+
+        order_car = [['Запросить на филиал','С адреса на адрес'],['⬅️ Назад']]
+        await update.message.reply_text('Тип',reply_markup=ReplyKeyboardMarkup(order_car,resize_keyboard=True))
+        return bot.CARSP
+
+async def cars_from_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
+    chosen_data  = update.message.text
+    if chosen_data=='⬅️ Назад':
+        order_car = [['Запросить на филиал','С адреса на адрес'],['⬅️ Назад']]
+        await update.message.reply_text('Тип',reply_markup=ReplyKeyboardMarkup(order_car,resize_keyboard=True))
+        return bot.CARSP
+    if update.message.location:
+
+        user_location = update.message.location
+        latitude = user_location.latitude
+        longitude = user_location.longitude
+
+        # Generate a Google Maps URL
+        map_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+    else:
+        map_url = update.message.text
+    context.user_data['cars_from_loc'] = map_url
+    await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    return bot.CARSTOLOC
+
+
+async def cars_to_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
+    chosen_data  = update.message.text
+    if chosen_data=='⬅️ Назад':
+        await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти')
+        context.user_data['carssp'] = 'С адреса на адрес'
+        return bot.CARSFROMLOC
+    if update.message.location:
+
+        user_location = update.message.location
+        latitude = user_location.latitude
+        longitude = user_location.longitude
+
+        # Generate a Google Maps URL
+        map_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+    if update.message.text:
+        map_url = update.message.text
+    context.user_data['cars_to_loc'] = map_url
+    await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    return bot.CHOOSESIZE
 
 
 async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
@@ -131,11 +212,15 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
                 sphere_status =None
         else:
             sphere_status=context.user_data['sphere_status']
-        request_db =  crud.get_category_list(db=bot.session,sphere_status=sphere_status,department=int(context.user_data['type']))
-        reply_keyboard = bot.transform_list(request_db,3,'name')
-        reply_keyboard.append(['⬅️ Назад'])
-        await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return bot.CATEGORY
+        if context.user_data['carssp'] =='Запросить на филиал':
+            request_db =  crud.get_category_list(db=bot.session,sphere_status=sphere_status,department=int(context.user_data['type']))
+            reply_keyboard = bot.transform_list(request_db,3,'name')
+            reply_keyboard.append(['⬅️ Назад'])
+            await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return bot.CATEGORY
+        else:
+            await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+            return bot.CARSTOLOC
     try:
         int(chosen_data)
     except:
@@ -171,7 +256,7 @@ async def input_image_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
-        with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+        with open(f"files/{file_name}",'wb+') as f:
             f.write(file_content)
             f.close()
         context.user_data['image_car']='files/'+file_name
@@ -196,11 +281,19 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     #                  hour=int(hour_part),
     #                  minute=0
     #                  )
+    if context.user_data['carssp'] =='Запросить на филиал':
+        category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category']).id
+        fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status'])).id
+        location = None
+    else:
+        category_query = None
+        fillial_query = None
+        location = {'from_loc':context.user_data['cars_from_loc'],'to_loc':context.user_data['cars_to_loc']}
+
     context.user_data['car_comment'] = entered_data
-    category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category'])
-    fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+    
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_car_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data)
+    data = crud.add_car_request(db=bot.session,category_id=category_query,fillial_id=fillial_query,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data,location=location)
     if context.user_data['image_car'] is not None:
         crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))

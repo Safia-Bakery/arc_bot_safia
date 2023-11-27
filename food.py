@@ -23,11 +23,9 @@ async def meal_size(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data['type'] = 6
         request_db = crud.get_branch_list(db=bot.session,sphere_status=1)
         reply_keyboard = bot.transform_list(request_db,2,'name')
-
         reply_keyboard.insert(0,['⬅️ Назад'])
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        
         return bot.BRANCHES
     try:
         meal_size = int(entered_data)

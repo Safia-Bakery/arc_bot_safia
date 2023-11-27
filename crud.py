@@ -109,8 +109,8 @@ def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,pro
     return db_add_request
 
 
-def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment):
-    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment)
+def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment,location):
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment,location=location)
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)
