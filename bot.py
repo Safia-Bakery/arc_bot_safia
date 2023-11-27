@@ -221,7 +221,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['page_number'] =0
         context.user_data['type'] = 5
         order_car = [['Запросить на филиал','С адреса на адрес'],['⬅️ Назад']]
-        await update.message.reply_text('please choose one',reply_markup=ReplyKeyboardMarkup(order_car,resize_keyboard=True))
+        await update.message.reply_text('Тип',reply_markup=ReplyKeyboardMarkup(order_car,resize_keyboard=True))
         return CARSP
     elif type_name =='Заказать еду🥘':
         context.user_data['page_number'] =0
