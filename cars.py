@@ -286,7 +286,7 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status'])).id
         location = None
     else:
-        category_query = None
+        category_query = 37
         fillial_query = None
         location = {'from_loc':context.user_data['cars_from_loc'],'to_loc':context.user_data['cars_to_loc']}
 
