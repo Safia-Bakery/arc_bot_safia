@@ -221,11 +221,11 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         else:
             await update.message.reply_text('Пожалуйста отправьте геолокацию или введите текстом куда нужно отвезти 🏁',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
             return bot.CARSTOLOC
-    try:
-        int(chosen_data)
-    except:
-        await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
-        return bot.CHOOSESIZE
+    #try:
+    #    int(chosen_data)
+    #except:
+    #    await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    #    return bot.CHOOSESIZE
     context.user_data["size_delivery"]=chosen_data
     await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.INPUTIMAGECAR
