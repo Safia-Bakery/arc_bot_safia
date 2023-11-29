@@ -110,8 +110,9 @@ async def choose_current_hour(update:Update,context:ContextTypes.DEFAULT_TYPE) -
     context.user_data['choose_hour']=chosen_data
     await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return bot.CHOOSESIZE
-
 """
+
+
 
 async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     chosen_data = update.message.text
@@ -120,7 +121,7 @@ async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘t'],['⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.TYPE
     if chosen_data== 'Запросить на филиал':

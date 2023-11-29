@@ -3,6 +3,7 @@ import models
 import pytz
 from typing import Optional
 import requests
+from sqlalchemy.sql import func
 from sqlalchemy import or_,and_,Date,cast
 from datetime import datetime 
 timezonetash = pytz.timezone("Asia/Tashkent")
@@ -102,7 +103,7 @@ def getchildbranch(db:Session,fillial,type,factory):
     return query
 
 def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None):
-    db_add_request = models.Requests(category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot)
+    db_add_request = models.Requests(category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)
@@ -110,7 +111,7 @@ def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,pro
 
 
 def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment,location):
-    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment,location=location)
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment,location=location,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)
@@ -119,7 +120,7 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
 
 
 def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery,category_id):
-    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size)
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size,update_time ={'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)

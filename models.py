@@ -194,6 +194,7 @@ class Requests(Base):
     arrival_date = Column(DateTime(timezone=True),nullable=True)
     bread_size = Column(String,nullable=True)
     location = Column(JSON,nullable=True)
+    update_time = Column(JSON,nullable=True)
 
 
 class Comments(Base):
