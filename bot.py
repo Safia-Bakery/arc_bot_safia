@@ -705,6 +705,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
         #if this value is about more than one it is about it is brigada id
         else:
             request_list = crud.accept_request(db = session,id=requests_id,brigada_id=selected_option,user_manager = user.full_name)
+            
             await query.message.edit_text(text=f"{text_of_order} \n\nкоманда🚙: {request_list.brigada.name}",reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
             try:
                 brigada_id = request_list.brigada.id

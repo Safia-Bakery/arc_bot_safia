@@ -26,7 +26,12 @@ def accept_request(db:Session,id,brigada_id,user_manager):
         query.user_manager=user_manager
         db.commit()
         db.refresh(query)
+        updated_data = query.update_time or {}
+        updated_data[str(1)] = str(datetime.now(tz=timezonetash))
+        query.update_time= updated_data
+        db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
         return query
+    
     else:
         return False
 
@@ -36,6 +41,10 @@ def reject_request(db:Session,status,id):
     query.status=status
     db.commit()
     db.refresh(query)
+    updated_data = query.update_time or {}
+    updated_data[str(status)] = str(datetime.now(tz=timezonetash))
+    query.update_time= updated_data
+    db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
     return query
 
 
