@@ -164,7 +164,7 @@ async def cars_from_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         longitude = user_location.longitude
 
         # Generate a Google Maps URL
-        map_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+        map_url = f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=18&l=map"
     else:
         map_url = update.message.text
     context.user_data['cars_from_loc'] = map_url
@@ -185,7 +185,8 @@ async def cars_to_loc(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         longitude = user_location.longitude
 
         # Generate a Google Maps URL
-        map_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+        #map_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+        map_url = f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=18&l=map"
     if update.message.text:
         map_url = update.message.text
     context.user_data['cars_to_loc'] = map_url
