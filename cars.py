@@ -286,17 +286,32 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     #                  )
     if context.user_data['carssp'] =='Запросить на филиал':
         category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category']).id
-        fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status'])).id
+        fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         location = None
+        fillial_id = fillial_query.id
     else:
         category_query = 37
         fillial_query = None
+        fillial_id = None
         location = {'from_loc':context.user_data['cars_from_loc'],'to_loc':context.user_data['cars_to_loc']}
 
     context.user_data['car_comment'] = entered_data
     
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_car_request(db=bot.session,category_id=category_query,fillial_id=fillial_query,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data,location=location)
+    data = crud.add_car_request(db=bot.session,category_id=category_query,fillial_id=fillial_id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data,location=location)
+    if "+" not in data.user.phone_number:
+        phone_number = '+'+data.user.phone_number
+    else:
+        phone_number = data.user.phone_number
+    if fillial_query is None:
+        message = f"📨 #{data.id}s Поступила новая заявка\n\n☎️Номер: {phone_number}\n🔸Группа проблем: С Адреса на адрес\n\n🚩Откуда: {data.location['from_loc']}\n🏁Куда: {data.location['to_loc']}\n\nКомментарии: {data.description}"
+    else:
+        if data.category.urgent is True:
+            message  = f"📨 #{data.id}s Поступила срочная заявка 🆘\n\n📍Филиал: {fillial_query.parentfillial.name}\n☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
+
+        else:
+           message  = f"📨 #{data.id}s Поступила новая заявка\n\n📍Филиал: {fillial_query.parentfillial.name}\n\☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
+    await context.bot.send_message(chat_id='-1002002556950',text=message)
     if context.user_data['image_car'] is not None:
         crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
