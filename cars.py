@@ -259,9 +259,9 @@ async def input_image_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
-        #with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
-        #    f.write(file_content)
-        #    f.close()
+        with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+            f.write(file_content)
+            f.close()
         context.user_data['image_car']='files/'+file_name
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('При желании добавьте комментарии',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
