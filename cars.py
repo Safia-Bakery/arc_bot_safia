@@ -259,9 +259,9 @@ async def input_image_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
-        with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
-            f.write(file_content)
-            f.close()
+        #with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+        #    f.write(file_content)
+        #    f.close()
         context.user_data['image_car']='files/'+file_name
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('При желании добавьте комментарии',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -304,14 +304,18 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     else:
         phone_number = data.user.phone_number
     if fillial_query is None:
-        message = f"📨 #{data.id}s Поступила новая заявка\n\n☎️Номер: {phone_number}\n🔸Группа проблем: С Адреса на адрес\n\n🚩Откуда: {data.location['from_loc']}\n🏁Куда: {data.location['to_loc']}\n\nКомментарии: {data.description}"
+        message = f"📨 #{data.id}s Поступила новая заявка\n\n☎️Номер: {phone_number}\n🔸Группа проблем: С Адреса на адрес\n\n🚩Откуда: {str(data.location['from_loc'])}\n🏁Куда: {str(data.location['to_loc'])}\n\nКомментарии: {data.description}"
     else:
         if data.category.urgent is True:
             message  = f"📨 #{data.id}s Поступила срочная заявка 🆘\n\n📍Филиал: {fillial_query.parentfillial.name}\n☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
 
         else:
            message  = f"📨 #{data.id}s Поступила новая заявка\n\n📍Филиал: {fillial_query.parentfillial.name}\n\☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
-    await context.bot.send_message(chat_id='-1002002556950',text=message)
+    keyboard = [
+    ]
+    #if data.file:
+    keyboard.append([InlineKeyboardButton(text='Посмотреть фото/видео',url=f"{bot.BASE_URL}{context.user_data['image_car']}")])
+    await context.bot.send_message(chat_id='-1002002556950',text=message,reply_markup=InlineKeyboardMarkup(keyboard))
     if context.user_data['image_car'] is not None:
         crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
