@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String,ForeignKey,Float,DateTime,Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID,ARRAY
+from sqlalchemy.dialects.postgresql import UUID,ARRAY,JSONB
 from datetime import datetime
 import pytz 
 import uuid
@@ -64,7 +64,6 @@ class Roles(Base):
 
 class Users(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True,nullable=True)
     password = Column(String,nullable=True)
@@ -121,8 +120,6 @@ class Suppliers(Base):
     store_id = Column(UUID(as_uuid=True),ForeignKey('fillials.id'))
     store = relationship('Fillials',back_populates='supplier')
 
-
-
 class Category(Base):
     __tablename__='category'
     id=Column(Integer,primary_key=True,index=True)
@@ -134,7 +131,7 @@ class Category(Base):
     sphere_status= Column(Integer,nullable=True)
     department=Column(Integer)
     sub_id = Column(Integer,nullable=True)
-
+    file = Column(String,nullable=True)
 
 class Brigada(Base):
     __tablename__ = 'brigada'
@@ -194,7 +191,10 @@ class Requests(Base):
     arrival_date = Column(DateTime(timezone=True),nullable=True)
     bread_size = Column(String,nullable=True)
     location = Column(JSON,nullable=True)
-    update_time = Column(JSON,nullable=True)
+    update_time = Column(JSONB,nullable=True)
+    finishing_time = Column(DateTime,nullable=True)
+    is_redirected = Column(Boolean,default=False)
+    old_cat_id = Column(Integer,nullable=True)
 
 
 class Comments(Base):

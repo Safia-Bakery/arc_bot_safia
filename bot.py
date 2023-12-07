@@ -50,7 +50,7 @@ marketing_cat_dict ={
     'Промо-продукция':3,
     'POS-Материалы':4,
     'Комплекты':5,
-    'Нестандартные рекламные решения':6,
+    'Для Терр. Менеджеров':6,
     'Внешний вид филиала':7
 }
 
@@ -258,7 +258,7 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
     context.user_data['branch'] = update.message.text
-    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
     await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return MARKETINGCAT
 
@@ -380,7 +380,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             return BRANCHES
         else:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Нестандартные рекламные решения','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['category']=update.message.text
@@ -429,7 +429,7 @@ async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return PRODUCT
         if int(context.user_data['type'])==3:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['description'] = update.message.text
@@ -605,7 +605,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Внести расход",
-                web_app=WebAppInfo(url=f"https://admin.service.safiabakery.uz/tg-add-product/{context.user_data['last_request']}?key={create_access_token(user_data.username)}"),
+                web_app=WebAppInfo(url=f"https://admin.service.safiabakery.uz/tg/add-product/{context.user_data['last_request']}?key={create_access_token(user_data.username)}"),
             ),resize_keyboard=True)
         )
         return CLOSEBUTTON
