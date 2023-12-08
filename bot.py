@@ -407,7 +407,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     elif int(context.user_data['type'])==3:
         data = crud.getcategoryname(db=session,name=update.message.text)
         if data.file:
-            file = open(f"{backend_location}files/{data.file}",'rb')
+            file = open(f"{backend_location}{data.file}",'rb')
             context.bot.send_photo(chat_id=update.message.from_user.id,photo=file)
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
