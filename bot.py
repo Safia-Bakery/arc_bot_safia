@@ -266,20 +266,24 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
 
 async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     type_name = update.message.text
-    #if type_name == 'Для Терр. Менеджеров':
-    #    data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
+    if type_name == 'Для Терр. Менеджеров':
+        data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
+        if data is None:
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+            await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return MARKETINGCAT
     if update.message.text == '⬅️ Назад':
         request_db = crud.get_branch_list_location(db=session)
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-
         return MARKETINGSTBUTTON
     id_cat = marketing_cat_dict[type_name]
     request_db = crud.get_category_list(db=session,sub_id=id_cat,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
     reply_keyboard = transform_list(request_db,3,'name')
     reply_keyboard.append(['⬅️ Назад'])
     await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+
     return CATEGORY
 
 
@@ -401,7 +405,11 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return CHOOSESIZE
         #return CHOOSEMONTH
     elif int(context.user_data['type'])==3:
-    
+        data = crud.getcategoryname(db=session,name=update.message.text)
+        if data.file:
+
+            file = open(f"{backend_location}files/{data.file}",'rb')
+            context.bot.send_photo(chat_id=update.message.from_user.id,photo=file)
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return DESCRIPTION
