@@ -266,7 +266,8 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
 
 async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     type_name = update.message.text
-
+    #if type_name == 'Для Терр. Менеджеров':
+    #    data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
     if update.message.text == '⬅️ Назад':
         request_db = crud.get_branch_list_location(db=session)
         reply_keyboard = transform_list(request_db,3,'name')

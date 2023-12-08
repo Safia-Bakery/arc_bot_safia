@@ -192,3 +192,7 @@ def get_work_time(db:Session):
 def get_category_department(db:Session,department_id):
     query = db.query(models.Category).filter(models.Category.department==department_id).first()
     return query
+
+def get_user_role(db:Session,telegram_id):
+    query = db.query(models.Groups).join(models.Users).join(models.Roles).filter(models.Users.telegram_id==telegram_id,models.Roles.page_id==9).first()
+    return query
