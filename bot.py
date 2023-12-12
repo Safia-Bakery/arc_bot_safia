@@ -140,7 +140,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(text="<a href='https://telegra.ph/Obuchenie-09-06-2'>Обучение🧑‍💻</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True),parse_mode = ParseMode.HTML)
         return MANU
     if text_manu =='Информацияℹ️':
-        await update.message.reply_text(f"🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\n🔘 Отдел: АРС Учтепа -  ************\n\n🔘 Отдел: Маркетинг -  +998(88)333-00-23\n\n🔘 Отдел: Инвентарь -  ************\n\n🔘 Отдел: IT -  +998(78)113-77-11",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        await update.message.reply_text(f"🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\n🔘 Отдел: АРС Учтепа -  ************\n\n🔘 Отдел: Маркетинг -  +998(88)333-00-23\n\n🔘 Отдел: Инвентарь -  ************\n\n🔘 Отдел: IT -  +998(78)113-77-11\n\n🔘 Отдел: Логистика (Учтепа) - +998(95)475-14-15",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     if text_manu =='Настройки⚙️':
         await update.message.reply_text(f"Пожалуйста выберите сферу в которой вы работаете",reply_markup=ReplyKeyboardMarkup([['Поменять сферу','⬅️ Назад']],resize_keyboard=True),)
@@ -642,7 +642,7 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     if chosen_branch == '⬅️ Назад':
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRIG_MANU 
+        return BRIG_MANU
     repsonsedata = crud.getfillialname(db=session,name=chosen_branch)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))

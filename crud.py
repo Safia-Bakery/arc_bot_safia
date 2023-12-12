@@ -32,7 +32,6 @@ def accept_request(db:Session,id,brigada_id,user_manager):
         db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
         db.commit()
         return query
-    
     else:
         return False
 
@@ -40,6 +39,7 @@ def accept_request(db:Session,id,brigada_id,user_manager):
 def reject_request(db:Session,status,id):
     query = db.query(models.Requests).filter(models.Requests.id==id).first()
     query.status=status
+    query.finished_at = datetime.now(timezonetash)
     db.commit()
     db.refresh(query)
     updated_data = query.update_time or {}

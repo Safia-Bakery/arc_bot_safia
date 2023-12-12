@@ -179,7 +179,6 @@ class Requests(Base):
     status = Column(Integer,default=0)
     started_at = Column(DateTime(timezone=True),nullable=True)
     finished_at = Column(DateTime(timezone=True),nullable=True)
-    rating = Column(Integer,nullable=True)
     deny_reason = Column(String,nullable=True)
     user = relationship('Users',back_populates='request')
     expanditure = relationship("Expanditure",back_populates='request')
@@ -204,7 +203,9 @@ class Comments(Base):
     request= relationship('Requests',back_populates='comments')
     user_id = Column(Integer,ForeignKey('users.id'))
     user = relationship('Users',back_populates='comments')
-    comment = Column(String)
+    comment = Column(String,nullable=True)
+    rating = Column(Integer,nullable=True)
+
 
 
 
