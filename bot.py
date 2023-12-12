@@ -258,7 +258,7 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
     context.user_data['branch'] = update.message.text
-    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+    reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','Внешний вид филиала'],['⬅️ Назад']]
     await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return MARKETINGCAT
 
@@ -385,7 +385,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             return BRANCHES
         else:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','Внешний вид филиала'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['category']=update.message.text
@@ -437,7 +437,7 @@ async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return PRODUCT
         if int(context.user_data['type'])==3:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','Внешний вид филиала'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['description'] = update.message.text
