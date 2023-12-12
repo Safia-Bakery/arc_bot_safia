@@ -269,7 +269,7 @@ async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     if type_name == 'Для Терр. Менеджеров':
         data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
         if data is None:
-            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Промо-продукция','POS-Материалы'],['Для Терр. Менеджеров','Внешний вид филиала'],['Комплекты','⬅️ Назад']]
+            reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','Внешний вид филиала'],['⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     if update.message.text == '⬅️ Назад':
