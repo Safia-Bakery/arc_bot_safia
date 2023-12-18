@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String,ForeignKey,Float,DateTime,Boolean,BIGINT,Table,Time,JSON
+from sqlalchemy import Column, Integer, String,ForeignKey,Float,DateTime,Boolean,BIGINT,Table,Time,JSON,VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -120,6 +120,7 @@ class Suppliers(Base):
     store_id = Column(UUID(as_uuid=True),ForeignKey('fillials.id'))
     store = relationship('Fillials',back_populates='supplier')
 
+
 class Category(Base):
     __tablename__='category'
     id=Column(Integer,primary_key=True,index=True)
@@ -132,6 +133,19 @@ class Category(Base):
     department=Column(Integer)
     sub_id = Column(Integer,nullable=True)
     file = Column(String,nullable=True)
+    finish_time = Column(Time,nullable=True)
+    cat_prod = relationship('Products',back_populates='prod_cat')
+
+
+
+class Products(Base):
+    __tablename__ = "products"
+    id= Column(Integer,primary_key=True,index=True)
+    name = Column(VARCHAR(100))
+    category_id = Column(Integer,ForeignKey('category.id'))
+    status = Column(Integer,default=1)
+    prod_cat = relationship('Category',back_populates='cat_prod')
+    product_orpr = relationship('OrderProducts',back_populates='orpr_product')
 
 class Brigada(Base):
     __tablename__ = 'brigada'
@@ -161,7 +175,6 @@ class Expanditure(Base):
     user_id = Column(Integer,ForeignKey('users.id'))
     user = relationship('Users',back_populates='expanditure')
     created_at = Column(DateTime(timezone=True),default=func.now())
-
 
 class Requests(Base):
     __tablename__='requests'
@@ -194,7 +207,16 @@ class Requests(Base):
     finishing_time = Column(DateTime,nullable=True)
     is_redirected = Column(Boolean,default=False)
     old_cat_id = Column(Integer,nullable=True)
+    request_orpr = relationship('OrderProducts',back_populates='orpr_request')
 
+
+class OrderProducts(Base):
+    __tablename__ = "orderproducts"
+    id = Column(Integer,primary_key=True,index=True)
+    request_id = Column(Integer,ForeignKey('requests.id'))
+    product_id = Column(Integer,ForeignKey('products.id'))
+    orpr_product = relationship('Products',back_populates='product_orpr')
+    orpr_request = relationship('Requests',back_populates='request_orpr')
 
 class Comments(Base):
     __tablename__='comments'
