@@ -270,9 +270,9 @@ async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
         if data is None:
             reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','Внешний вид филиала'],['⬅️ Назад']]
-            await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            await update.message.reply_text(f"Для вас этот пункт недоступен ❌ Выберите другую категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
-    if update.message.text == '⬅️ Назад':
+    if type_name == '⬅️ Назад':
         request_db = crud.get_branch_list_location(db=session)
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
