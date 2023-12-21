@@ -121,6 +121,7 @@ class Suppliers(Base):
     store = relationship('Fillials',back_populates='supplier')
 
 
+
 class Category(Base):
     __tablename__='category'
     id=Column(Integer,primary_key=True,index=True)
@@ -133,7 +134,7 @@ class Category(Base):
     department=Column(Integer)
     sub_id = Column(Integer,nullable=True)
     file = Column(String,nullable=True)
-    finish_time = Column(Time,nullable=True)
+    ftime = Column(Float,nullable=True)
     cat_prod = relationship('Products',back_populates='prod_cat')
 
 
@@ -157,8 +158,7 @@ class Brigada(Base):
     status = Column(Integer,default=0)
     created_at = Column(DateTime(timezone=True),default=func.now())
     sphere_status = Column(Integer,default=1)
-    
-    
+    department = Column(Integer,nullable=True)
 
 
 
@@ -215,6 +215,7 @@ class OrderProducts(Base):
     id = Column(Integer,primary_key=True,index=True)
     request_id = Column(Integer,ForeignKey('requests.id'))
     product_id = Column(Integer,ForeignKey('products.id'))
+    amount = Column(Integer,nullable=True)
     orpr_product = relationship('Products',back_populates='product_orpr')
     orpr_request = relationship('Requests',back_populates='request_orpr')
 

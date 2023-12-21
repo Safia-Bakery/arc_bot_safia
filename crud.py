@@ -8,8 +8,8 @@ from sqlalchemy import or_,and_,Date,cast
 from datetime import datetime 
 timezonetash = pytz.timezone("Asia/Tashkent")
 
-def getlistbrigada(db:Session,sphere_status ):
-    query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1).all()
+def getlistbrigada(db:Session,sphere_status,department):
+    query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1,department).all()
     return query
 
 
@@ -130,6 +130,15 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
 
 
 
+def add_it_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment):
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
+    db.add(db_add_request)
+    db.commit()
+    db.refresh(db_add_request)
+    return db_add_request
+
+
+
 def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery,category_id):
     db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size,update_time ={'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
@@ -195,4 +204,18 @@ def get_category_department(db:Session,department_id):
 
 def get_user_role(db:Session,telegram_id):
     query = db.query(models.Groups).join(models.Users).join(models.Roles).filter(models.Users.telegram_id==telegram_id,models.Roles.page_id==64).first()
+    return query
+
+def get_products(db:Session,category):
+    query = db.query(models.Products).join(models.Category).filter(models.Category.name.ilike(f"%{category}%")).all()
+    return query
+
+def get_product_by_name(db:Session,name):
+    query = db.query(models.Products).filter(models.Products.name.ilike(f"%{name}%")).first()
+    return query
+def create_order_product(db:Session,product_id,amount,order_id):
+    query = models.OrderProducts(product_id=product_id,amount=amount,request_id=order_id)
+    db.add(query)
+    db.commit()
+    db.refresh(query)
     return query

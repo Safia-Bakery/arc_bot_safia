@@ -37,6 +37,7 @@ import os
 from dotenv import load_dotenv
 import cars
 import food
+import ittech
 
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
@@ -59,12 +60,47 @@ offsett = 70
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
-backend_location = '/var/www/arc_backend/'
-#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+#backend_location = '/var/www/arc_backend/'
+backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 
-PHONE, FULLNAME, MANU, BRANCHES,CATEGORY,DESCRIPTION,PRODUCT,FILES, TYPE,BRIG_MANU,LOCATION_BRANCH,ORDERSTG,FINISHING,CLOSEBUTTON,MARKETINGCAT,MARKETINGSTBUTTON,SPHERE,CHANGESPHERE,CHOSENSPHERE,ADDCOMMENT,CHOOSESIZE,INPUTIMAGECAR,COMMENTCAR,MEALSIZE,MEALBREADSIZE,CARSP,CARSFROMLOC,CARSTOLOC= range(28)
+PHONE,\
+FULLNAME,\
+MANU, \
+BRANCHES,\
+CATEGORY,\
+DESCRIPTION,\
+PRODUCT,\
+FILES, \
+TYPE,\
+BRIG_MANU,\
+LOCATION_BRANCH,\
+ORDERSTG,\
+FINISHING,\
+CLOSEBUTTON,\
+MARKETINGCAT,\
+MARKETINGSTBUTTON,\
+SPHERE,\
+CHANGESPHERE,\
+CHOSENSPHERE,\
+ADDCOMMENT,\
+CHOOSESIZE,\
+INPUTIMAGECAR,\
+COMMENTCAR,\
+MEALSIZE,\
+MEALBREADSIZE,\
+CARSP,\
+CARSFROMLOC,\
+CARSTOLOC,\
+ITSPHERE,\
+ITCATEGORY,\
+ITPRODUCTS,\
+ITAMOUNT,\
+ITCOMMENT,\
+ITFILES,\
+ITFINISHING,\
+    = range(35)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -201,7 +237,6 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.insert(0,['⬅️ Назад'])
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-
         return BRANCHES
     elif type_name=='⬅️ Назад':
         await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
@@ -239,6 +274,22 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
+        return BRANCHES
+    elif type_name=='IT🧑‍💻':
+        context.user_data['type'] = 4
+        context.user_data['page_number'] =0
+        #if context.user_data['sphere_status']==1:
+        request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        #else:
+        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ 
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
     else:
         if int(context.user_data['sphere_status'])==2:
@@ -344,6 +395,10 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Укажите количество порции еды',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MEALSIZE
+    if int(context.user_data['type'])==4:
+        reply_keyboard=[['Обслуживание и тех.поддержка','Закуп'],['⬅️ Назад']]
+        await update.message.reply_text('Выберите тип заявки:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return ITSPHERE
     else:
         sphere_status=context.user_data['sphere_status']
     request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
@@ -647,8 +702,8 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
-    
-    
+
+
 
 
 
@@ -657,7 +712,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(
         "bye",reply_markup=ReplyKeyboardRemove()
     )
-    
     return ConversationHandler.END
 
 
@@ -683,7 +737,6 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-
     query = update.callback_query
     selected_option = int(query.data)
     message = query.message
@@ -702,7 +755,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     elif one_request.status ==0 and user:
         if selected_option <0:
             if selected_option == -1:
-                db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status)
+                db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status,department=one_request.category.department)
                 reply_murkup = data_transform(db_query)
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
             if selected_option== -2:
@@ -780,7 +833,15 @@ def main() -> None:
             MEALBREADSIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,food.meal_bread_size)],
             CARSP:[MessageHandler(filters.TEXT,cars.car_sphere)],
             CARSFROMLOC:[MessageHandler(filters.TEXT | filters.LOCATION,cars.cars_from_loc)],
-            CARSTOLOC:[MessageHandler(filters.TEXT | filters.LOCATION,cars.cars_to_loc)]
+            CARSTOLOC:[MessageHandler(filters.TEXT | filters.LOCATION,cars.cars_to_loc)],
+            ITSPHERE:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_sphere)],
+            ITCATEGORY:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_category)],
+            ITPRODUCTS:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_products)],
+            ITAMOUNT:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_amount)],
+            ITCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_comment)],
+            ITFILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,ittech.it_files)],
+            ITFINISHING:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_finishing)],
+
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
