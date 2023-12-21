@@ -60,8 +60,8 @@ offsett = 70
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
-#backend_location = '/var/www/arc_backend/'
-backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+backend_location = '/var/www/arc_backend/'
+#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 
