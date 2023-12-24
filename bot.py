@@ -276,21 +276,28 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         return BRANCHES
     elif type_name=='IT🧑‍💻':
-        context.user_data['type'] = 4
-        context.user_data['page_number'] =0
-        #if context.user_data['sphere_status']==1:
-        request_db = crud.get_branch_list(db=session,sphere_status=1)
-            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        #else:
-        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
-        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
- 
-        reply_keyboard = transform_list(request_db,2,'name')
-
-        reply_keyboard.insert(0,['⬅️ Назад'])
-        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRANCHES
+        if int(context.user_data['sphere_status'])==2:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        elif int(context.user_data['sphere_status'])==1:
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return TYPE
+        #context.user_data['type'] = 4
+        #context.user_data['page_number'] =0
+        ##if context.user_data['sphere_status']==1:
+        #request_db = crud.get_branch_list(db=session,sphere_status=1)
+        #    #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        ##else:
+        ##    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+        ##    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ #
+        #reply_keyboard = transform_list(request_db,2,'name')
+#
+        #reply_keyboard.insert(0,['⬅️ Назад'])
+        #reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        #await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        #return BRANCHES
     else:
         if int(context.user_data['sphere_status'])==2:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
