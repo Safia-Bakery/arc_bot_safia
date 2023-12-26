@@ -220,8 +220,8 @@ def create_order_product(db:Session,product_id,amount,order_id):
     db.refresh(query)
     return query
 
-def add_comment_request(db:Session,comment,category_id,name,user_id,fillial_id,image):
-    query = models.Requests(description=comment,category_id=category_id,product=name,user_id=user_id,fillial_id=fillial_id,image=image)
+def add_comment_request(db:Session,comment,category_id,name,user_id,fillial_id):
+    query = models.Requests(description=comment,category_id=category_id,product=name,user_id=user_id,fillial_id=fillial_id)
     db.add(query)
     db.commit()
     db.refresh(query)
