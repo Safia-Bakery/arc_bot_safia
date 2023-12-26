@@ -118,10 +118,10 @@ async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     chosen_data = update.message.text
     if chosen_data=='⬅️ Назад':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘t'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.TYPE
     if chosen_data== 'Запросить на филиал':

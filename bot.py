@@ -38,7 +38,7 @@ from dotenv import load_dotenv
 import cars
 import food
 import ittech
-
+import comments
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
 load_dotenv()
@@ -100,7 +100,10 @@ ITAMOUNT,\
 ITCOMMENT,\
 ITFILES,\
 ITFINISHING,\
-    = range(35)
+COMMENTTEXT,\
+COMMENTNAME,\
+COMMENTPHOTO,\
+    = range(38)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -162,10 +165,10 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text_manu = update.message.text
     if text_manu.lower() =='подать заявку📝':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -263,7 +266,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['type'] = 6
         time_work = crud.get_work_time(db=session)
         if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return TYPE
         
@@ -277,12 +280,13 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRANCHES
     elif type_name=='IT🧑‍💻':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
+        
         #context.user_data['type'] = 4
         #context.user_data['page_number'] =0
         ##if context.user_data['sphere_status']==1:
@@ -298,12 +302,23 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         #reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         #await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         #return BRANCHES
+    
+    elif type_name=='Отзывы гостей✍':
+        context.user_data['type'] = 7
+        request_db = crud.get_branch_list(db=session,sphere_status=1)
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRANCHES
+
     else:
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -311,7 +326,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     if update.message.text == '⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
         
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
@@ -352,9 +367,9 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if context.user_data['sphere_status']==1:
 
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Заказать еду🥘'],['Отзывы гостей✍','⬅️ Назад']]
         if context.user_data['sphere_status']==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['⬅️ Назад']]
+            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
         
 
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -406,12 +421,14 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard=[['Обслуживание и тех.поддержка','Закуп'],['⬅️ Назад']]
         await update.message.reply_text('Выберите тип заявки:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return ITSPHERE
+    if int(context.user_data['type'])==7:
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Оставьте отзыв в виде текстового сообщения',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return COMMENTTEXT
     else:
         sphere_status=context.user_data['sphere_status']
     request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
-    categoryies = request_db
     reply_keyboard = transform_list(request_db,3,'name')
-
     reply_keyboard.append(['⬅️ Назад'])
     await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
 
@@ -848,7 +865,9 @@ def main() -> None:
             ITCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_comment)],
             ITFILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,ittech.it_files)],
             ITFINISHING:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.it_finishing)],
-
+            COMMENTNAME:[MessageHandler(filters.TEXT& ~filters.COMMAND,comments.commentname)],
+            COMMENTTEXT:[MessageHandler(filters.TEXT& ~filters.COMMAND,comments.commenttext)],
+            COMMENTPHOTO:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,comments.commentphoto)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
