@@ -9,7 +9,7 @@ from datetime import datetime
 timezonetash = pytz.timezone("Asia/Tashkent")
 
 def getlistbrigada(db:Session,sphere_status,department):
-    query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1,department).all()
+    query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1,models.Brigada.department==department).all()
     return query
 
 

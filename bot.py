@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # pylint: disable=unused-argument, wrong-import-position
 # This program is dedicated to the public domain under the CC0 license.
-
 """
 First, a few callback functions are defined. Then, those functions are passed to
-the Application and registered at their respective places.
+the Applisdcation and registered at their respective places.
 Then, the bot is started and runs until we press Ctrl-C on the command line.
 
 Usage:
@@ -13,6 +12,7 @@ Send /start to initiate the conversation.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
+
 import json
 import re
 from telegram.constants import ParseMode
@@ -813,7 +813,6 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     pass
     else:
         await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
-
 
 
 def main() -> None:
