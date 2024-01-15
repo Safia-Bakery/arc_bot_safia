@@ -17,6 +17,7 @@ import json
 import re
 from telegram.constants import ParseMode
 from sqlalchemy.orm import Session
+import inventory
 
 from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton,ReplyKeyboardRemove
 from telegram.ext import (
@@ -103,7 +104,8 @@ ITFINISHING,\
 COMMENTTEXT,\
 COMMENTNAME,\
 COMMENTPHOTO,\
-    = range(38)
+INVETORY,\
+    = range(39)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -312,6 +314,17 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
+    elif type_name=='Инвентарь📦':
+        user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        await update.message.reply_text(
+        f"Пожалуйста нажмите кнопку: Заказать🍰",
+        
+        reply_markup=ReplyKeyboardMarkup.from_button(
+            KeyboardButton(
+                text="Заказать🍰",
+                web_app=WebAppInfo(url=f"{BASE_URL}/tg/inventory-request-add?key={create_access_token(user.username)}")
+            ),resize_keyboard=True))
+        return INVETORY
 
     else:
         if int(context.user_data['sphere_status'])==2:
@@ -867,6 +880,7 @@ def main() -> None:
             COMMENTNAME:[MessageHandler(filters.TEXT& ~filters.COMMAND,comments.commentname)],
             COMMENTTEXT:[MessageHandler(filters.TEXT& ~filters.COMMAND,comments.commenttext)],
             COMMENTPHOTO:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,comments.commentphoto)],
+            INVETORY:[MessageHandler(filters.TEXT& ~filters.COMMAND,inventory.close_invetory)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
