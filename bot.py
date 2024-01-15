@@ -65,6 +65,7 @@ backend_location = '/var/www/arc_backend/'
 #backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
+FRONT_URL = 'https://service.safiabakery.uz/'
 
 PHONE,\
 FULLNAME,\
@@ -317,12 +318,12 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         await update.message.reply_text(
-        f"Пожалуйста нажмите кнопку: Заказать🍰",
+        f"Пожалуйста нажмите кнопку: Инвентарь📦",
         
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
-                text="Заказать🍰",
-                web_app=WebAppInfo(url=f"{BASE_URL}/tg/inventory-request-add?key={create_access_token(user.username)}")
+                text="Инвентарь📦",
+                web_app=WebAppInfo(url=f"{FRONT_URL}/tg/inventory-request-add?key={create_access_token(user.username)}")
             ),resize_keyboard=True))
         return INVETORY
 
