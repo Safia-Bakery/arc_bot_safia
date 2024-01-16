@@ -11,7 +11,7 @@ import pytz
 from dotenv import load_dotenv
 load_dotenv()
 timezonetash = pytz.timezone("Asia/Tashkent")
-ACCESS_TOKEN_EXPIRE_MINUTES = 60*24  # 30 minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7 # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')   # should be kept secret
 JWT_REFRESH_SECRET_KEY =  os.environ.get('JWT_REFRESH_SECRET_KEY')
