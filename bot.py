@@ -31,7 +31,7 @@ from telegram.ext import (
 
 )
 import datetime
-from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between
+from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string
 import requests
 import crud
 import os 
@@ -157,7 +157,7 @@ async def sphere(update:Update,context:ContextTypes.DEFAULT_TYPE)->int:
     if update.message.text in buttons_sphere[0]:
         context.user_data['sphere_status']=sphere_dict[update.message.text]
 
-    dat = crud.create_user(db=session,full_name=context.user_data['full_name'],phone_number=str(context.user_data['phone_number']).replace('+',''),telegram_id=update.message.from_user.id,sphere_status=int(context.user_data['sphere_status']))
+    dat = crud.create_user(db=session,full_name=context.user_data['full_name'],phone_number=str(context.user_data['phone_number']).replace('+',''),telegram_id=update.message.from_user.id,sphere_status=int(context.user_data['sphere_status']),username=generate_random_string(10))
     #requests_data = requests.post(f"{BASE_URL}tg/create/user",json=body)
     await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return MANU
@@ -318,7 +318,6 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         acces_token = create_access_token(user.username)
-        print(acces_token)
         await update.message.reply_text(
         f"Пожалуйста нажмите кнопку: Инвентарь📦",
         

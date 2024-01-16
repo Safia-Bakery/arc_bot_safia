@@ -4,7 +4,9 @@ from datetime import datetime,timedelta
 from typing import Union, Any
 from jose import jwt
 import requests
+import string
 import os
+import random
 import pytz
 from dotenv import load_dotenv
 load_dotenv()
@@ -103,3 +105,7 @@ def is_time_between(start_time, end_time, current_time=None):
         return False
     
 
+def generate_random_string(length=10):
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
