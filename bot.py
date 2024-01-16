@@ -317,13 +317,15 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRANCHES
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        acces_token = create_access_token(user.username)
+        print(acces_token)
         await update.message.reply_text(
         f"Пожалуйста нажмите кнопку: Инвентарь📦",
         
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Инвентарь📦",
-                web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}")
+                web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={acces_token}")
             ),resize_keyboard=True))
         return INVETORY
 
