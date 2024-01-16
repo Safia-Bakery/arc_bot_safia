@@ -318,6 +318,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         acces_token = create_access_token(user.username)
+        print(acces_token)
         await update.message.reply_text(
         f"Пожалуйста нажмите кнопку: Инвентарь📦",
         
