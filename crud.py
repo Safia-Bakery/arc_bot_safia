@@ -60,8 +60,8 @@ def get_user_tel_id(db:Session,id):
     return query
 
 
-def create_user(db:Session,full_name,telegram_id,sphere_status,phone_number):
-    db_add_request = models.Users(full_name=full_name,telegram_id=telegram_id,phone_number=phone_number,sphere_status=sphere_status)
+def create_user(db:Session,full_name,telegram_id,sphere_status,phone_number,username):
+    db_add_request = models.Users(full_name=full_name,telegram_id=telegram_id,phone_number=phone_number,sphere_status=sphere_status,username=username)
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)
