@@ -323,7 +323,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Инвентарь📦",
-                web_app=WebAppInfo(url=f"{FRONT_URL}/tg/inventory-request-add?key={create_access_token(user.username)}")
+                web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}")
             ),resize_keyboard=True))
         return INVETORY
 
