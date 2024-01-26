@@ -31,7 +31,7 @@ from telegram.ext import (
 
 )
 import datetime
-from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string
+from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string,inlinewebapp
 import requests
 import crud
 import os 
@@ -669,7 +669,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['last_request'] = uservalue
     request_db = crud.get_request_id(db=session,id=uservalue)
     reply_keyboard = [['Завершить ✅'],['Забрать на ремонт 🛠'],['⬅️ Назад']]
-    if request_db.status == 2:
+    if request_db.status == 2 or request_db.category.department==4: 
         reply_keyboard = [['Завершить ✅'],['⬅️ Назад']]
 
     keyboard = [
@@ -697,8 +697,27 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_button = update.message.text
+    if user_button=='⬅️ Назад':
+        #user = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        await update.message.reply_text(
+        f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRIG_MANU
     if user_button=='Завершить ✅':
-    
+        request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
+        if request_db.category.department==4:
+            #finish request data 
+            request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
+            url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
+            #send message to request owner to rate request
+            inlinewebapp(bot_token=BOTTOKEN,
+                         chat_id=request_list.user.telegram_id,
+                         message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+                         url=url)
+            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+            await update.message.reply_text(
+            f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return BRIG_MANU
         user_data = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
