@@ -41,7 +41,6 @@ def generate_text(lst):
             data[i.fillial.name]=f"#{i.id}s"
         else:
             data[i.fillial.name]=data[i.fillial.name]+f", #{i.id}s"
-    
     for inf in data.keys():
         a+=1
         sending_text = sending_text+f"\n\n{a}) {inf} - ( {data[inf]} )"

@@ -270,7 +270,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         time_work = crud.get_work_time(db=session)
         if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
             reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
-            await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            await update.message.reply_text(f"Заявки на Стафф питание принимаются с 07:00 до 17:00 🕓",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return TYPE
         
         request_db = crud.get_branch_list(db=session,sphere_status=1)
