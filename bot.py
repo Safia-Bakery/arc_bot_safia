@@ -591,10 +591,14 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         if context.user_data['type']==1:
             product=context.user_data['product']
         add_request = crud.add_request(db=session,is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
-        
+
         crud.create_files(db=session,request_id=add_request.id,filename=f"files/{file_name}")
         formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
-        text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {add_request.fillial.parentfillial.name}\n"\
+        if add_request.category.sphere_status==1 and add_request.category.department==1:
+            fillial_name  = add_request.fillial.parentfillial.name
+        else:
+            fillial_name  = add_request.fillial.name
+        text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {fillial_name}\n"\
                         f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
                         f"🔰Категория проблемы: {add_request.category.name}\n"\
                         f"⚙️Название оборудования: {add_request.product}\n"\
@@ -608,7 +612,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
-        await update.message.reply_text(f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        await update.message.reply_text(f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     
 
