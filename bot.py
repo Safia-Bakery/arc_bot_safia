@@ -179,7 +179,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard = buttons_sphere_2
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = buttons_sphere_2
+            reply_keyboard = buttons_sphere_1
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
