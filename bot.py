@@ -40,6 +40,7 @@ import cars
 import food
 import ittech
 import comments
+import video
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
 load_dotenv()
@@ -61,6 +62,9 @@ offsett = 70
 manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
+
+buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
+buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 #backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
@@ -106,7 +110,11 @@ COMMENTTEXT,\
 COMMENTNAME,\
 COMMENTPHOTO,\
 INVETORY,\
-    = range(39)
+VIDCOMMENT,\
+VIDFROM,\
+VIDTO,\
+VIDFILES,\
+    = range(43)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -168,10 +176,10 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text_manu = update.message.text
     if text_manu.lower() =='подать заявку📝':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_2
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_2
             await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -269,7 +277,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['type'] = 6
         time_work = crud.get_work_time(db=session)
         if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_1
             await update.message.reply_text(f"Заявки на Стафф питание принимаются с 07:00 до 17:00 🕓",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return TYPE
         
@@ -283,10 +291,10 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRANCHES
     elif type_name=='IT🧑‍💻':
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_2
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_1
             await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
         
@@ -326,13 +334,22 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}")
             ),resize_keyboard=True))
         return INVETORY
+    elif type_name=='Видеонаблюдение🎥':
+        context.user_data['type'] = 8
+        request_db = crud.get_branch_list(db=session,sphere_status=int(context.user_data['sphere_status']))
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRANCHES
 
     else:
         if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_2
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_1
             await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
 
@@ -340,7 +357,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     if update.message.text == '⬅️ Назад':
-        reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+        reply_keyboard = buttons_sphere_2
         
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return TYPE
@@ -381,9 +398,9 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if context.user_data['sphere_status']==1:
 
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_1
         if context.user_data['sphere_status']==2:
-            reply_keyboard = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','⬅️ Назад']]
+            reply_keyboard = buttons_sphere_2
         
 
         await update.message.reply_text(f"Пожалуйста выберите направление:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -439,6 +456,10 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Оставьте отзыв в виде текстового сообщения',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return COMMENTTEXT
+    if int(context.user_data['type'])==8:
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Опишите пожалуйста событие в деталях',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return VIDCOMMENT
     else:
         sphere_status=context.user_data['sphere_status']
     request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
@@ -905,6 +926,10 @@ def main() -> None:
             COMMENTTEXT:[MessageHandler(filters.TEXT& ~filters.COMMAND,comments.commenttext)],
             COMMENTPHOTO:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,comments.commentphoto)],
             INVETORY:[MessageHandler(filters.StatusUpdate.WEB_APP_DATA& ~filters.COMMAND,inventory.close_invetory)],
+            VIDCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidcomment)],
+            VIDFILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,video.vidfiles)],
+            VIDFROM:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidfrom)],
+            VIDTO:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidto)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),

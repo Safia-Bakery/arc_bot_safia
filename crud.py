@@ -226,3 +226,13 @@ def add_comment_request(db:Session,comment,category_id,name,user_id,fillial_id):
     db.commit()
     db.refresh(query)
     return query
+
+
+
+def add_video_request(db:Session,comment, category_id,fillial_id, user_id,vidfrom,vidto):
+    query = models.Requests(description=comment,category_id=category_id,user_id=user_id,fillial_id=fillial_id,update_time={'vidfrom':vidfrom,'vidto':vidto})
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+    return query
+
