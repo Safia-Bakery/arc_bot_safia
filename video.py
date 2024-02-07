@@ -95,7 +95,7 @@ async def vidfiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(f"Manu",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_video_request(db=bot.session,category_id=55,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
+    data = crud.add_video_request(db=bot.session,category_id=60,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
     if photo_vid is not None:
         add_files = crud.create_files(db=bot.session,request_id=data.id,filename=photo_vid)
 
