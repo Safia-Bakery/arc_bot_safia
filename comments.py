@@ -41,7 +41,7 @@ async def commentname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     if entered_data == '⬅️ Назад':
         await update.message.reply_text('Пожалуйста укажите номер и имя гостя',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.COMMENTTEXT
-    reply_keyboard = [['⬅️ Назад','Пропустить']]
+    reply_keyboard = [['⬅️ Назад']]
     context.user_data['comment_name'] = entered_data
     await  update.message.reply_text('Пожалуйста отправьте фото из Книги жалоб',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return bot.COMMENTPHOTO
@@ -53,8 +53,6 @@ async def commentphoto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         if entered_data == '⬅️ Назад':
             await update.message.reply_text('Пожалуйста укажите номер и имя гостя',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return bot.COMMENTTEXT
-        if entered_data == 'Пропустить':
-            context.user_data['image_comment'] = None
         else:
             await update.message.reply_text('Пожалуйста отправьте фото из Книги жалоб',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return bot.COMMENTPHOTO
