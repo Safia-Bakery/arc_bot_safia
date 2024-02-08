@@ -463,6 +463,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     else:
         sphere_status=context.user_data['sphere_status']
     request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
+    
     reply_keyboard = transform_list(request_db,3,'name')
     reply_keyboard.append(['⬅️ Назад'])
     await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -472,7 +473,8 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message.text == '⬅️ Назад':
+    inserted_data = update.message.text
+    if inserted_data== '⬅️ Назад':
         if context.user_data['type']==1:
             if context.user_data['sphere_status']==1:
                 
@@ -505,6 +507,16 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['category']=update.message.text
     
     if int(context.user_data['type'])==1:
+        get_category  = crud.getcategoryname(db=session,name=inserted_data)
+        if get_category.is_child:
+            pass
+        else:
+            categories = crud.get_child_categories(db=session,category_id=get_category.id)
+            if categories:
+                reply_keyboard = transform_list(categories,3,'name')
+                reply_keyboard.append(['⬅️ Назад'])
+                await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+                return CATEGORY
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return PRODUCT

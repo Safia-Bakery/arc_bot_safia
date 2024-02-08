@@ -90,6 +90,7 @@ def get_category_list(db:Session,sphere_status,department,sub_id:Optional[int]=N
         query = query.filter(models.Category.sphere_status==sphere_status)
     if sub_id is not None:
         query  = query.filter(models.Category.sub_id==sub_id)
+    query = query.filter(models.Category.parent_id==None)
     
     query = query.filter(models.Category.status==1,models.Category.department==department).all()
     return query
@@ -236,3 +237,6 @@ def add_video_request(db:Session,comment, category_id,fillial_id, user_id,vidfro
     db.refresh(query)
     return query
 
+def get_child_categories(db:Session,category_id):
+    query = db.query(models.Category).filter(models.Category.parent_id==category_id,models.Category.status==1).all()
+    return query
