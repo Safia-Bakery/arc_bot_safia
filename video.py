@@ -98,8 +98,8 @@ async def vidfiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     data = crud.add_video_request(db=bot.session,category_id=60,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
     if photo_vid is not None:
         add_files = crud.create_files(db=bot.session,request_id=data.id,filename=photo_vid)
-    formatted_datetime_str = data.created_at.strftime("%Y-%m-%d %H:%M")
-    await context.bot.send_message(chat_id='-1002124172379',text="📑Заявка № "+str(data.id)+"\n\n📍Филиал: "+str(data.fillial.parentfillial.name)+"\n🕘Дата поступления заявки: "+str(formatted_datetime_str)+"\n\n💬Комментарии: "+str(data.description))
+    formatted_datetime_str = data.created_at.strftime("%d.%m.%Y %H:%M")
+    await context.bot.send_message(chat_id='-1002124172379',text="📑Заявка № "+str(data.id)+"\n\n📍Филиал: "+str(data.fillial.parentfillial.name)+"\n🕘Дата поступления заявки: "+str(formatted_datetime_str)+"\n\n🏳️Дата и время начало события: "+data.update_time['vidfrom']+"\n🏁Дата и время конца события: "+data.update_time['vidto']+"\n\n💬Комментарии: "+str(data.description))
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Видеонаблюдение принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     #await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return bot.MANU
