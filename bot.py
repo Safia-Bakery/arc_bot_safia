@@ -115,7 +115,8 @@ VIDFROM,\
 VIDTO,\
 VIDFILES,\
 ITPHOTOREPORT,\
-    = range(44)
+VERIFYUSER,\
+    = range(45)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -128,12 +129,33 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data['sphere_status']=user.sphere_status
         await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
-    await update.message.reply_text(
-        "Здравствуйте. Давайте сначала познакомимся ☺️\nКак Вас зовут? (в формате Ф.И.О)",
-        
-    )
+    else:
+        await update.message.reply_text(
+            """Здравствуйте\n
+Это корпоративный бот компании Safia\n
+Пожалуйста введите пароль:\n\n
 
-    return FULLNAME
+если у вас её нет, обратитесь к системному администратору вашей компании""",
+            
+        )
+        return VERIFYUSER
+
+
+
+
+async def verify_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_input = update.message.text
+    if user_input == '$af!a2005':
+
+
+        await update.message.reply_text(
+            "Здравствуйте. Давайте сначала познакомимся ☺️\nКак Вас зовут? (в формате Ф.И.О)",
+            
+        )
+        return FULLNAME
+    else:
+        await update.message.reply_text("Пароль не верный❌\nПопробуйте еще раз")
+        return VERIFYUSER
 
 
 
@@ -997,6 +1019,7 @@ def main() -> None:
             VIDFROM:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidfrom)],
             VIDTO:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidto)],
             ITPHOTOREPORT:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,it_photo_report)],
+            VERIFYUSER:[MessageHandler(filters.TEXT& ~filters.COMMAND,verify_user)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
