@@ -148,8 +148,8 @@ def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_del
     return db_add_request
 
 
-def create_files(db:Session,request_id,filename):
-    db_add_file = models.Files(request_id=request_id,url=filename)
+def create_files(db:Session,request_id,filename,status:Optional[int]=0):
+    db_add_file = models.Files(request_id=request_id,url=filename,status=status)
     db.add(db_add_file)
     db.commit()
     db.refresh(db_add_file)

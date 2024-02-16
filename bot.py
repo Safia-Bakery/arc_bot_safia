@@ -114,7 +114,8 @@ VIDCOMMENT,\
 VIDFROM,\
 VIDTO,\
 VIDFILES,\
-    = range(43)
+ITPHOTOREPORT,\
+    = range(44)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -740,6 +741,9 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
         f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
+    
+    #------------------this is it request closing data-------------------
+
     if user_button=='Завершить ✅':
         request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
         if request_db.category.department==4:
@@ -755,6 +759,9 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
             f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return BRIG_MANU
+        
+    #------------------this is it end of request closing data-------------------
+        
         user_data = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
@@ -779,10 +786,57 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
+
+
+
 async def closebutton(update:Update,context:ContextTypes.DEFAULT_TYPE):
     data = json.loads(update.effective_message.web_app_data.data)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    return BRIG_MANU
+
+
+
+async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
+    request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
+
+    if update.message.text:
+        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRIG_MANU
+   
+    else:
+        
+        if update.message.document:
+           #context.user_data['file_url']=f"files/{update.message.document.file_name}"
+            file_id = update.message.document.file_id
+            file_name = update.message.document.file_name
+            new_file = await context.bot.get_file(file_id=file_id)
+            
+            file_content = await new_file.download_as_bytearray()
+        if update.message.photo:
+            file_name = f"{update.message.photo[-1].file_id}.jpg"
+            getFile = await context.bot.getFile(update.message.photo[-1].file_id)
+            file_content = await getFile.download_as_bytearray()
+            
+        with open(f"{backend_location}files/{file_name}",'wb+') as f:
+            f.write(file_content)
+            f.close()
+        #request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
+        add_file = crud.create_files(db=session,request_id=request_db.id,filename=f"files/{file_name}",status=1)
+        await update.message.reply_text("Фото добавлено",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+
+    #finish request data 
+    request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
+    url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
+    #send message to request owner to rate request
+    inlinewebapp(bot_token=BOTTOKEN,
+                 chat_id=request_list.user.telegram_id,
+                 message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+                 url=url)
+    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    await update.message.reply_text(
+    f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
 
@@ -832,7 +886,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    selected_option = int(query.data)
+    selected_option = int(query.data) 
     message = query.message
     blank_reply_murkup = [[]]
     text_of_order = query.message.text
@@ -942,6 +996,7 @@ def main() -> None:
             VIDFILES:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,video.vidfiles)],
             VIDFROM:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidfrom)],
             VIDTO:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidto)],
+            ITPHOTOREPORT:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,it_photo_report)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
