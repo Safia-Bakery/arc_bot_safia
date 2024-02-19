@@ -770,17 +770,18 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
         if request_db.category.department==4:
             #finish request data 
-            request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
-            url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
-            #send message to request owner to rate request
-            inlinewebapp(bot_token=BOTTOKEN,
-                         chat_id=request_list.user.telegram_id,
-                         message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
-                         url=url)
-            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
-            await update.message.reply_text(
-            f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-            return BRIG_MANU
+            #request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
+            #url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
+            ##send message to request owner to rate request
+            #inlinewebapp(bot_token=BOTTOKEN,
+            #             chat_id=request_list.user.telegram_id,
+            #             message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+            #             url=url)
+            #reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+            #await update.message.reply_text(
+            #f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            await update.message.reply_text("Входной фотоотчет",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+            return ITPHOTOREPORT
         
     #------------------this is it end of request closing data-------------------
         
