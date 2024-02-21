@@ -131,8 +131,8 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
 
 
 
-def add_it_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment):
-    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
+def add_it_request(db:Session,category_id,fillial_id,user_id,size,finishing_time,comment):
+    db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,finishing_time=finishing_time,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
     db.commit()
     db.refresh(db_add_request)

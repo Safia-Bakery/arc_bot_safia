@@ -201,11 +201,12 @@ async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
         return bot.ITCOMMENT
-    category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category']).id
+    category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category'])
     fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
     fillial_id = fillial_query.id
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_it_request(db=bot.session,category_id=category_query,fillial_id=fillial_id,user_id=user_query.id,size=None,time_delivery=None,comment=context.user_data['comment'])
+    finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now()
+    data = crud.add_it_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=context.user_data['comment'])
     #reply_keyboard = [['⬅️ Назад']]
     products = dict(context.user_data['productd'])
     for key,value in products.items():

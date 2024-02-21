@@ -502,7 +502,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Укажите количество порции еды',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MEALSIZE
     if int(context.user_data['type'])==4:
-        reply_keyboard=[['Обслуживание и тех.поддержка','Закуп'],['⬅️ Назад']]
+        reply_keyboard=[['Обслуживание и тех.поддержка'],['⬅️ Назад']]
         await update.message.reply_text('Выберите тип заявки:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return ITSPHERE
     if int(context.user_data['type'])==7:
