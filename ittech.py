@@ -18,6 +18,8 @@ from microser import transform_list
 import datetime
 import calendar
 import re
+import pytz
+timezonetash = pytz.timezone("Asia/Tashkent")
 
 async def it_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     user_mess = update.message.text
@@ -188,7 +190,7 @@ async def it_comment(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         fillial_id = fillial_query.id
         user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-        finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now()
+        finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
         data = crud.add_it_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment)
         if context.user_data['image_it'] is not None:
             crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_it'])
@@ -206,7 +208,7 @@ async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
     fillial_id = fillial_query.id
     user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now()
+    finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
     data = crud.add_it_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=context.user_data['comment'])
     #reply_keyboard = [['⬅️ Назад']]
     products = dict(context.user_data['productd'])
