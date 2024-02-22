@@ -65,8 +65,8 @@ sphere_dict = {'Фабрика':2,'Розница':1}
 
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
-#backend_location = '/var/www/arc_backend/'
-backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+backend_location = '/var/www/arc_backend/'
+#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
