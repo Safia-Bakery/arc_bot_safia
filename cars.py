@@ -284,7 +284,7 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     #                  minute=0
     #                  )
     if context.user_data['carssp'] =='Запросить на филиал':
-        category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category']).id
+        category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category'],department=int(context.user_data['type'])).id
         fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         location = None
         fillial_id = fillial_query.id

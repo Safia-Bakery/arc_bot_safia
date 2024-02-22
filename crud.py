@@ -92,14 +92,16 @@ def get_category_list(db:Session,sphere_status,department,sub_id:Optional[int]=N
         query  = query.filter(models.Category.sub_id==sub_id)
     query = query.filter(models.Category.parent_id==None)
     
-    query = query.filter(models.Category.status==1,models.Category.department==department).all()
+    query = query.filter(models.Category.status==1,models.Category.department==department).order_by(models.Category.name).all()
     return query
 
 
 
-def getcategoryname(db:Session,name):
-    query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%")).first()
-    return query
+def getcategoryname(db:Session,name,department:Optional[int]=None):
+    query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"))
+    if department is not None:
+        query = query.filter(models.Category.department==department)
+    return query.first()
 
 
 def getchildbranch(db:Session,fillial,type,factory):
@@ -238,5 +240,5 @@ def add_video_request(db:Session,comment, category_id,fillial_id, user_id,vidfro
     return query
 
 def get_child_categories(db:Session,category_id):
-    query = db.query(models.Category).filter(models.Category.parent_id==category_id,models.Category.status==1).all()
+    query = db.query(models.Category).filter(models.Category.parent_id==category_id,models.Category.status==1).order_by(models.Category.name).all()
     return query

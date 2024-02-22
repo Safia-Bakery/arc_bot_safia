@@ -65,8 +65,8 @@ sphere_dict = {'Фабрика':2,'Розница':1}
 
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
-backend_location = '/var/www/arc_backend/'
-#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+#backend_location = '/var/www/arc_backend/'
+backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -563,7 +563,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['category']=update.message.text
     
     if int(context.user_data['type'])==1:
-        get_category  = crud.getcategoryname(db=session,name=inserted_data)
+        get_category  = crud.getcategoryname(db=session,name=inserted_data,department=int(context.user_data['type']))
         if get_category.is_child:
             pass
         else:
@@ -587,7 +587,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return CHOOSESIZE
         #return CHOOSEMONTH
     elif int(context.user_data['type'])==3:
-        data = crud.getcategoryname(db=session,name=update.message.text)
+        data = crud.getcategoryname(db=session,name=update.message.text,department=int(context.user_data['type']))
         if data.file:
             file = open(f"{backend_location}{data.file}",'rb')
             await context.bot.send_photo(chat_id=update.message.from_user.id,photo=file)
@@ -671,7 +671,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         #with open(f"files/{file_name}", 'wb') as f:
         #    context.bot.get_file(update.message.document).download(out=f)
         #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open).json()
-        category_query = crud.getcategoryname(db=session,name=context.user_data['category'])
+        category_query = crud.getcategoryname(db=session,name=context.user_data['category'],department=int(context.user_data['type']))
         fillial_query = crud.getchildbranch(db=session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
         list_data = [None,'АРС🛠',None,'Маркетигну📈']
