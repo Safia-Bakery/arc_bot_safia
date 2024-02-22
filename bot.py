@@ -888,7 +888,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
     #send message to request owner to rate request
     inlinewebapp(bot_token=BOTTOKEN,
                  chat_id=request_list.user.telegram_id,
-                 message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+                 message_text=f"Уважаемый {request_list.user.full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
                  url=url)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_text(
