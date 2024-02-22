@@ -164,7 +164,7 @@ async def it_comment(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         #if context.user_data['image_it'] is not None:
         #    crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]
-        reply_keyboard = [['⬅️ Назад']]
+        reply_keyboard = [['⬅️ Назад',"Пропустить"]]
         await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
         return bot.ITFILES
     
@@ -181,25 +181,24 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
             return bot.ITCOMMENT
         else:
-            reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
-            return bot.ITFILES
-    if update.message.document:
-       #context.user_data['file_url']=f"files/{update.message.document.file_name}"
-        file_id = update.message.document.file_id
-        file_name = update.message.document.file_name
-        new_file = await context.bot.get_file(file_id=file_id)
-        file_content = await new_file.download_as_bytearray()
-        #files_open = {'files':file_content}
-    if update.message.photo:
-        file_name = f"{update.message.photo[-1].file_id}.jpg"
-        getFile = await context.bot.getFile(update.message.photo[-1].file_id)
-        file_content = await getFile.download_as_bytearray()
-        #files_open = {'files':file_content}
-    with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
-        f.write(file_content)
-        f.close()
-    context.user_data['image_it'] ='files/'+file_name
+            context.user_data['image_it'] = None
+    else:
+        if update.message.document:
+        #context.user_data['file_url']=f"files/{update.message.document.file_name}"
+            file_id = update.message.document.file_id
+            file_name = update.message.document.file_name
+            new_file = await context.bot.get_file(file_id=file_id)
+            file_content = await new_file.download_as_bytearray()
+            #files_open = {'files':file_content}
+        if update.message.photo:
+            file_name = f"{update.message.photo[-1].file_id}.jpg"
+            getFile = await context.bot.getFile(update.message.photo[-1].file_id)
+            file_content = await getFile.download_as_bytearray()
+            #files_open = {'files':file_content}
+        with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+            f.write(file_content)
+            f.close()
+        context.user_data['image_it'] ='files/'+file_name
     #reply_keyboard = [['⬅️ Назад']]
     #await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
     if context.user_data['itsphere'] =='Обслуживание и тех.поддержка':
