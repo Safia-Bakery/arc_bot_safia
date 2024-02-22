@@ -65,8 +65,8 @@ sphere_dict = {'Фабрика':2,'Розница':1}
 
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
-backend_location = '/var/www/arc_backend/'
-#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+#backend_location = '/var/www/arc_backend/'
+backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -502,9 +502,12 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Укажите количество порции еды',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MEALSIZE
     if int(context.user_data['type'])==4:
-        reply_keyboard=[['Обслуживание и тех.поддержка'],['⬅️ Назад']]
-        await update.message.reply_text('Выберите тип заявки:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return ITSPHERE
+        data = crud.get_category_list(db=session,department=4,sphere_status=4)
+        context.user_data['itsphere'] = 'Обслуживание и тех.поддержка'
+        reply_keyboard = transform_list(data,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text('Выберите категорию заявки',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
+        return ITCATEGORY
     if int(context.user_data['type'])==7:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Оставьте отзыв в виде текстового сообщения',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
