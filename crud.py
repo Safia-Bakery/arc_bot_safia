@@ -177,8 +177,7 @@ def tg_update_requst_st(db:Session,requestid,status):
     db.refresh(query)
     updated_data = query.update_time or {}
     updated_data[str(status)] = str(datetime.now(tz=timezonetash))
-    query.update_time= updated_data
-    db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
+    db.query(models.Requests).filter(models.Requests.id==query.id).update({'update_time':updated_data})
     db.commit()
     return query
 
