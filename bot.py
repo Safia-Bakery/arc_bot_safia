@@ -880,10 +880,9 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
             f.close()
         #request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
         add_file = crud.create_files(db=session,request_id=request_db.id,filename=f"files/{file_name}",status=1)
-        await update.message.reply_text("Фото добавлено",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
-
+        
     #finish request data 
-    request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
+    request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=6)
     url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
     #send message to request owner to rate request
     inlinewebapp(bot_token=BOTTOKEN,
@@ -892,7 +891,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
                  url=url)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_text(
-    f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    f"Заявка решена", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
 
