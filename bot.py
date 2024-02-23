@@ -116,8 +116,7 @@ VIDTO,\
 VIDFILES,\
 ITPHOTOREPORT,\
 VERIFYUSER,\
-IT_PASSWORD,\
-    = range(46)
+    = range(45)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -320,24 +319,24 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         #elif int(context.user_data['sphere_status'])==1:
         #    reply_keyboard = buttons_sphere_1
         #    await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        await update.message.reply_text("Пожалуйста введите пароль для доступа в IT Отдел",reply_markup=ReplyKeyboardRemove())
-        return IT_PASSWORD
+        #await update.message.reply_text("Пожалуйста введите пароль для доступа в IT Отдел",reply_markup=ReplyKeyboardRemove())
+        #return IT_PASSWORD
         
-        #context.user_data['type'] = 4
-        #context.user_data['page_number'] =0
-        ##if context.user_data['sphere_status']==1:
-        #request_db = crud.get_branch_list(db=session,sphere_status=1)
-        #    #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        ##else:
-        ##    request_db = crud.getfillialchildfabrica(db=session,offset=0)
-        ##    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
- #
-        #reply_keyboard = transform_list(request_db,2,'name')
-#
-        #reply_keyboard.insert(0,['⬅️ Назад'])
-        #reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-        #await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        #return BRANCHES
+        context.user_data['type'] = 4
+        context.user_data['page_number'] =0
+        #if context.user_data['sphere_status']==1:
+        request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        #else:
+        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+ 
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRANCHES
     
     elif type_name=='Отзывы гостей✍':
         context.user_data['type'] = 7
@@ -379,32 +378,32 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return TYPE
 
 
-async def it_password(update:Update,context:ContextTypes.DEFAULT_TYPE):
-    input_text = update.message.text
-    if input_text =="Толибжан":
-        context.user_data['type'] = 4
-        context.user_data['page_number'] =0
-        #if context.user_data['sphere_status']==1:
-        request_db = crud.get_branch_list(db=session,sphere_status=1)
-            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-        #else:
-        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
-        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
- 
-        reply_keyboard = transform_list(request_db,2,'name')
-
-        reply_keyboard.insert(0,['⬅️ Назад'])
-        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRANCHES
-    else:
-        if int(context.user_data['sphere_status'])==2:
-            reply_keyboard = buttons_sphere_2
-            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        elif int(context.user_data['sphere_status'])==1:
-            reply_keyboard = buttons_sphere_1
-            await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return TYPE
+#async def it_password(update:Update,context:ContextTypes.DEFAULT_TYPE):
+#    input_text = update.message.text
+#    if input_text =="Толибжан":
+#        context.user_data['type'] = 4
+#        context.user_data['page_number'] =0
+#        #if context.user_data['sphere_status']==1:
+#        request_db = crud.get_branch_list(db=session,sphere_status=1)
+#            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+#        #else:
+#        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+#        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+# 
+#        reply_keyboard = transform_list(request_db,2,'name')
+#
+#        reply_keyboard.insert(0,['⬅️ Назад'])
+#        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+#        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+#        return BRANCHES
+#    else:
+#        if int(context.user_data['sphere_status'])==2:
+#            reply_keyboard = buttons_sphere_2
+#            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+#        elif int(context.user_data['sphere_status'])==1:
+#            reply_keyboard = buttons_sphere_1
+#            await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+#        return TYPE
         
 
 
@@ -883,7 +882,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
         #request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
         add_file = crud.create_files(db=session,request_id=request_db.id,filename=f"files/{file_name}",status=1)
         
-        
+
     #finish request data 
     request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=6)
     url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
@@ -1056,7 +1055,7 @@ def main() -> None:
             VIDTO:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidto)],
             ITPHOTOREPORT:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,it_photo_report)],
             VERIFYUSER:[MessageHandler(filters.TEXT& ~filters.COMMAND,verify_user)],
-            IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
+            #IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
         },
         fallbacks=[CommandHandler("cancel", cancel),
                    CommandHandler('check',check),
