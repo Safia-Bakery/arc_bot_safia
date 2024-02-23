@@ -130,15 +130,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     else:
-        await update.message.reply_text(
-            """Здравствуйте\n
-Это корпоративный бот компании Safia\n
-Пожалуйста введите пароль:\n\n
-
-если у вас её нет, обратитесь к системному администратору вашей компании""",
-            
-        )
-        return VERIFYUSER
+        await update.message.reply_text('Здравствуйте. Давайте сначала познакомимся ☺️\nКак Вас зовут? (в формате Ф.И.О)')
+        return FULLNAME
+#    else:
+#        await update.message.reply_text(
+#            """Здравствуйте\n
+#Это корпоративный бот компании Safia\n
+#Пожалуйста введите пароль:\n\n
+#
+#если у вас её нет, обратитесь к системному администратору вашей компании""",
+#            
+#        )
+#        return VERIFYUSER
 
 
 
