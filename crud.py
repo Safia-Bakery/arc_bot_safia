@@ -170,11 +170,16 @@ def get_request_id(db:Session,id):
 
 def tg_update_requst_st(db:Session,requestid,status):
     query = db.query(models.Requests).filter(models.Requests.id==requestid).first()
-    if status == 3:
+    if status == 3 or status == 6:
         query.finished_at = datetime.now(timezonetash)
     query.status = status
     db.commit() 
     db.refresh(query)
+    updated_data = query.update_time or {}
+    updated_data[str(status)] = str(datetime.now(tz=timezonetash))
+    query.update_time= updated_data
+    db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
+    db.commit()
     return query
 
 

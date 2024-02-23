@@ -813,7 +813,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
             #reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
             #await update.message.reply_text(
             #f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-            await update.message.reply_text("Входной фотоотчет",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+            await update.message.reply_text("Входной фотоотчет",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад',"Пропустить"]],resize_keyboard=True))
             return ITPHOTOREPORT
         
     #------------------this is it end of request closing data-------------------
@@ -857,9 +857,11 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
     request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
 
     if update.message.text:
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
-        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRIG_MANU
+        if update.message.text == '⬅️ Назад':
+            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+            await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return BRIG_MANU
+            
    
     else:
         
@@ -880,6 +882,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
             f.close()
         #request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
         add_file = crud.create_files(db=session,request_id=request_db.id,filename=f"files/{file_name}",status=1)
+        
         
     #finish request data 
     request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=6)
