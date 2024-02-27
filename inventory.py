@@ -17,5 +17,5 @@ from datetime import datetime,timedelta
 
 async def close_invetory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     data = json.loads(update.effective_message.web_app_data.data)
-    await update.message.reply_text(f"Спасибо, ваша заявка по Inventary принята. Как ваша заявка будет назначена в работу, вы получите уведомление",reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons,resize_keyboard=True))
+    await update.message.reply_text(f"Спасибо, ваша заявка по Инвентарю📦 принята. Как ваша заявка будет назначена в работу, вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons,resize_keyboard=True))
     return bot.MANU

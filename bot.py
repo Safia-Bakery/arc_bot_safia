@@ -496,7 +496,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
     context.user_data['branch'] = update.message.text
-    
+
     if context.user_data['type']==5:
         sphere_status =None
     if context.user_data['type']==6:
