@@ -785,7 +785,9 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {request_db.fillial.parentfillial.name}\n"\
                                     f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
                                     f"🔰Категория проблемы: {request_db.category.name}\n"\
-                                    f"⚙️ Название оборудования: {request_db.product}\n"\
+                                    f"⚙️Название оборудования: {request_db.product}\n"\
+                                    f"📱Номер телефона: +{request_db.user.phone_number}\n"\
+                                    f"🥷Имя: {request_db.user.full_name}\n"\
                                     f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
     await update.message.reply_text(f"📑Заявка #{request_db.id}s",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     #if request_db.file:
@@ -962,11 +964,11 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     #if selected_option is less than 0 it is about yes or no
     user = crud.get_user_tel_id(db=session,id=query.from_user.id)
     one_request = crud.get_request(db=session,id=requests_id)
-    if one_request.status== 3 and int(selected_option)==4:
-        await context.bot.send_message(query.from_user.id,'please enter comment',reply_markup=ReplyKeyboardRemove())
-        return ADDCOMMENT
+    #if one_request.status== 3 and int(selected_option)==4:
+    #    await context.bot.send_message(query.from_user.id,'please enter comment',reply_markup=ReplyKeyboardRemove())
+    #    return ADDCOMMENT
 
-    elif one_request.status ==0 and user:
+    if one_request.status ==0 and user:
         if selected_option <0:
             if selected_option == -1:
                 db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status,department=one_request.category.department)
