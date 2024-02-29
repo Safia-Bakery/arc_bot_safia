@@ -328,7 +328,11 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['type'] = 4
         context.user_data['page_number'] =0
         #if context.user_data['sphere_status']==1:
-        request_db = crud.get_branch_list(db=session,sphere_status=1)
+        if int(context.user_data['sphere_status'])==1:
+            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+        else:
+            request_db = crud.getfillialchildfabrica(db=session,offset=0)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         #else:
         #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
