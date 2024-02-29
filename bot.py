@@ -324,6 +324,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         #    await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         #await update.message.reply_text("Пожалуйста введите пароль для доступа в IT Отдел",reply_markup=ReplyKeyboardRemove())
         #return IT_PASSWORD
+        reply_keyboard_back = ['⬅️ Назад']
         
         context.user_data['type'] = 4
         context.user_data['page_number'] =0
@@ -332,6 +333,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
             request_db = crud.get_branch_list(db=session,sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
+            reply_keyboard_back.append('Учтепа фабрика New')
             request_db = crud.getfillialchildfabrica(db=session,offset=0)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         #else:
@@ -340,7 +342,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
  
         reply_keyboard = transform_list(request_db,2,'name')
 
-        reply_keyboard.insert(0,['⬅️ Назад','Учтепа фабрика New'])
+        reply_keyboard.insert(0,reply_keyboard_back)
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
