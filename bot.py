@@ -340,7 +340,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
  
         reply_keyboard = transform_list(request_db,2,'name')
 
-        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.insert(0,['⬅️ Назад','Учтепа фабрика New'])
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
