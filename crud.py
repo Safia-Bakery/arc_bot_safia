@@ -101,6 +101,7 @@ def getcategoryname(db:Session,name,department:Optional[int]=None):
     query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"))
     if department is not None:
         query = query.filter(models.Category.department==department)
+    query = query.order_by(func.similarity(models.Category.name, name).desc())
     return query.first()
 
 
