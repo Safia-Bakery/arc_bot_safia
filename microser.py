@@ -36,7 +36,7 @@ def generate_text(lst):
     sending_text = f"Мои заказы: "
     a = 0
     for i in lst:
-        if i.fillial.name not in isin:
+        if i.fillial.parentfillial.name not in isin:
             isin.append(i.fillial.name)
             data[i.fillial.parentfillial.name]=f"#{i.id}s"
         else:
