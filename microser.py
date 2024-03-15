@@ -38,9 +38,9 @@ def generate_text(lst):
     for i in lst:
         if i.fillial.name not in isin:
             isin.append(i.fillial.name)
-            data[i.fillial.name]=f"#{i.id}s"
+            data[i.fillial.parentfillial.name]=f"#{i.id}s"
         else:
-            data[i.fillial.name]=data[i.fillial.name]+f", #{i.id}s"
+            data[i.fillial.parentfillial.name]=data[i.fillial.parentfillial.name]+f", #{i.id}s"
     for inf in data.keys():
         a+=1
         sending_text = sending_text+f"\n\n{a}) {inf} - ( {data[inf]} )"
