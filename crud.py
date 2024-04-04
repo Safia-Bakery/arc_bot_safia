@@ -101,6 +101,7 @@ def getcategoryname(db:Session,name,department:Optional[int]=None):
     query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"))
     if department is not None:
         query = query.filter(models.Category.department==department)
+    query = query.filter(models.Category.status==1)
     return query.first()
 
 
