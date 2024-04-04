@@ -687,6 +687,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             product=None
         if context.user_data['type']==1:
             product=context.user_data['product']
+        print(category_query.id, category_query.name)
+        print(fillial_query.id, fillial_query.name)
+        print(user_query.id, user_query.full_name)
         add_request = crud.add_request(db=session,is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
 
         crud.create_files(db=session,request_id=add_request.id,filename=f"files/{file_name}")
