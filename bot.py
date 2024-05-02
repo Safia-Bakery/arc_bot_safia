@@ -806,7 +806,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
         f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
-    
+
     #------------------this is it request closing data-------------------
 
     if user_button=='Завершить ✅':
@@ -1074,8 +1074,6 @@ def main() -> None:
         allow_reentry=True,
         name="my_conversation",
         persistent=True,
-
-        
     )
 
     application.add_handler(conv_handler)
