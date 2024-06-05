@@ -971,31 +971,31 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     if one_request.status ==0 and user:
         if selected_option <0:
             if selected_option == -1:
-                db_query  = crud.getlistbrigada(sphere_status=one_request.category.sphere_status,department=one_request.category.department)
+                db_query  = crud.getlistbrigada(sphere_status=one_request.category_sphere_status,department=one_request.category_department)
                 reply_murkup = data_transform(db_query)
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
             if selected_option== -2:
                 request_rejected = crud.reject_request(status=4,id=requests_id)
-                await context.bot.send_message(chat_id=request_rejected.user.telegram_id,text=f"Ваша заявка по Арс🛠  #{request_rejected.id}s  была отменена по причине: < причина >")
+                await context.bot.send_message(chat_id=request_rejected.user_telegram_id,text=f"Ваша заявка по Арс🛠  #{request_rejected.id}s  была отменена по причине: < причина >")
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
         #if this value is about more than one it is about it is brigada id
         else:
-            request_list = crud.accept_request(db = session,id=requests_id,brigada_id=selected_option,user_manager = user.full_name)
+            request_list = crud.accept_request(id=requests_id,brigada_id=selected_option,user_manager = user.full_name)
             
-            await query.message.edit_text(text=f"{text_of_order} \n\nкоманда🚙: {request_list.brigada.name}",reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+            await query.message.edit_text(text=f"{text_of_order} \n\nкоманда🚙: {request_list.brigada_name}",reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
             try:
-                brigada_id = request_list.brigada.id
-                brigader_telid = crud.get_brigada_id(session,id=brigada_id)
+                brigada_id = request_list.brigada_id
+                #brigader_telid = crud.get_brigada_id(session,id=brigada_id)
             except:
                 pass
             if request_list.category.department==1:
                 try:
-                    await context.bot.send_message(chat_id=brigader_telid.user[0].telegram_id,text=f"{request_list.brigada.name} вам назначена заявка, #{request_list.id}s {request_list.fillial.name}")
+                    await context.bot.send_message(chat_id=request_list.brigada_telegram_id,text=f"{request_list.brigada_name} вам назначена заявка, #{request_list.id}s {request_list.fillial_name}")
                 except:
                     pass
                 try:
-                    await context.bot.send_message(chat_id=request_list.user.telegram_id,text=f"Уважаемый {request_list.user.full_name}, на вашу заявку #{request_list.id}s назначена команда🚙: {request_list.brigada.name}")
+                    await context.bot.send_message(chat_id=request_list.user.telegram_id,text=f"Уважаемый {request_list.user_full_name}, на вашу заявку #{request_list.id}s назначена команда🚙: {request_list.brigada_name}")
                 except:
                     pass
             else:

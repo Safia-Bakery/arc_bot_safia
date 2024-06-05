@@ -62,6 +62,12 @@ def get_request(id):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id==id).first()
         CommitDb().get_data(db,query)
+        query.category_sphere_status = query.category.sphere_status
+        query.category_department = query.category.department
+        query.category_name = query.category.name
+        query.fillial_name = query.fillial.name
+        query.parentfillial_name = query.fillial.parentfillial.name
+
 
         return query
 
@@ -75,6 +81,13 @@ def accept_request(id,brigada_id,user_manager):
             query.started_at = datetime.now(timezonetash)
             query.user_manager=user_manager
             CommitDb().update_data(db,query)
+            query.user_telegram_id = query.user.telegram_id
+            query.user_fullname = query.user.full_name
+            query.brigada_name = query.brigada.name
+            query.brigada_telegram_id = query.brigada.user[0].telegram_id
+            query.brigada_id = query.brigada.id
+            query.parentfillial_name = query.fillial.parentfillial.name
+            query.fillial_name = query.fillial.name
             with SessionLocal() as db:
                 updated_data = query.update_time or {}
                 updated_data[str(1)] = str(datetime.now(tz=timezonetash))
@@ -93,13 +106,17 @@ def reject_request(status,id):
         query.status=status
         query.finished_at = datetime.now(timezonetash)
         CommitDb().update_data(db,query)
+        query.user_telegram_id = query.user.telegram_id
+
         with SessionLocal() as db:
             updated_data = query.update_time or {}
             updated_data[str(status)] = str(datetime.now(tz=timezonetash))
             query.update_time= updated_data
             db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
             CommitDb().update_data(db,query)
+
             return query
+
 
 
 
