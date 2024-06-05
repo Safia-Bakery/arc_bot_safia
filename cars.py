@@ -35,7 +35,7 @@ async def choose_month(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                 sphere_status =None
             else:
                 sphere_status=context.user_data['sphere_status']
-            request_db =  crud.get_category_list(db=bot.session,sphere_status=sphere_status,department=int(context.user_data['type']))
+            request_db =  crud.get_category_list(sphere_status=sphere_status,department=int(context.user_data['type']))
             reply_keyboard = bot.transform_list(request_db,3,'name')
 
             reply_keyboard.append(['⬅️ Назад'])
@@ -128,10 +128,10 @@ async def car_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         context.user_data['carssp'] = 'Запросить на филиал'
         context.user_data
         if context.user_data['sphere_status']==1:
-            request_db = crud.get_branch_list(db=bot.session,sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
-            request_db = crud.getfillialchildfabrica(db=bot.session,offset=0)
+            request_db = crud.getfillialchildfabrica(offset=0)
             #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
  
         reply_keyboard = transform_list(request_db,2,'name')
@@ -216,7 +216,7 @@ async def choose_size(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         else:
             sphere_status=context.user_data['sphere_status']
         if context.user_data['carssp'] =='Запросить на филиал':
-            request_db =  crud.get_category_list(db=bot.session,sphere_status=sphere_status,department=int(context.user_data['type']))
+            request_db =  crud.get_category_list(sphere_status=sphere_status,department=int(context.user_data['type']))
             reply_keyboard = bot.transform_list(request_db,3,'name')
             reply_keyboard.append(['⬅️ Назад'])
             await update.message.reply_text(f"Пожалуйста выберите категорию:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -284,8 +284,8 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     #                  minute=0
     #                  )
     if context.user_data['carssp'] =='Запросить на филиал':
-        category_query = crud.getcategoryname(db=bot.session,name=context.user_data['category'],department=int(context.user_data['type'])).id
-        fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+        category_query = crud.getcategoryname(name=context.user_data['category'],department=int(context.user_data['type'])).id
+        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
         location = None
         fillial_id = fillial_query.id
     else:
@@ -296,27 +296,27 @@ async def comment_car(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
 
     context.user_data['car_comment'] = entered_data
     
-    user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_car_request(db=bot.session,category_id=category_query,fillial_id=fillial_id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data,location=location)
+    user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+    data = crud.add_car_request(category_id=category_query,fillial_id=fillial_id,user_id=user_query.id,size=context.user_data["size_delivery"],time_delivery=None,comment=entered_data,location=location)
     if "+" not in data.user.phone_number:
-        phone_number = '+'+data.user.phone_number
+        phone_number = '+'+data.user_phonenumber
     else:
-        phone_number = data.user.phone_number
+        phone_number = data.user_phone_number
     if fillial_query is None:
         message = f"📨 #{data.id}s Поступила новая заявка\n\n☎️Номер: {phone_number}\n🔸Группа проблем: С Адреса на адрес\n\n🚩Откуда: {str(data.location['from_loc'])}\n🏁Куда: {str(data.location['to_loc'])}\n\nКомментарии: {data.description}"
     else:
         if data.category.urgent is True:
-            message  = f"📨 #{data.id}s Поступила срочная заявка 🆘\n\n📍Филиал: {fillial_query.parentfillial.name}\n☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
+            message  = f"📨 #{data.id}s Поступила срочная заявка 🆘\n\n📍Филиал: {data.parentfillial_name}\n☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
 
         else:
-           message  = f"📨 #{data.id}s Поступила новая заявка\n\n📍Филиал: {fillial_query.parentfillial.name}\n\☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
+           message  = f"📨 #{data.id}s Поступила новая заявка\n\n📍Филиал: {data.parentfillial_name}\n\☎️Номер: {phone_number}\n🔸Группа проблем: {data.category.name}\n\nКомментарии: {data.description}"
     keyboard = [
     ]
     #if data.file:
     keyboard.append([InlineKeyboardButton(text='Посмотреть фото/видео',url=f"{bot.BASE_URL}{context.user_data['image_car']}")])
     await context.bot.send_message(chat_id='-1002002556950',text=message,reply_markup=InlineKeyboardMarkup(keyboard))
     if context.user_data['image_car'] is not None:
-        crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_car'])
+        crud.create_files(request_id=data.id,filename=context.user_data['image_car'])
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Запрос машины принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     #await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return bot.MANU

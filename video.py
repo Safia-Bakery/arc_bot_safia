@@ -21,7 +21,7 @@ async def vidcomment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = [['⬅️ Назад']]
     if entered_data == '⬅️ Назад':
         context.user_data['page_number'] =0
-        request_db = crud.get_branch_list(db=bot.session,sphere_status=1)
+        request_db = crud.get_branch_list(sphere_status=1)
         reply_keyboard = bot.transform_list(request_db,2,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
@@ -54,9 +54,9 @@ async def vidto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard.append(['Пропустить'])
     await update.message.reply_text(f"При желании отправьте фото",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     #await update.message.reply_text(f"Manu",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
-    #fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
-    #user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    #data = crud.add_video_request(db=bot.session,category_id=,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
+    #fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+    #user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+    #data = crud.add_video_request(category_id=,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
     return bot.VIDFILES
 
 async def vidfiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -94,16 +94,16 @@ async def vidfiles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     
     await update.message.reply_text(f"Manu",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
-    fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
-    user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_video_request(db=bot.session,category_id=60,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
+    fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+    user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+    data = crud.add_video_request(category_id=60,fillial_id=fillial_query.id,user_id=user_query.id,comment=context.user_data['comment'],vidfrom=context.user_data['vidfrom'],vidto=context.user_data['vidto'])
     if photo_vid is not None:
-        add_files = crud.create_files(db=bot.session,request_id=data.id,filename=photo_vid)
-    formatted_datetime_str = data.created_at.strftime("%d.%m.%Y %H:%M")
+        add_files = crud.create_files(request_id=data.id,filename=photo_vid)
+    #formatted_datetime_str = data.created_at.strftime("%d.%m.%Y %H:%M")
     keyboard_button = []
     if photo_vid is not None:
         keyboard_button = [{'text':'Посмотреть фото/видео',"url":f"{bot.BASE_URL}{photo_vid}"}]
-    bot.sendtotelegramviewimage(bot_token=bot.BOTTOKEN,chat_id='-1002126422204',message_text="📑Заявка № "+str(data.id)+"\n\n📍Филиал: "+str(data.fillial.parentfillial.name)+"\n\nИмя: "+str(user_query.full_name)+"\nНомер: +"+user_query.phone_number+"\nТелеграм: "+f"https://t.me/{update.message.from_user.username}"+"\n\n🏳️Дата и время начало события: "+data.update_time['vidfrom']+"\n🏁Дата и время конца события: "+data.update_time['vidto']+"\n\n💬Комментарии: "+str(data.description),buttons=keyboard_button)
+    bot.sendtotelegramviewimage(bot_token=bot.BOTTOKEN,chat_id='-1002126422204',message_text="📑Заявка № "+str(data.id)+"\n\n📍Филиал: "+str(data.parentfillial_name)+"\n\nИмя: "+str(user_query.full_name)+"\nНомер: +"+user_query.phone_number+"\nТелеграм: "+f"https://t.me/{update.message.from_user.username}"+"\n\n🏳️Дата и время начало события: "+data.update_time['vidfrom']+"\n🏁Дата и время конца события: "+data.update_time['vidto']+"\n\n💬Комментарии: "+str(data.description),buttons=keyboard_button)
     await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Видеонаблюдение принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     #await update.message.reply_text(f"Главное  меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return bot.MANU

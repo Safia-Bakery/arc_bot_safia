@@ -1,5 +1,5 @@
 
-from database import session
+
 from datetime import datetime,timedelta
 from typing import Union, Any
 from jose import jwt
@@ -17,9 +17,6 @@ JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')   # should be kept secret
 JWT_REFRESH_SECRET_KEY =  os.environ.get('JWT_REFRESH_SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
 
-def get_db():
-    db = session
-    return db
 
 
 def transform_list(lst, size, key):

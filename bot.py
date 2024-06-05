@@ -31,7 +31,7 @@ from telegram.ext import (
 
 )
 import datetime
-from microser import get_db,transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string,inlinewebapp,sendtotelegramviewimage,info_string
+from microser import transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string,inlinewebapp,sendtotelegramviewimage,info_string
 import requests
 import crud
 import os 
@@ -44,7 +44,7 @@ import video
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
 load_dotenv()
-from database import engine,session
+from database import engine,SessionLocal
 #Base.metadata.create_all(bind=engine)
 BOTTOKEN = os.environ.get('BOT_TOKEN')
 marketing_cat_dict ={
@@ -66,7 +66,7 @@ sphere_dict = {'Фабрика':2,'Розница':1}
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
-#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -122,7 +122,7 @@ persistence = PicklePersistence(filepath='hello.pickle')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the conversation and asks the user about their gender."""
-    user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+    user= crud.get_user_tel_id(id=update.message.from_user.id)
     #user_data = requests.post(f"{BASE_URL}tg/login",json={'telegram_id':update.message.from_user.id})
 
     if user:
@@ -191,7 +191,7 @@ async def sphere(update:Update,context:ContextTypes.DEFAULT_TYPE)->int:
     if update.message.text in buttons_sphere[0]:
         context.user_data['sphere_status']=sphere_dict[update.message.text]
 
-    dat = crud.create_user(db=session,full_name=context.user_data['full_name'],phone_number=str(context.user_data['phone_number']).replace('+',''),telegram_id=update.message.from_user.id,sphere_status=int(context.user_data['sphere_status']),username=generate_random_string(10))
+    dat = crud.create_user(full_name=context.user_data['full_name'],phone_number=str(context.user_data['phone_number']).replace('+',''),telegram_id=update.message.from_user.id,sphere_status=int(context.user_data['sphere_status']),username=generate_random_string(10))
     #requests_data = requests.post(f"{BASE_URL}tg/create/user",json=body)
     await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return MANU
@@ -247,13 +247,13 @@ async def chosensphere(update:Update,context:ContextTypes.DEFAULT_TYPE):
         return CHANGESPHERE
     if chosen_sphere =="Фабрика":
         context.user_data['sphere_status']=2
-        crud.update_user_sphere(db=session,tel_id=update.message.from_user.id,sphere_status=2)
+        crud.update_user_sphere(tel_id=update.message.from_user.id,sphere_status=2)
         await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
 
     elif chosen_sphere=='Розница':
         context.user_data['sphere_status']=1
-        crud.update_user_sphere(db=session,tel_id=update.message.from_user.id,sphere_status=1)
+        crud.update_user_sphere(tel_id=update.message.from_user.id,sphere_status=1)
         await update.message.reply_text(f"Вы успешно поменяли сферу",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
     else:
@@ -266,10 +266,10 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['page_number'] =0
         context.user_data['type'] = 1
         if context.user_data['sphere_status']==1:
-            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
-            request_db = crud.getfillialchildfabrica(db=session,offset=0)
+            request_db = crud.getfillialchildfabrica(offset=0)
             #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
  
         reply_keyboard = transform_list(request_db,2,'name')
@@ -284,7 +284,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name=='Маркетинг📈':
         context.user_data['type'] = 3
 
-        request_db = crud.get_branch_list_location(db=session)
+        request_db = crud.get_branch_list_location()
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -301,13 +301,13 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif type_name =='Стафф питание🥘':
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
-        time_work = crud.get_work_time(db=session)
+        time_work = crud.get_work_time()
         if is_time_between(start_time=time_work.from_time,end_time=time_work.to_time) is False:
             reply_keyboard = buttons_sphere_1
             await update.message.reply_text(f"Заявки на Стафф питание принимаются с 07:00 до 17:00 🕓",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return TYPE
         
-        request_db = crud.get_branch_list(db=session,sphere_status=1)
+        request_db = crud.get_branch_list(sphere_status=1)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -330,14 +330,14 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['page_number'] =0
         #if context.user_data['sphere_status']==1:
         if int(context.user_data['sphere_status'])==1:
-            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
             reply_keyboard_back.append('Учтепа фабрика New')
-            request_db = crud.getfillialchildfabrica(db=session,offset=0)
+            request_db = crud.getfillialchildfabrica(offset=0)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         #else:
-        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+        #    request_db = crud.getfillialchildfabrica(offset=0)
         #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
  
         reply_keyboard = transform_list(request_db,2,'name')
@@ -349,7 +349,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     elif type_name=='Отзывы гостей✍':
         context.user_data['type'] = 7
-        request_db = crud.get_branch_list(db=session,sphere_status=1)
+        request_db = crud.get_branch_list(sphere_status=1)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -357,7 +357,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
     elif type_name=='Инвентарь📦':
-        user= crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        user= crud.get_user_tel_id(id=update.message.from_user.id)
         await update.message.reply_text(
         f"Пожалуйста нажмите кнопку: Инвентарь📦",
         
@@ -369,7 +369,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return INVETORY
     elif type_name=='Видеонаблюдение🎥':
         context.user_data['type'] = 8
-        request_db = crud.get_branch_list(db=session,sphere_status=int(context.user_data['sphere_status']))
+        request_db = crud.get_branch_list(sphere_status=int(context.user_data['sphere_status']))
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -393,10 +393,10 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 #        context.user_data['type'] = 4
 #        context.user_data['page_number'] =0
 #        #if context.user_data['sphere_status']==1:
-#        request_db = crud.get_branch_list(db=session,sphere_status=1)
+#        request_db = crud.get_branch_list(sphere_status=1)
 #            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
 #        #else:
-#        #    request_db = crud.getfillialchildfabrica(db=session,offset=0)
+#        #    request_db = crud.getfillialchildfabrica(offset=0)
 #        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
 # 
 #        reply_keyboard = transform_list(request_db,2,'name')
@@ -432,19 +432,19 @@ async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->i
 async def marketingcat(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     type_name = update.message.text
     if type_name == 'Для Терр. Менеджеров':
-        data = crud.get_user_role(db=session,telegram_id=update.message.from_user.id)
+        data = crud.get_user_role(telegram_id=update.message.from_user.id)
         if data is None:
             reply_keyboard = [['Проектная работа для дизайнеров','Локальный маркетинг'],['Для Терр. Менеджеров','⬅️ Назад']]
             await update.message.reply_text(f"Для вас этот пункт недоступен ❌ Выберите другую категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     if type_name == '⬅️ Назад':
-        request_db = crud.get_branch_list_location(db=session)
+        request_db = crud.get_branch_list_location()
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MARKETINGSTBUTTON
     id_cat = marketing_cat_dict[type_name]
-    request_db = crud.get_category_list(db=session,sub_id=id_cat,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
+    request_db = crud.get_category_list(sub_id=id_cat,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
     reply_keyboard = transform_list(request_db,3,'name')
     reply_keyboard.append(['⬅️ Назад'])
     await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -469,11 +469,11 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if user_text=='Следующий>>>':
         context.user_data['page_number']=int(context.user_data['page_number'])+1
         if context.user_data['sphere_status']==1:
-            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
-            request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
-        #request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
+            request_db = crud.getfillialchildfabrica(offset=int(context.user_data['page_number'])*offsett)
+        #request_db = crud.getfillialchildfabrica(offset=int(context.user_data['page_number'])*offsett)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -487,10 +487,10 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         else:
             context.user_data['page_number']=0
         if context.user_data['sphere_status']==1:
-            request_db = crud.get_branch_list(db=session,sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
         else:
-            request_db = crud.getfillialchildfabrica(db=session,offset=int(context.user_data['page_number'])*offsett)
+            request_db = crud.getfillialchildfabrica(offset=int(context.user_data['page_number'])*offsett)
         reply_keyboard = transform_list(request_db,2,'name')
 
         reply_keyboard.insert(0,['⬅️ Назад'])
@@ -510,7 +510,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Укажите количество порции еды',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return MEALSIZE
     if int(context.user_data['type'])==4:
-        data = crud.get_category_list(db=session,department=4,sphere_status=4)
+        data = crud.get_category_list(department=4,sphere_status=4)
         context.user_data['itsphere'] = 'Обслуживание и тех.поддержка'
         reply_keyboard = transform_list(data,3,'name')
         reply_keyboard.append(['⬅️ Назад'])
@@ -526,7 +526,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return VIDCOMMENT
     else:
         sphere_status=context.user_data['sphere_status']
-    request_db =  crud.get_category_list(db=session,sphere_status=sphere_status,department=int(context.user_data['type']))
+    request_db =  crud.get_category_list(sphere_status=sphere_status,department=int(context.user_data['type']))
     
     reply_keyboard = transform_list(request_db,3,'name')
     reply_keyboard.append(['⬅️ Назад'])
@@ -542,10 +542,10 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         if context.user_data['type']==1:
             if context.user_data['sphere_status']==1:
                 
-                request_db = crud.get_branch_list(db=session,sphere_status=1)
+                request_db = crud.get_branch_list(sphere_status=1)
             else:
                 context.user_data['page_number']=0
-                request_db = crud.getfillialchildfabrica(db=session,offset=0)
+                request_db = crud.getfillialchildfabrica(offset=0)
             reply_keyboard = transform_list(request_db,3,'name')
             reply_keyboard.insert(0,['⬅️ Назад'])
             reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
@@ -554,10 +554,10 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         elif int(context.user_data['type'])==5:
             if context.user_data['sphere_status']==1:
                 
-                request_db = crud.get_branch_list(db=session,sphere_status=1)
+                request_db = crud.get_branch_list(sphere_status=1)
             else:
                 context.user_data['page_number']=0
-                request_db = crud.getfillialchildfabrica(db=session,offset=0)
+                request_db = crud.getfillialchildfabrica(offset=0)
             reply_keyboard = transform_list(request_db,3,'name')
             reply_keyboard.insert(0,['⬅️ Назад'])
             reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
@@ -571,11 +571,11 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['category']=update.message.text
     
     if int(context.user_data['type'])==1:
-        get_category  = crud.getcategoryname(db=session,name=inserted_data,department=int(context.user_data['type']))
+        get_category  = crud.getcategoryname(name=inserted_data,department=int(context.user_data['type']))
         if get_category.is_child:
             pass
         else:
-            categories = crud.get_child_categories(db=session,category_id=get_category.id)
+            categories = crud.get_child_categories(category_id=get_category.id)
             if categories:
                 reply_keyboard = transform_list(categories,3,'name')
                 reply_keyboard.append(['⬅️ Назад'])
@@ -595,7 +595,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return CHOOSESIZE
         #return CHOOSEMONTH
     elif int(context.user_data['type'])==3:
-        data = crud.getcategoryname(db=session,name=update.message.text,department=int(context.user_data['type']))
+        data = crud.getcategoryname(name=update.message.text,department=int(context.user_data['type']))
         if data.file:
             file = open(f"{backend_location}{data.file}",'rb')
             await context.bot.send_photo(chat_id=update.message.from_user.id,photo=file)
@@ -607,7 +607,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
-        request_db = crud.get_category_list(db=session,sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
+        request_db = crud.get_category_list(sphere_status=context.user_data['sphere_status'],department=context.user_data['type'])
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -679,22 +679,22 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         #with open(f"files/{file_name}", 'wb') as f:
         #    context.bot.get_file(update.message.document).download(out=f)
         #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open).json()
-        category_query = crud.getcategoryname(db=session,name=context.user_data['category'],department=int(context.user_data['type']))
-        fillial_query = crud.getchildbranch(db=session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
-        user_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        category_query = crud.getcategoryname(name=context.user_data['category'],department=int(context.user_data['type']))
+        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+        user_query = crud.get_user_tel_id(id=update.message.from_user.id)
         list_data = [None,'АРС🛠',None,'Маркетигну📈']
         if context.user_data['type']==3:
             product=None
         if context.user_data['type']==1:
             product=context.user_data['product']
-        add_request = crud.add_request(db=session,is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
+        add_request = crud.add_request(is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
 
-        crud.create_files(db=session,request_id=add_request.id,filename=f"files/{file_name}")
+        crud.create_files(request_id=add_request.id,filename=f"files/{file_name}")
         formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
-        if add_request.category.sphere_status==1 and add_request.category.department==1:
-            fillial_name  = add_request.fillial.parentfillial.name
+        if add_request.category_sphere_status==1 and add_request.category_department==1:
+            fillial_name  = add_request.parentfillial_name
         else:
-            fillial_name  = add_request.fillial.name
+            fillial_name  = add_request.fillial_name
         text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {fillial_name}\n"\
                         f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
                         f"🔰Категория проблемы: {add_request.category.name}\n"\
@@ -705,7 +705,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         if add_request.file:
             for i in add_request.file:
                 keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{i.url}"})
-        if add_request.category.sphere_status==1 and add_request.category.department==1:
+        if add_request.category_sphere_status==1 and add_request.category_department==1:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
@@ -719,8 +719,8 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def addcomment(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_option = update.message.text 
     user_id = update.message.from_user.id
-    user = crud.get_user_tel_id(db=session,id=user_id)
-    crud.addcomment(db=session,user_id=user.id,comment=user_option,request_id=context.user_data['request_id'])
+    user = crud.get_user_tel_id(id=user_id)
+    crud.addcomment(user_id=user.id,comment=user_option,request_id=context.user_data['request_id'])
     await update.message.reply_text(f"Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     return MANU
 
@@ -732,8 +732,8 @@ async def brig_manu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_choose = update.message.text
     user_id = update.message.from_user.id
     if user_choose == 'Мои заказы 📋':
-        user = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
-        request_db = crud.tg_get_request_list(db=session,brigada_id=user.brigada_id)
+        user = crud.get_user_tel_id(id=update.message.from_user.id)
+        request_db = crud.tg_get_request_list(brigada_id=user.brigada_id)
         message_brig = generate_text(request_db)
 
         reply_keyboard = transform_list(request_db,3,'id')
@@ -746,7 +746,7 @@ async def brig_manu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(message_brig,reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return ORDERSTG
     elif user_choose == 'Адреса Филиалов📍':
-        request_db = crud.get_branch_list_location(db=session)
+        request_db = crud.get_branch_list_location()
         reply_keyboard = transform_list(request_db,3,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         await update.message.reply_text(f"Выберите филиал",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -768,7 +768,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRIG_MANU
     uservalue = int(uservalue)
     context.user_data['last_request'] = uservalue
-    request_db = crud.get_request_id(db=session,id=uservalue)
+    request_db = crud.get_request_id(id=uservalue)
     reply_keyboard = [['Завершить ✅'],['Забрать на ремонт 🛠'],['⬅️ Назад']]
     if request_db.status == 2 or request_db.category.department==4: 
         reply_keyboard = [['Завершить ✅'],['⬅️ Назад']]
@@ -801,7 +801,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_button = update.message.text
     if user_button=='⬅️ Назад':
-        #user = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        #user = crud.get_user_tel_id(id=update.message.from_user.id)
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
         f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -810,10 +810,10 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     #------------------this is it request closing data-------------------
 
     if user_button=='Завершить ✅':
-        request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
+        request_db = crud.get_request_id(id=context.user_data['last_request'])
         if request_db.category.department==4:
             #finish request data 
-            #request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=3)
+            #request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=3)
             #url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
             ##send message to request owner to rate request
             #inlinewebapp(bot_token=BOTTOKEN,
@@ -828,7 +828,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         
     #------------------this is it end of request closing data-------------------
         
-        user_data = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+        user_data = crud.get_user_tel_id(id=update.message.from_user.id)
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
         f"Пожалуйста внесите расход на заявку №{context.user_data['last_request']}",
@@ -843,7 +843,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     
         #requests.put(f"{BASE_URL}tg/request",json={'request_id':int(context.user_data['last_request']),'status':3})
     if user_button=='Забрать на ремонт 🛠':
-        crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=2)
+        crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=2)
         
         
     
@@ -864,7 +864,7 @@ async def closebutton(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
 
 async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
-    request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
+    request_db = crud.get_request_id(id=context.user_data['last_request'])
 
     if update.message.text:
         if update.message.text == '⬅️ Назад':
@@ -890,12 +890,12 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
         with open(f"{backend_location}files/{file_name}",'wb+') as f:
             f.write(file_content)
             f.close()
-        #request_db = crud.get_request_id(db=session,id=context.user_data['last_request'])
-        add_file = crud.create_files(db=session,request_id=request_db.id,filename=f"files/{file_name}",status=1)
+        #request_db = crud.get_request_id(id=context.user_data['last_request'])
+        add_file = crud.create_files(request_id=request_db.id,filename=f"files/{file_name}",status=1)
         
 
     #finish request data 
-    request_list = crud.tg_update_requst_st(db=session,requestid=context.user_data['last_request'],status=6)
+    request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=6)
     url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
     #send message to request owner to rate request
     inlinewebapp(bot_token=BOTTOKEN,
@@ -914,7 +914,7 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
-    repsonsedata = crud.getfillialname(db=session,name=chosen_branch)
+    repsonsedata = crud.getfillialname(name=chosen_branch)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
@@ -936,7 +936,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_check_query = crud.get_user_tel_id(db=session,id=update.message.from_user.id)
+    user_check_query = crud.get_user_tel_id(id=update.message.from_user.id)
     #user_check = requests.get(f"{BASE_URL}tg/check/user?telegram_id={update.message.from_user.id}")
     if user_check_query.brigada_id:
 
@@ -962,8 +962,8 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     context.user_data['request_id'] = requests_id
 
     #if selected_option is less than 0 it is about yes or no
-    user = crud.get_user_tel_id(db=session,id=query.from_user.id)
-    one_request = crud.get_request(db=session,id=requests_id)
+    user = crud.get_user_tel_id(id=query.from_user.id)
+    one_request = crud.get_request(id=requests_id)
     #if one_request.status== 3 and int(selected_option)==4:
     #    await context.bot.send_message(query.from_user.id,'please enter comment',reply_markup=ReplyKeyboardRemove())
     #    return ADDCOMMENT
@@ -971,11 +971,11 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     if one_request.status ==0 and user:
         if selected_option <0:
             if selected_option == -1:
-                db_query  = crud.getlistbrigada(db=session,sphere_status=one_request.category.sphere_status,department=one_request.category.department)
+                db_query  = crud.getlistbrigada(sphere_status=one_request.category.sphere_status,department=one_request.category.department)
                 reply_murkup = data_transform(db_query)
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
             if selected_option== -2:
-                request_rejected = crud.reject_request(db=session,status=4,id=requests_id)
+                request_rejected = crud.reject_request(status=4,id=requests_id)
                 await context.bot.send_message(chat_id=request_rejected.user.telegram_id,text=f"Ваша заявка по Арс🛠  #{request_rejected.id}s  была отменена по причине: < причина >")
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 

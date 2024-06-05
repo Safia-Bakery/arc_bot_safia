@@ -21,7 +21,7 @@ async def meal_size(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if entered_data == '⬅️ Назад':
         context.user_data['page_number'] =0
         context.user_data['type'] = 6
-        request_db = crud.get_branch_list(db=bot.session,sphere_status=1)
+        request_db = crud.get_branch_list(sphere_status=1)
         reply_keyboard = bot.transform_list(request_db,2,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
@@ -49,10 +49,10 @@ async def meal_bread_size(update:Update,context:ContextTypes.DEFAULT_TYPE) -> in
         time_delivery = datetime.now(timezonetash)
         time_delivery = time_delivery + timedelta(days=1)
         next_day_noon = datetime(time_delivery.year, time_delivery.month, time_delivery.day, 12, 0, 0)
-        category_query = crud.get_category_department(db=bot.session,department_id=int(context.user_data['type']))
-        fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
-        user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-        data = crud.add_meal_request(db=bot.session,category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,bread_size=bread_size,meal_size=context.user_data['meal_size'],time_delivery=next_day_noon)
+        category_query = crud.get_category_department(department_id=int(context.user_data['type']))
+        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
+        user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+        data = crud.add_meal_request(category_id=category_query.id,fillial_id=fillial_query.id,user_id=user_query.id,bread_size=bread_size,meal_size=context.user_data['meal_size'],time_delivery=next_day_noon)
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по Еду принята.",reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
         return bot.MANU
     except:
