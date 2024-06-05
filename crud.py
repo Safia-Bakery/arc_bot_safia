@@ -8,6 +8,15 @@ from sqlalchemy import or_,and_,Date,cast
 from datetime import datetime 
 timezonetash = pytz.timezone("Asia/Tashkent")
 
+
+def commit_db(db:Session):
+    try:
+        db.commit()
+        return True
+    except:
+        db.rollback()
+        return False
+
 def getlistbrigada(db:Session,sphere_status,department):
     query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1,models.Brigada.department==department).all()
     return query
@@ -24,13 +33,15 @@ def accept_request(db:Session,id,brigada_id,user_manager):
         query.brigada_id = brigada_id
         query.started_at = datetime.now(timezonetash)
         query.user_manager=user_manager
-        db.commit()
-        db.refresh(query)
+
+        commit_db(db)
+
         updated_data = query.update_time or {}
         updated_data[str(1)] = str(datetime.now(tz=timezonetash))
         query.update_time= updated_data
         db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
-        db.commit()
+        commit_db(db)
+
         return query
     else:
         return False
@@ -40,13 +51,12 @@ def reject_request(db:Session,status,id):
     query = db.query(models.Requests).filter(models.Requests.id==id).first()
     query.status=status
     query.finished_at = datetime.now(timezonetash)
-    db.commit()
-    db.refresh(query)
+    commit_db(db)
     updated_data = query.update_time or {}
     updated_data[str(status)] = str(datetime.now(tz=timezonetash))
     query.update_time= updated_data
     db.query(models.Requests).filter(models.Requests.id==id).update({'update_time':updated_data})
-    db.commit()
+    commit_db(db)
     return query
 
 
@@ -63,8 +73,7 @@ def get_user_tel_id(db:Session,id):
 def create_user(db:Session,full_name,telegram_id,sphere_status,phone_number,username):
     db_add_request = models.Users(full_name=full_name,telegram_id=telegram_id,phone_number=phone_number,sphere_status=sphere_status,username=username)
     db.add(db_add_request)
-    db.commit()
-    db.refresh(db_add_request)
+    commit_db(db)
     return db_add_request
 
 
@@ -120,7 +129,7 @@ def getchildbranch(db:Session,fillial,type,factory):
 def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None):
     db_add_request = models.Requests(category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
-    db.commit()
+    commit_db(db)
     db.refresh(db_add_request)
     return db_add_request
 
@@ -128,7 +137,7 @@ def add_request(db:Session,category_id,fillial_id,description,user_id,is_bot,pro
 def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery,comment,location):
     db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,arrival_date=time_delivery,user_id=user_id,size=size,is_bot=1,description=comment,location=location,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
-    db.commit()
+    commit_db(db)
     db.refresh(db_add_request)
     return db_add_request
 
@@ -137,7 +146,7 @@ def add_car_request(db:Session,category_id,fillial_id,user_id,size,time_delivery
 def add_it_request(db:Session,category_id,fillial_id,user_id,size,finishing_time,comment):
     db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,finishing_time=finishing_time,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
-    db.commit()
+    commit_db(db)
     db.refresh(db_add_request)
     return db_add_request
 
@@ -146,7 +155,7 @@ def add_it_request(db:Session,category_id,fillial_id,user_id,size,finishing_time
 def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_delivery,category_id):
     db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,arrival_date=time_delivery,bread_size=bread_size,size=meal_size,update_time ={'0':str(datetime.now(tz=timezonetash))})
     db.add(db_add_request)
-    db.commit()
+    commit_db(db)
     db.refresh(db_add_request)
     return db_add_request
 
@@ -154,7 +163,7 @@ def add_meal_request(db:Session,fillial_id,user_id,meal_size,bread_size,time_del
 def create_files(db:Session,request_id,filename,status:Optional[int]=0):
     db_add_file = models.Files(request_id=request_id,url=filename,status=status)
     db.add(db_add_file)
-    db.commit()
+    commit_db(db)
     db.refresh(db_add_file)
     return db_add_file
 
@@ -174,12 +183,12 @@ def tg_update_requst_st(db:Session,requestid,status):
     if status == 3 or status == 6:
         query.finished_at = datetime.now(timezonetash)
     query.status = status
-    db.commit() 
+    commit_db(db)
     db.refresh(query)
     updated_data = query.update_time or {}
     updated_data[str(status)] = str(datetime.now(tz=timezonetash))
     db.query(models.Requests).filter(models.Requests.id==query.id).update({'update_time':updated_data})
-    db.commit()
+    commit_db(db)
     return query
 
 
@@ -191,14 +200,14 @@ def getfillialname(db:Session,name):
 def update_user_sphere(db:Session,tel_id,sphere_status):
     query = db.query(models.Users).filter(models.Users.telegram_id==tel_id).first()
     query.sphere_status=sphere_status
-    db.commit()
+    commit_db(db)
     db.refresh(query)
     return query
 
 def addcomment(db:Session,user_id,comment,request_id):
     query = models.Comments(user_id=user_id,request_id=request_id,comment=comment)
     db.add(query)
-    db.commit()
+    commit_db(db)
     db.refresh(query)
     return query
 
@@ -224,14 +233,14 @@ def get_product_by_name(db:Session,name):
 def create_order_product(db:Session,product_id,amount,order_id):
     query = models.OrderProducts(product_id=product_id,amount=amount,request_id=order_id)
     db.add(query)
-    db.commit()
+    commit_db(db)
     db.refresh(query)
     return query
 
 def add_comment_request(db:Session,comment,category_id,name,user_id,fillial_id):
     query = models.Requests(description=comment,category_id=category_id,product=name,user_id=user_id,fillial_id=fillial_id)
     db.add(query)
-    db.commit()
+    commit_db(db)
     db.refresh(query)
     return query
 
@@ -240,7 +249,7 @@ def add_comment_request(db:Session,comment,category_id,name,user_id,fillial_id):
 def add_video_request(db:Session,comment, category_id,fillial_id, user_id,vidfrom,vidto):
     query = models.Requests(description=comment,category_id=category_id,user_id=user_id,fillial_id=fillial_id,update_time={'vidfrom':vidfrom,'vidto':vidto})
     db.add(query)
-    db.commit()
+    commit_db(db)
     db.refresh(query)
     return query
 
