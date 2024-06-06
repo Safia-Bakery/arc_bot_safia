@@ -261,10 +261,10 @@ def create_files(request_id,filename,status:Optional[int]=0):
 
 
 def tg_get_request_list(brigada_id):
-    with SessionLocal() as db:
-        query = db.query(models.Requests).filter(and_(models.Requests.brigada_id==brigada_id,models.Requests.status.in_([1,2]))).all()
-        CommitDb().get_data(db,query)
-        return query
+    db = SessionLocal()
+    query = db.query(models.Requests).filter(and_(models.Requests.brigada_id==brigada_id,models.Requests.status.in_([1,2]))).all()
+    CommitDb().get_data(db,query)
+    return query
 
 
 def get_request_id(id):
