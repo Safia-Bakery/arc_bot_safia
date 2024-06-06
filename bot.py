@@ -688,8 +688,8 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         if context.user_data['type']==1:
             product=context.user_data['product']
         add_request = crud.add_request(is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
-
-        crud.create_files(request_id=add_request.id,filename=f"files/{file_name}")
+        fileurl = f"files/{file_name}"
+        crud.create_files(request_id=add_request.id,filename=fileurl)
         formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
         if add_request.category_sphere_status==1 and add_request.category_department==1:
             fillial_name  = add_request.parentfillial_name
@@ -702,9 +702,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         f"💬Комментарии: {add_request.description}"
         keyboard = [
         ]
-        if add_request.file:
-            for i in add_request.file:
-                keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{i.url}"})
+
+
+        keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{fileurl}"})
         if add_request.category_sphere_status==1 and add_request.category_department==1:
                 sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
         if add_request.category.sphere_status==2 and add_request.category.department==1:

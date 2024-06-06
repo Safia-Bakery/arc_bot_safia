@@ -216,9 +216,6 @@ def add_request(category_id,fillial_id,description,user_id,is_bot,product:Option
         query.category_name = query.category.name
         query.fillial_name = query.fillial.name
         query.parentfillial_name = query.fillial.parentfillial.name
-        query.file = db_add_request.file
-
-
         return query
 
 
