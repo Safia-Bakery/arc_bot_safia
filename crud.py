@@ -131,6 +131,7 @@ def get_user_tel_id(id):
     with SessionLocal() as db:
         query = db.query(models.Users).filter(models.Users.telegram_id==id).first()
         CommitDb().get_data(db,query)
+        query.brigada_name = query.brigada.name
         return query
 
 

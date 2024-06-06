@@ -942,7 +942,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
         await update.message.reply_text(
-        f"🧑‍🔧Ваша команда - {user_check_query.brigader.name}", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True)
+        f"🧑‍🔧Ваша команда - {user_check_query.brigader_name}", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True)
         )
         return BRIG_MANU
     else:
