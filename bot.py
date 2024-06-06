@@ -775,9 +775,8 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
     ]
-    if request_db.file:
-        for i in request_db.file:
-            keyboard.append([InlineKeyboardButton('Посмотреть фото/видео',url=f"{BASE_URL}{i.url}")])
+
+    keyboard.append([InlineKeyboardButton('Посмотреть фото/видео',url=f"{BASE_URL}{request_db.file_url}")])
 
     #parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
     
