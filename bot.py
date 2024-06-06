@@ -770,7 +770,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['last_request'] = uservalue
     request_db = crud.get_request_id(id=uservalue)
     reply_keyboard = [['Завершить ✅'],['Забрать на ремонт 🛠'],['⬅️ Назад']]
-    if request_db.status == 2 or request_db.category.department==4: 
+    if request_db.status == 2 or request_db.category_department==4:
         reply_keyboard = [['Завершить ✅'],['⬅️ Назад']]
 
     keyboard = [
@@ -782,12 +782,12 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
     
     formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
-    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {request_db.fillial.parentfillial.name}\n"\
+    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {request_db.parentfillial_name}\n"\
                                     f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
-                                    f"🔰Категория проблемы: {request_db.category.name}\n"\
+                                    f"🔰Категория проблемы: {request_db.category_name}\n"\
                                     f"⚙️Название оборудования: {request_db.product}\n"\
-                                    f"📱Номер телефона: +{request_db.user.phone_number}\n"\
-                                    f"🥷Имя: {request_db.user.full_name}\n"\
+                                    f"📱Номер телефона: +{request_db.user_phone_number}\n"\
+                                    f"🥷Имя: {request_db.user_full_name}\n"\
                                     f"💬Комментарии: {request_db.description}",reply_markup=InlineKeyboardMarkup(keyboard))
     await update.message.reply_text(f"📑Заявка #{request_db.id}s",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     #if request_db.file:
@@ -811,7 +811,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     if user_button=='Завершить ✅':
         request_db = crud.get_request_id(id=context.user_data['last_request'])
-        if request_db.category.department==4:
+        if request_db.category_department==4:
             #finish request data 
             #request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=3)
             #url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"

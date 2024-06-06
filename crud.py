@@ -271,6 +271,14 @@ def get_request_id(id):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id==id).first()
         CommitDb().get_data(db,query)
+        query.category_name = query.category.name
+        query.fillial_name = query.fillial.name
+        query.parentfillial_name = query.fillial.parentfillial.name
+        query.category_department = query.category.department
+        query.category_sphere_status = query.category.sphere_status
+        query.user_full_name = query.user.full_name
+        query.user_phone_number = query.user.phone_number
+
         return query
 
 
