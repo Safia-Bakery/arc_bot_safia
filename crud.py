@@ -278,7 +278,10 @@ def get_request_id(id):
         query.category_sphere_status = query.category.sphere_status
         query.user_full_name = query.user.full_name
         query.user_phone_number = query.user.phone_number
-        query.file_url = query.file[0].url
+        if query.file:
+            query.file_url = query.file[0].url
+        else:
+            query.file_url = None
 
         return query
 
