@@ -895,11 +895,11 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     #finish request data 
     request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=6)
-    url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
+    url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
     #send message to request owner to rate request
     inlinewebapp(bot_token=BOTTOKEN,
-                 chat_id=request_list.user.telegram_id,
-                 message_text=f"Уважаемый {request_list.user.full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
+                 chat_id=request_list.user_telegram_id,
+                 message_text=f"Уважаемый {request_list.user_full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
                  url=url)
     reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
     await update.message.reply_text(

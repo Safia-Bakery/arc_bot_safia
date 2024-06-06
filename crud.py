@@ -278,6 +278,7 @@ def get_request_id(id):
         query.category_sphere_status = query.category.sphere_status
         query.user_full_name = query.user.full_name
         query.user_phone_number = query.user.phone_number
+        query.category_sub_id = query.category.sub_id
         if query.file:
             query.file_url = query.file[0].url
         else:
@@ -293,6 +294,13 @@ def tg_update_requst_st(requestid,status):
             query.finished_at = datetime.now(timezonetash)
         query.status = status
         CommitDb().update_data(db,query)
+        query.category_name = query.category.name
+        query.category_department = query.category.department
+        query.category_sphere_status = query.category.sphere_status
+        query.user_id = query.user.id
+        query.category_sub_id = query.category.sub_id
+        query.user_full_name = query.user.full_name
+        query.user_telegram_id = query.user.telegram_id
         with SessionLocal() as db:
             updated_data = query.update_time or {}
             updated_data[str(status)] = str(datetime.now(tz=timezonetash))
