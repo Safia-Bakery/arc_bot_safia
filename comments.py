@@ -76,12 +76,12 @@ async def commentphoto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             f.write(file_content)
             f.close()
 
-    fillial_query = crud.getchildbranch(db=bot.session,fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status'])).id
+    fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status'])).id
     category_id = 56
-    user_query = crud.get_user_tel_id(db=bot.session,id=update.message.from_user.id)
-    data = crud.add_comment_request(db=bot.session,category_id=category_id,fillial_id=fillial_query,user_id=user_query.id,comment=context.user_data['comment_text'],name=context.user_data['comment_name'])
+    user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+    data = crud.add_comment_request(category_id=category_id,fillial_id=fillial_query,user_id=user_query.id,comment=context.user_data['comment_text'],name=context.user_data['comment_name'])
     if context.user_data['image_comment'] is not None:
-        crud.create_files(db=bot.session,request_id=data.id,filename=context.user_data['image_comment'])
+        crud.create_files(request_id=data.id,filename=context.user_data['image_comment'])
     await update.message.reply_text('Спасибо ваш отзыв принят✍',reply_markup=ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     return bot.MANU
     
