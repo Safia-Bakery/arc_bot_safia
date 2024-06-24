@@ -139,7 +139,7 @@ def get_user_tel_id(id):
 
 
 def create_user(full_name,telegram_id,sphere_status,phone_number,username):
-    with SessionLocal as db:
+    with SessionLocal() as db:
 
         db_add_request = models.Users(full_name=full_name,telegram_id=telegram_id,phone_number=phone_number,sphere_status=sphere_status,username=username)
         CommitDb().insert_data(db,db_add_request)
