@@ -248,7 +248,10 @@ def add_it_request(category_id,fillial_id,user_id,size,finishing_time,comment):
         db_add_request.category_name = db_add_request.category.name
         if db_add_request.fillial:
             db_add_request.fillial_name = db_add_request.fillial.name
-        db_add_request.chat_id =db_add_request.category.chat_id
+        if db_add_request.category.telegram is not None:
+            db_add_request.chat_id =db_add_request.category.telegram.chat_id
+        else :
+            db_add_request.chat_id = None
         return db_add_request
 
 
