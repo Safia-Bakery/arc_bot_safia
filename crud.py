@@ -209,6 +209,7 @@ def getchildbranch(fillial,type,factory):
         elif factory==2:
             query = query.filter(models.Fillials.name.like(f"%{fillial}%")).first()
         CommitDb().get_data(db,query)
+        query.name= query.name
         return query
 
 def add_request(category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None):
@@ -242,6 +243,12 @@ def add_it_request(category_id,fillial_id,user_id,size,finishing_time,comment):
     with SessionLocal() as db:
         db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,finishing_time=finishing_time,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
         CommitDb().insert_data(db,db_add_request)
+        db_add_request.user_phonenumber = db_add_request.user.phone_number
+        db_add_request.user_fullname = db_add_request.user.full_name
+        db_add_request.category_name = db_add_request.category.name
+        if db_add_request.fillial:
+            db_add_request.fillial_name = db_add_request.fillial.name
+        db_add_request.chat_id =db_add_request.category.chat_id
         return db_add_request
 
 

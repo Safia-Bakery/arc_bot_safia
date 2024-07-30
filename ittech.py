@@ -13,13 +13,17 @@ from telegram.ext import (
 
 
 )
-from microser import transform_list
-
+from microser import transform_list,sendtotelegram
+BASE_URL = 'https://api.service.safiabakery.uz/'
 import datetime
 import calendar
 import re
 import pytz
 timezonetash = pytz.timezone("Asia/Tashkent")
+import os
+from dotenv import load_dotenv
+load_dotenv()
+BOTTOKEN = os.environ.get('BOT_TOKEN')
 
 async def it_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
     user_mess = update.message.text
@@ -213,6 +217,15 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по IT🧑‍💻 принята.  Как ваша заявка будет назначена в работу, вы получите уведомление",reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons,resize_keyboard=True))
+
+        formatted_datetime_str = data.created_at.strftime("%Y-%m-%d %H:%M")
+        text = f"📑Заявка № {data.id}\n\n📍Филиал: {fillial_query.name}\n" \
+               f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
+               f"🔰Категория проблемы: {data.category_name}\n" \
+               f"💬Комментарии: {data.description}"
+
+        sendtotelegram(bot_token=BOTTOKEN, chat_id=data.chat_id, message_text=text, buttons=[])
+
     return bot.MANU
 
 async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
@@ -227,6 +240,17 @@ async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
     data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=context.user_data['comment'])
     #reply_keyboard = [['⬅️ Назад']]
+    formatted_datetime_str = data.created_at.strftime("%Y-%m-%d %H:%M")
+    text = f"📑Заявка № {data.id}\n\n📍Филиал: {fillial_query.name}\n" \
+           f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
+           f"🔰Категория проблемы: {data.category_name}\n" \
+           f"💬Комментарии: {data.description}"
+
+
+
+
+    sendtotelegram(bot_token=BOTTOKEN,chat_id=data.chat_id,message_text=text,buttons=[])
+
     products = dict(context.user_data['productd'])
     for key,value in products.items():
         product = crud.get_product_by_name(name=key)
