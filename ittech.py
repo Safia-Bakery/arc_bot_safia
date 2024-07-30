@@ -248,8 +248,8 @@ async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
 
 
-
-    sendtotelegram(bot_token=BOTTOKEN,chat_id=data.chat_id,message_text=text,buttons=[])
+    if data.chat_id is not None:
+        sendtotelegram(bot_token=BOTTOKEN,chat_id=data.chat_id,message_text=text,buttons=[])
 
     products = dict(context.user_data['productd'])
     for key,value in products.items():
