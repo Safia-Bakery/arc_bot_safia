@@ -53,7 +53,10 @@ class CommitDb():
 
 def getlistbrigada(sphere_status,department):
     with SessionLocal() as db:
-        query = db.query(models.Brigada).filter(models.Brigada.sphere_status==sphere_status,models.Brigada.status==1,models.Brigada.department==department).all()
+        query = db.query(models.Brigada).filter(models.Brigada.status==1,models.Brigada.department==department)
+        if sphere_status is not None:
+            query = query.filter(models.Brigada.sphere_status==sphere_status)
+        query = query.all()
         CommitDb().get_data(db,query)
         return query
 

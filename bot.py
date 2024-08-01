@@ -970,7 +970,11 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
     if one_request.status ==0 and user:
         if selected_option <0:
             if selected_option == -1:
-                db_query  = crud.getlistbrigada(sphere_status=one_request.category_sphere_status,department=one_request.category_department)
+                if one_request.category_department==1:
+
+                    db_query  = crud.getlistbrigada(sphere_status=one_request.category_sphere_status,department=one_request.category_department)
+                else:
+                    db_query = crud.getlistbrigada(department=one_request.category_department,sphere_status=None)
                 reply_murkup = data_transform(db_query)
                 await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(reply_murkup))
             if selected_option== -2:
