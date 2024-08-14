@@ -146,9 +146,11 @@ class Category(Base):
     cat_prod = relationship("Products", back_populates="prod_cat")
     parent_id = Column(Integer, nullable=True)
     is_child = Column(Boolean,default=False)
+    price = Column(String, nullable=True)
     telegram_id = Column(Integer, ForeignKey("telegrams.id"), nullable=True)
     telegram = relationship("Telegrams", back_populates="categories")
     cattool = relationship("CategoryTools", back_populates="categories")
+
 
 
 class Telegrams(Base):

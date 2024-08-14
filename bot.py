@@ -63,7 +63,7 @@ manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻'
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
 
-buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
+buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],["🥼Заявка на форму",'⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 #backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
@@ -116,7 +116,12 @@ VIDTO,\
 VIDFILES,\
 ITPHOTOREPORT,\
 VERIFYUSER,\
-    = range(45)
+UNIFORMCATEGORIES,\
+UNIFORMSIZE,\
+UNIFORMVERIFY,\
+UNIFORMNAME,\
+UNIFORMAMOUNT,\
+    = range(50)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -376,6 +381,16 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
+    elif type_name=='🥼Заявка на форму':
+        context.user_data['type'] = 9
+        context.user_data['card'] = []
+        request_db = crud.get_branch_list(sphere_status=1)
+        reply_keyboard = transform_list(request_db,2,'name')
+
+        reply_keyboard.insert(0,['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return BRANCHES
 
     else:
         if int(context.user_data['sphere_status'])==2:
@@ -387,33 +402,6 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return TYPE
 
 
-#async def it_password(update:Update,context:ContextTypes.DEFAULT_TYPE):
-#    input_text = update.message.text
-#    if input_text =="Толибжан":
-#        context.user_data['type'] = 4
-#        context.user_data['page_number'] =0
-#        #if context.user_data['sphere_status']==1:
-#        request_db = crud.get_branch_list(sphere_status=1)
-#            #request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
-#        #else:
-#        #    request_db = crud.getfillialchildfabrica(offset=0)
-#        #    #request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
-# 
-#        reply_keyboard = transform_list(request_db,2,'name')
-#
-#        reply_keyboard.insert(0,['⬅️ Назад'])
-#        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-#        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-#        return BRANCHES
-#    else:
-#        if int(context.user_data['sphere_status'])==2:
-#            reply_keyboard = buttons_sphere_2
-#            await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-#        elif int(context.user_data['sphere_status'])==1:
-#            reply_keyboard = buttons_sphere_1
-#            await update.message.reply_text(f"Бот для подачи заявок в IT Отдел ➡️ @Safiatech_uzbot",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-#        return TYPE
-        
 
 
 async def marketingstbutton(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
@@ -524,6 +512,12 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text('Опишите пожалуйста событие в деталях',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return VIDCOMMENT
+    if int(context.user_data['type'])==9:
+        category_tools = crud.get_category_list(department=9)
+        reply_keyboard = transform_list(category_tools,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text('Выберите тип формы',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return UNIFORMCATEGORIES
     else:
         sphere_status=context.user_data['sphere_status']
     request_db =  crud.get_category_list(sphere_status=sphere_status,department=int(context.user_data['type']))
@@ -585,12 +579,6 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return PRODUCT
     elif int(context.user_data['type'])==5:
-        #current_date = datetime.date.today()
-        #current_month = current_date.month-1
-        #next_month = current_date.replace(day=1) + datetime.timedelta(days=32)
-        #next_month = next_month.replace(day=1).month-1
-        #months_buttons = [[cars.month_list[current_month],cars.month_list[next_month]],['⬅️ Назад']]
-        #await update.message.reply_text('Укажите в какое время вам нужна машина',reply_markup=ReplyKeyboardMarkup(months_buttons,resize_keyboard=True))
         await update.message.reply_text("Укажите вес/размер",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
         return CHOOSESIZE
         #return CHOOSEMONTH

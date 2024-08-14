@@ -175,7 +175,7 @@ def get_branch_list_location():
 
 
 
-def get_category_list(sphere_status,department,sub_id:Optional[int]=None):
+def get_category_list(department,sub_id:Optional[int]=None,sphere_status:Optional[int]=None):
     with SessionLocal() as db:
         query = db.query(models.Category)
         if sphere_status is not None:
