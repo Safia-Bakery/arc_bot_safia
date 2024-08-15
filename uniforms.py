@@ -99,9 +99,13 @@ async def uniformamount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
         context.user_data['card'].append({'product_id':context.user_data['uniformsize'],'amount':amount,'price':context.user_data['price'],'category_name':context.user_data['category_name'],'uniformsize_name':context.user_data['uniformsize_name']})
         text_to_send = "Товар добавлен в корзину\n\n"
+        total_summ = 0
         for item in context.user_data['card']:
+            if item['price'] is not None:
+                total_summ += item['price']*item['amount']
             product_info = f"{item['category_name']} {item['uniformsize_name']} - {item['price']} сум - {item['amount']} шт"
             text_to_send += product_info+'\n'
+        text_to_send += f"\nИтого: {total_summ} сум"
         await update.message.reply_text(text_to_send)
         reply_keyboard = [['Подтвердить',"Добавить еще"],['⬅️ Назад']]
         await update.message.reply_text('Выберите действие',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -151,9 +155,16 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         return bot.UNIFORMVERIFY
     try:
         user_query = crud.get_user_tel_id(id=update.message.from_user.id)
-        data = crud.add_uniform_request(user_id=user_query.id,products=context.user_data['card'],name=entered_data)
+        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'], type=int(context.user_data['type']),
+                                            factory=1)
+        fillial_id = fillial_query.id
+
+        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'])
+        for i in context.user_data['card']:
+            crud.add_uniform_product(request_id=data.id,product_id=i['product_id'],amount=i['amount'])
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id} по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
         return bot.MANU
-    except:
+    except Exception as e:
+        print(e)
         await update.message.reply_text('Укажите полное ФИО кому заказываете форму и должность сотрудника',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.UNIFORMNAME

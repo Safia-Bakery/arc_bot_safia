@@ -40,6 +40,7 @@ import cars
 import food
 import ittech
 import comments
+import uniforms
 import video
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
@@ -1056,6 +1057,11 @@ def main() -> None:
             VIDFROM:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidfrom)],
             VIDTO:[MessageHandler(filters.TEXT& ~filters.COMMAND,video.vidto)],
             ITPHOTOREPORT:[MessageHandler(filters.PHOTO | filters.Document.DOCX|filters.Document.IMAGE|filters.Document.PDF|filters.TEXT|filters.Document.MimeType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') & ~filters.COMMAND,it_photo_report)],
+            UNIFORMNAME:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformname)],
+            UNIFORMSIZE:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformsize)],
+            UNIFORMAMOUNT:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformamount)],
+            UNIFORMVERIFY:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformverify)],
+            UNIFORMCATEGORIES:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformcategories)],
             VERIFYUSER:[MessageHandler(filters.TEXT& ~filters.COMMAND,verify_user)],
             #IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
         },

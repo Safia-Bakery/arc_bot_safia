@@ -405,6 +405,20 @@ def get_child_categories(category_id):
         return query
 
 
+def add_uniform_request(category_id,fillial_id,user_id,description):
+    with SessionLocal() as db:
+        query = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,description=description)
+        CommitDb().insert_data(db,query)
+        return query
+
+
+def add_uniform_product(product_id,amount,request_id):
+    with SessionLocal() as db:
+        query = models.OrderProducts(product_id=product_id,amount=amount,request_id=request_id)
+        CommitDb().insert_data(db,query)
+        return query
+
+
 #def get_category_sphere(name,sphere_status):
 #    query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"),models.Category.sphere_status==sphere_status).first()
 #    return query
