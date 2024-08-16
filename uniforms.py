@@ -106,6 +106,7 @@ async def uniformamount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             product_info = f"{item['category_name']} {item['uniformsize_name']} - {item['price']} сум - {item['amount']} шт"
             text_to_send += product_info+'\n'
         text_to_send += f"\nИтого: {total_summ} сум"
+        context.user_data['total_summ'] = total_summ
         await update.message.reply_text(text_to_send)
         reply_keyboard = [['Подтвердить',"Добавить еще"],['⬅️ Назад']]
         await update.message.reply_text('Выберите действие',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -159,7 +160,7 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                                             factory=1)
         fillial_id = fillial_query.id
 
-        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'])
+        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'],total_cum=context.user_data['total_summ'])
         for i in context.user_data['card']:
             crud.add_uniform_product(request_id=data.id,product_id=i['product_id'],amount=i['amount'])
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id} по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))

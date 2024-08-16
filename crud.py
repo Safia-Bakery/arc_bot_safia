@@ -405,9 +405,9 @@ def get_child_categories(category_id):
         return query
 
 
-def add_uniform_request(category_id,fillial_id,user_id,description):
+def add_uniform_request(category_id,fillial_id,user_id,description,total_cum):
     with SessionLocal() as db:
-        query = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,description=description)
+        query = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,description=description,price=total_cum)
         CommitDb().insert_data(db,query)
         return query
 
