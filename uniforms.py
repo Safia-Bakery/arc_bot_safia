@@ -160,7 +160,7 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                                             factory=1)
         fillial_id = fillial_query.id
 
-        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'],total_cum=context.user_data['total_summ'])
+        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'],total_cum=float(context.user_data['total_summ']))
         for i in context.user_data['card']:
             crud.add_uniform_product(request_id=data.id,product_id=i['product_id'],amount=i['amount'])
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id} по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
