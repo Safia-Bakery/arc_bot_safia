@@ -127,7 +127,7 @@ async def uniformverify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         return bot.UNIFORMSIZE
     if entered_data == 'Подтвердить':
         text_to_send = """Укажите полное ФИО кому заказываете форму и должность сотрудника
-        (Как сотрудник получит форму, итоговая сумма будет списана с его заработной платы)"""
+(Как сотрудник получит форму, итоговая сумма будет списана с его заработной платы)"""
         reply_keyboard = [['⬅️ Назад']]
         await update.message.reply_text(text_to_send,
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
