@@ -367,9 +367,9 @@ def get_products(category):
         CommitDb().get_data(db,query)
         return query
 
-def get_product_by_name(name):
+def get_product_by_name(name,category):
     with SessionLocal() as db:
-        query = db.query(models.Products).filter(models.Products.name.ilike(f"%{name}%")).first()
+        query = db.query(models.Products).filter(models.Products.name.ilike(f"%{name}%")).filter(models.Products.category_id==category).first()
         CommitDb().get_data(db,query)
         return query
 def create_order_product(product_id,amount,order_id):

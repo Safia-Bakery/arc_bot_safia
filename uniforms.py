@@ -59,7 +59,7 @@ async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMCATEGORIES
     try:
-        uniformsize = crud.get_product_by_name(entered_data)
+        uniformsize = crud.get_product_by_name(entered_data,category=context.user_data['category'])
         if uniformsize:
             context.user_data['uniformsize'] = uniformsize.id
             context.user_data['uniformsize_name'] = uniformsize.name
@@ -86,7 +86,6 @@ async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 async def uniformamount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     entered_data = update.message.text
-    reply_keyboard = [['⬅️ Назад']]
     if entered_data == '⬅️ Назад':
         uniformsizes = context.user_data['uniformsizes']
         reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')

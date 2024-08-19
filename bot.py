@@ -28,7 +28,6 @@ from telegram.ext import (
     MessageHandler,
     filters,
     CallbackQueryHandler,PicklePersistence
-
 )
 import datetime
 from microser import transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string,inlinewebapp,sendtotelegramviewimage,info_string
@@ -64,8 +63,8 @@ manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻'
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
 
-buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛','Стафф питание🥘'],['Отзывы гостей✍','Видеонаблюдение🎥'],["Заявка на форму🥼",'⬅️ Назад']]
-buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Отзывы гостей✍','Видеонаблюдение🎥'],['⬅️ Назад']]
+buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
+buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 #backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
@@ -122,7 +121,8 @@ UNIFORMSIZE,\
 UNIFORMVERIFY,\
 UNIFORMNAME,\
 UNIFORMAMOUNT,\
-    = range(50)
+PHONENUMBER,\
+    = range(51)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -354,14 +354,11 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BRANCHES
     
     elif type_name=='Отзывы гостей✍':
-        context.user_data['type'] = 7
-        request_db = crud.get_branch_list(sphere_status=1)
-        reply_keyboard = transform_list(request_db,2,'name')
+        text_tosend = "@complaints_uzbot"
+        await update.message.reply_text(f"Бот для подачи отзывов ➡️ {text_tosend}",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
 
-        reply_keyboard.insert(0,['⬅️ Назад'])
-        reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRANCHES
+
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(id=update.message.from_user.id)
         await update.message.reply_text(
@@ -621,6 +618,25 @@ async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             return MARKETINGCAT
     context.user_data['description'] = update.message.text
     await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    return FILES
+
+
+
+async def phonenumber(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message.text:
+        if update.message.text=='⬅️ Назад':
+            if int(context.user_data['type'])==1:
+                await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+                return PRODUCT
+            if int(context.user_data['type'])==3:
+                reply_keyboard = [['Проектная работа для дизайнеров','Для Терр. Менеджеров'],['Видеография/Фото','⬅️ Назад']]
+                await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+                return MARKETINGCAT
+    if update.message.contact:
+        context.user_data['phone_number'] = update.message.contact.phone_number
+    else:
+        context.user_data['phone_number'] = update.message.text
+    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
     return FILES
 
 
