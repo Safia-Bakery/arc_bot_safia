@@ -165,6 +165,7 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
         return bot.MANU
     except Exception as e:
-        print(e)
-        await update.message.reply_text('Укажите полное ФИО кому заказываете форму и должность сотрудника',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        text_to_send = """Укажите полное ФИО кому заказываете форму и должность сотрудника
+(Как сотрудник получит форму, итоговая сумма будет списана с его заработной платы)"""
+        await update.message.reply_text(text=text_to_send,reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.UNIFORMNAME
