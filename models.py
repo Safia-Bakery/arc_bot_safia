@@ -238,7 +238,7 @@ class Requests(Base):
     cars = relationship("Cars", back_populates="request")
     communication = relationship("Communication", back_populates="requestc")
     price = Column(Float, nullable=True)
-
+    phone_number = Column(String, nullable=True)
 
 class Communication(Base):
     __tablename__ = "communication"
