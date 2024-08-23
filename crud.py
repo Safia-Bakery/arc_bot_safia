@@ -192,7 +192,7 @@ def get_category_list(department,sub_id:Optional[int]=None,sphere_status:Optiona
 
 def getcategoryname(name,department:Optional[int]=None):
     with SessionLocal() as db:
-        query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"))
+        query = db.query(models.Category).filter(models.Category.name==name)
         if department is not None:
             query = query.filter(models.Category.department==department)
         query = query.filter(models.Category.status==1).first()
