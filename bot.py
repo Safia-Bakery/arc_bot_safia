@@ -663,7 +663,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 product = context.user_data['product']
             add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_query.id,
                                            product=product, description=context.user_data['description'],
-                                           user_id=user_query.id)
+                                           user_id=user_query.id,phone_number=context.user_data['phone_number'])
             keyboard = [
             ]
 

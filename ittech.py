@@ -233,7 +233,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         fillial_id = fillial_query.id
         user_query = crud.get_user_tel_id(id=update.message.from_user.id)
         finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
-        data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment)
+        data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment,phone_number=context.user_data['phone_number'])
         if context.user_data['image_it'] is not None:
             crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]

@@ -215,9 +215,9 @@ def getchildbranch(fillial,type,factory):
         query.name= query.name
         return query
 
-def add_request(category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None):
+def add_request(category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None,phone_number:Optional[str]=None):
     with SessionLocal() as db:
-        db_add_request = models.Requests(category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,update_time = {'0':str(datetime.now(tz=timezonetash))})
+        db_add_request = models.Requests(phone_number=phone_number,category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,update_time = {'0':str(datetime.now(tz=timezonetash))})
         query = CommitDb().insert_data(db,db_add_request)
         query.category_sphere_status  = query.category.sphere_status
         query.category_department = query.category.department
@@ -242,9 +242,9 @@ def add_car_request(category_id,fillial_id,user_id,size,time_delivery,comment,lo
 
 
 
-def add_it_request(category_id,fillial_id,user_id,size,finishing_time,comment):
+def add_it_request(category_id,fillial_id,user_id,size,finishing_time,comment,phone_number):
     with SessionLocal() as db:
-        db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,finishing_time=finishing_time,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
+        db_add_request = models.Requests(category_id=category_id,fillial_id=fillial_id,user_id=user_id,size=size,is_bot=1,finishing_time=finishing_time,phone_number=phone_number,description=comment,update_time = {'0':str(datetime.now(tz=timezonetash))})
         CommitDb().insert_data(db,db_add_request)
         db_add_request.user_phonenumber = db_add_request.user.phone_number
         db_add_request.user_fullname = db_add_request.user.full_name
