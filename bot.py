@@ -664,9 +664,14 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_query.id,
                                            product=product, description=context.user_data['description'],
                                            user_id=user_query.id)
+            keyboard = [
+            ]
+
             for file in context.user_data['files']:
                 file_url = f"files/{file}"
-            crud.create_files(request_id=add_request.id, filename=file_url)
+                crud.create_files(request_id=add_request.id, filename=file_url)
+                keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
+
             formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 fillial_name = add_request.parentfillial_name
@@ -677,10 +682,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                    f"🔰Категория проблемы: {add_request.category.name}\n" \
                    f"⚙️Название оборудования: {add_request.product}\n" \
                    f"💬Комментарии: {add_request.description}"
-            keyboard = [
-            ]
 
-            keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
             if add_request.category.sphere_status == 2 and add_request.category.department == 1:
@@ -717,7 +719,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             f.write(file_content)
             f.close()
         context.user_data['files'].append(file_name)
-        await update.message.reply_text('Пожалуйста отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад','Далее➡️']],resize_keyboard=True))
+        await update.message.reply_text('Фото добавлено:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад','Далее➡️']],resize_keyboard=True))
         return FILES
 
 
