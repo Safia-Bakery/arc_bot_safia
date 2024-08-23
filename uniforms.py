@@ -140,7 +140,6 @@ async def uniformverify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         await update.message.reply_text('Выберите тип формы',
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMCATEGORIES
-
     else:
         reply_keyboard = [['Подтвердить', "Добавить еще"], ['⬅️ Назад']]
         await update.message.reply_text('Выберите действие', reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))

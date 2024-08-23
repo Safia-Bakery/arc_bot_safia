@@ -66,7 +66,7 @@ sphere_dict = {'Фабрика':2,'Розница':1}
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
-#backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+# backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -122,7 +122,8 @@ UNIFORMVERIFY,\
 UNIFORMNAME,\
 UNIFORMAMOUNT,\
 PHONENUMBER,\
-    = range(51)
+ITPHONENUMBER,\
+    = range(52)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -617,26 +618,23 @@ async def description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return MARKETINGCAT
     context.user_data['description'] = update.message.text
-    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    return FILES
+    await update.message.reply_text('Пожалуйста укажите ваш номер телефона',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    return PHONENUMBER
 
 
 
 async def phonenumber(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text:
         if update.message.text=='⬅️ Назад':
-            if int(context.user_data['type'])==1:
-                await update.message.reply_text('Пожалуйста укажите название/модель оборудования',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
-                return PRODUCT
-            if int(context.user_data['type'])==3:
-                reply_keyboard = [['Проектная работа для дизайнеров','Для Терр. Менеджеров'],['Видеография/Фото','⬅️ Назад']]
-                await update.message.reply_text(f"Пожалуйста выберите категорию",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-                return MARKETINGCAT
+            reply_keyboard = [['⬅️ Назад']]
+            await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+            return DESCRIPTION
     if update.message.contact:
         context.user_data['phone_number'] = update.message.contact.phone_number
     else:
         context.user_data['phone_number'] = update.message.text
-    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+    await update.message.reply_text('Отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад','Далее➡️']],resize_keyboard=True))
+    context.user_data['files'] = []
     return FILES
 
 
@@ -647,6 +645,54 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_keyboard = [['⬅️ Назад']]
             await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return DESCRIPTION
+        if update.message.text=='Далее➡️':
+            if not context.user_data['files']:
+                await update.message.reply_text('Пожалуйста отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад','Далее➡️']],resize_keyboard=True))
+                return FILES
+
+            category_query = crud.getcategoryname(name=context.user_data['category'],
+                                                  department=int(context.user_data['type']))
+            fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],
+                                                type=int(context.user_data['type']),
+                                                factory=int(context.user_data['sphere_status']))
+            user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+            list_data = [None, 'АРС🛠', None, 'Маркетигну📈']
+            if context.user_data['type'] == 3:
+                product = None
+            if context.user_data['type'] == 1:
+                product = context.user_data['product']
+            add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_query.id,
+                                           product=product, description=context.user_data['description'],
+                                           user_id=user_query.id)
+            for file in context.user_data['files']:
+                file_url = f"files/{file}"
+            crud.create_files(request_id=add_request.id, filename=file_url)
+            formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
+            if add_request.category_sphere_status == 1 and add_request.category_department == 1:
+                fillial_name = add_request.parentfillial_name
+            else:
+                fillial_name = add_request.fillial_name
+            text = f"📑Заявка № {add_request.id}\n\n📍Филиал: {fillial_name}\n" \
+                   f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
+                   f"🔰Категория проблемы: {add_request.category.name}\n" \
+                   f"⚙️Название оборудования: {add_request.product}\n" \
+                   f"💬Комментарии: {add_request.description}"
+            keyboard = [
+            ]
+
+            keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
+            if add_request.category_sphere_status == 1 and add_request.category_department == 1:
+                sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
+            if add_request.category.sphere_status == 2 and add_request.category.department == 1:
+                sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
+            await update.message.reply_text(
+                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",
+                reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
+
+            context.user_data['files'] = []
+            return MANU
+
+
 
     else:
         
@@ -670,54 +716,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         with open(f"{backend_location}files/{file_name}",'wb+') as f:
             f.write(file_content)
             f.close()
-        #data = {'description':context.user_data['description'],
-        #        'product':context.user_data['product'],
-        #        'category':context.user_data['category'],
-        #        'fillial':context.user_data['branch'],
-        #        'type':int(context.user_data['type']),
-        #        'telegram_id':update.message.from_user.id,
-        #        'file_name':file_name,
-        #        'factory':int(context.user_data['sphere_status'])}
-        #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data)
-
-        #file_name = update.message.document.file_name
-        #with open(f"files/{file_name}", 'wb') as f:
-        #    context.bot.get_file(update.message.document).download(out=f)
-        #responsefor = requests.post(url=f"{BASE_URL}tg/request",data=data,files=files_open).json()
-        category_query = crud.getcategoryname(name=context.user_data['category'],department=int(context.user_data['type']))
-        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],type=int(context.user_data['type']),factory=int(context.user_data['sphere_status']))
-        user_query = crud.get_user_tel_id(id=update.message.from_user.id)
-        list_data = [None,'АРС🛠',None,'Маркетигну📈']
-        if context.user_data['type']==3:
-            product=None
-        if context.user_data['type']==1:
-            product=context.user_data['product']
-        add_request = crud.add_request(is_bot=1,category_id=category_query.id,fillial_id=fillial_query.id,product=product,description=context.user_data['description'],user_id=user_query.id)
-        fileurl = f"files/{file_name}"
-        crud.create_files(request_id=add_request.id,filename=fileurl)
-        formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
-        if add_request.category_sphere_status==1 and add_request.category_department==1:
-            fillial_name  = add_request.parentfillial_name
-        else:
-            fillial_name  = add_request.fillial_name
-        text  = f"📑Заявка № {add_request.id}\n\n📍Филиал: {fillial_name}\n"\
-                        f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n"\
-                        f"🔰Категория проблемы: {add_request.category.name}\n"\
-                        f"⚙️Название оборудования: {add_request.product}\n"\
-                        f"💬Комментарии: {add_request.description}"
-        keyboard = [
-        ]
-
-
-        keyboard.append({'text':'Посмотреть фото/видео',"url":f"{BASE_URL}{fileurl}"})
-        if add_request.category_sphere_status==1 and add_request.category_department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001920671327',message_text=text,buttons=keyboard)
-        if add_request.category.sphere_status==2 and add_request.category.department==1:
-                sendtotelegram(bot_token=BOTTOKEN,chat_id='-1001831677963',message_text=text,buttons=keyboard)
-        await update.message.reply_text(f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
-        return MANU
-    
-
+        context.user_data['files'].append(file_name)
+        await update.message.reply_text('Пожалуйста отправьте фотографию или файл:',reply_markup=ReplyKeyboardMarkup([['⬅️ Назад','Далее➡️']],resize_keyboard=True))
+        return FILES
 
 
 
@@ -1079,6 +1080,9 @@ def main() -> None:
             UNIFORMVERIFY:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformverify)],
             UNIFORMCATEGORIES:[MessageHandler(filters.TEXT& ~filters.COMMAND,uniforms.uniformcategories)],
             VERIFYUSER:[MessageHandler(filters.TEXT& ~filters.COMMAND,verify_user)],
+            ITPHONENUMBER:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.itphonenumber)],
+            PHONENUMBER:[MessageHandler(filters.TEXT& ~filters.COMMAND,phonenumber)],
+
             #IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
         },
         fallbacks=[CommandHandler("cancel", cancel),

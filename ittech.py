@@ -168,9 +168,28 @@ async def it_comment(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         #if context.user_data['image_it'] is not None:
         #    crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]
-        reply_keyboard = [['⬅️ Назад',"Пропустить"]]
-        await update.message.reply_text('Пожалуйста отправьте фото',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
-        return bot.ITFILES
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Введите номер телефона',
+                                        reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
+        return bot.ITPHONENUMBER
+
+
+
+async  def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message.text == '⬅️ Назад':
+        data = crud.get_category_list(department=4,sphere_status=4)
+        reply_keyboard = transform_list(data,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text('Выберите категорию заявки',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
+        return bot.ITCATEGORY
+    user_comment = update.message.text
+    context.user_data['phone_number'] = user_comment
+
+
+    reply_keyboard = [['⬅️ Назад']]
+    await update.message.reply_text('Пожалуйста отправьте фото',
+                                    reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
+    return bot.ITFILES
     
 
 
@@ -182,8 +201,10 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             #data = crud.get_category_list(department=4,sphere_status=4)
             #reply_keyboard = transform_list(data,3,'name')
             reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
-            return bot.ITCOMMENT
+            await update.message.reply_text('Введите номер телефона',
+                                            reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
+            return bot.ITPHONENUMBER
+
         else:
             context.user_data['image_it'] = None
     else:
