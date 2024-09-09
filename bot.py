@@ -63,8 +63,8 @@ manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻'
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
 
-buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
-buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','⬅️ Назад']]
+buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Адреса Филиалов📍'],['⬅️ Назад']]
+buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','Адреса Филиалов📍'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
@@ -390,6 +390,13 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
+    elif type_name=='Адреса Филиалов📍':
+        request_db = crud.get_branch_list_location()
+        reply_keyboard = transform_list(request_db, 3, 'name')
+        reply_keyboard.insert(0, ['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал",
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        return LOCATION_BRANCH
 
     else:
         if int(context.user_data['sphere_status'])==2:
@@ -918,13 +925,13 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
 async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     chosen_branch  = update.message.text
     if chosen_branch == '⬅️ Назад':
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
-        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return BRIG_MANU
+
+        await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+        return MANU
     repsonsedata = crud.getfillialname(name=chosen_branch)
-    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
-    await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    return BRIG_MANU
+
+    await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+    return MANU
 
 
 
