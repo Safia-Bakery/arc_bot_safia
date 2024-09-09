@@ -1023,6 +1023,8 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по Маркетингу: В процессе.")
                 except:
                     pass
+    if one_request.status == 1 and user:
+        pass
     else:
         await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 

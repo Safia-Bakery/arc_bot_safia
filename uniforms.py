@@ -21,7 +21,7 @@ async def uniformcategories(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     reply_keyboard = [['⬅️ Назад']]
     if entered_data == '⬅️ Назад':
         context.user_data['page_number'] =0
-        context.user_data['type'] = 6
+        context.user_data['type'] = 9
         request_db = crud.get_branch_list(sphere_status=1)
         reply_keyboard = bot.transform_list(request_db,2,'name')
         reply_keyboard.insert(0,['⬅️ Назад'])
