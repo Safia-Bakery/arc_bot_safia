@@ -930,7 +930,8 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
         return MANU
     repsonsedata = crud.getfillialname(name=chosen_branch)
 
-    await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+    #await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+    await update.message.reply_location(latitude=repsonsedata.latitude,longitude=repsonsedata.longtitude)
     return MANU
 
 
