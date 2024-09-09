@@ -59,12 +59,12 @@ marketing_cat_dict ={
 
 offsett = 70
 
-manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Настройки⚙️']]
+manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬',,'Адреса Филиалов📍'],['Настройки⚙️']]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
 
-buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Адреса Филиалов📍'],['⬅️ Назад']]
-buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','Адреса Филиалов📍'],['⬅️ Назад']]
+buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
+buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
@@ -930,7 +930,6 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
         return MANU
     repsonsedata = crud.getfillialname(name=chosen_branch)
 
-    #await update.message.reply_html(text=f"{repsonsedata.name.capitalize()} - <a href='https://maps.google.com/?q={repsonsedata.latitude},{repsonsedata.longtitude}'>Fillial manzili</a>",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
     await update.message.reply_location(latitude=repsonsedata.latitude,longitude=repsonsedata.longtitude)
     return MANU
 
