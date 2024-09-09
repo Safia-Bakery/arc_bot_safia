@@ -228,6 +228,13 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if text_manu =='Настройки⚙️':
         await update.message.reply_text(f"Пожалуйста выберите сферу в которой вы работаете",reply_markup=ReplyKeyboardMarkup([['Поменять сферу','⬅️ Назад']],resize_keyboard=True),)
         return CHANGESPHERE
+    elif text_manu=='Адреса Филиалов📍':
+        request_db = crud.get_branch_list_location()
+        reply_keyboard = transform_list(request_db, 3, 'name')
+        reply_keyboard.insert(0, ['⬅️ Назад'])
+        await update.message.reply_text(f"Выберите филиал",
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        return LOCATION_BRANCH
     else:
         await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
@@ -390,13 +397,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
-    elif type_name=='Адреса Филиалов📍':
-        request_db = crud.get_branch_list_location()
-        reply_keyboard = transform_list(request_db, 3, 'name')
-        reply_keyboard.insert(0, ['⬅️ Назад'])
-        await update.message.reply_text(f"Выберите филиал",
-                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-        return LOCATION_BRANCH
+
 
     else:
         if int(context.user_data['sphere_status'])==2:
