@@ -931,7 +931,8 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
         return MANU
     repsonsedata = crud.getfillialname(name=chosen_branch)
 
-    await update.message.reply_location(latitude=repsonsedata.latitude,longitude=repsonsedata.longtitude)
+    await update.message.reply_location(latitude=repsonsedata.latitude,longitude=repsonsedata.longtitude,reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
+
     return MANU
 
 
