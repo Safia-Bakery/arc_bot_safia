@@ -754,7 +754,7 @@ async def brig_manu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         reply_keyboard = transform_list(request_db,3,'id')
         if not reply_keyboard:
-            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+            reply_keyboard = [['Мои заказы 📋']]
             await update.message.reply_text(
             f"У вашей бригады на данный момент нет заявок !", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return BRIG_MANU
@@ -768,7 +768,7 @@ async def brig_manu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return LOCATION_BRANCH
     else:
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        reply_keyboard = [['Мои заказы 📋']]
         await update.message.reply_text(
         f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
@@ -779,7 +779,7 @@ isTrue = {0:'No',1:'Yes'}
 async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uservalue = update.message.text
     if uservalue == '⬅️ Назад':
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        reply_keyboard = [['Мои заказы 📋']]
         await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
     uservalue = int(uservalue)
@@ -817,7 +817,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     user_button = update.message.text
     if user_button=='⬅️ Назад':
         #user = crud.get_user_tel_id(id=update.message.from_user.id)
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        reply_keyboard = [['Мои заказы 📋']]
         await update.message.reply_text(
         f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRIG_MANU
@@ -844,7 +844,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     #------------------this is it end of request closing data-------------------
         
         user_data = crud.get_user_tel_id(id=update.message.from_user.id)
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        reply_keyboard = [['Мои заказы 📋']]
         await update.message.reply_text(
         f"Пожалуйста внесите расход на заявку №{context.user_data['last_request']}",
         reply_markup=ReplyKeyboardMarkup.from_button(
@@ -862,7 +862,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
         
         
     
-    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    reply_keyboard = [['Мои заказы 📋']]
     await update.message.reply_text(
     f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
@@ -872,7 +872,7 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
 async def closebutton(update:Update,context:ContextTypes.DEFAULT_TYPE):
     data = json.loads(update.effective_message.web_app_data.data)
-    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    reply_keyboard = [['Мои заказы 📋']]
     await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
 
@@ -883,7 +883,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     if update.message.text:
         if update.message.text == '⬅️ Назад':
-            reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+            reply_keyboard = [['Мои заказы 📋']]
             await update.message.reply_text("Главное меню",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             return BRIG_MANU
             
@@ -917,7 +917,7 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
                  chat_id=request_list.user_telegram_id,
                  message_text=f"Уважаемый {request_list.user_full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
                  url=url)
-    reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+    reply_keyboard = [['Мои заказы 📋']]
     await update.message.reply_text(
     f"Заявка решена", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
     return BRIG_MANU
@@ -956,7 +956,7 @@ async def check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     #user_check = requests.get(f"{BASE_URL}tg/check/user?telegram_id={update.message.from_user.id}")
     if user_check_query.brigada_id:
 
-        reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
+        reply_keyboard = [['Мои заказы 📋']]
         await update.message.reply_text(
         f"🧑‍🔧Ваша команда - {user_check_query.brigada_name}", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True)
         )
