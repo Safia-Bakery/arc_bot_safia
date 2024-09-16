@@ -1040,8 +1040,10 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 #              message_text=message_text,
                 #              url=url)
 
-            except:
+            except Exception as e:
+                print(e)
                 pass
+
         elif selected_option==11:
             request_list = crud.tg_update_requst_st(requestid=requests_id,status=7)
             await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
