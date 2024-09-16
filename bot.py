@@ -1015,7 +1015,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по Маркетингу: В процессе.")
                 except:
                     pass
-    elif one_request.status == 1 and user:
+    elif one_request.status == 6 and user:
         if selected_option==10:
 
             request_list = crud.tg_update_only_status(requestid=requests_id,status=3)
