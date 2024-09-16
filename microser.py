@@ -16,6 +16,9 @@ REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')   # should be kept secret
 JWT_REFRESH_SECRET_KEY =  os.environ.get('JWT_REFRESH_SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
+backend_base_url = os.environ.get('BACKEND_BASE_URL')
+backend_pass = os.environ.get('BACKEND_PASS')
+
 
 
 
@@ -170,3 +173,48 @@ info_string = f"""🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\
 🔘 Отдел: Инвентарь -  +998(97)740-06-16\n\n
 🔘 Отдел: IT - +998(95)798-16-61, @safiasupport\n\n
 🔘 Отдел: Логистика (Учтепа) - +998(95)475-14-15"""
+
+
+
+
+def confirmation_request(bot_token,chat_id,message_text):
+    keyboard = {
+        'inline_keyboard': [
+            [{'text': 'Подтвердить', 'callback_data': '10'}],
+            [{'text': 'Не сделано', 'callback_data': '11'}],
+        ]
+    }
+
+    # Create the request payload
+    payload = {
+        'chat_id': chat_id,
+        'text': message_text,
+        'reply_markup': keyboard,
+        'parse_mode': 'HTML'
+    }
+
+    # Send the request to send the inline keyboard message
+    response = requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload,)
+
+    # Check the response status
+    if response.status_code == 200:
+        return response
+    else:
+        return False
+
+
+
+def send_iiko_document(request_id):
+    url =f"{backend_base_url}/v2/iiko_transfer"
+    headers = {
+        'Authorization': f'Bearer {backend_pass}'
+    }
+    data = {
+        'id':request_id
+    }
+    response = requests.post(url,headers=headers,json=data)
+    return response.json()
+
+
+
+

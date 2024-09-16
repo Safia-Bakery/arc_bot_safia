@@ -322,6 +322,25 @@ def tg_update_requst_st(requestid,status):
             CommitDb().update_data(db,query)
             return query
 
+def tg_update_only_status(requestid,status):
+    with SessionLocal() as db:
+        query = db.query(models.Requests).filter(models.Requests.id == requestid).first()
+        query.status = status
+        CommitDb().update_data(db, query)
+        query.category_name = query.category.name
+        query.category_department = query.category.department
+        query.category_sphere_status = query.category.sphere_status
+        query.user_id = query.user.id
+        query.category_sub_id = query.category.sub_id
+        query.user_full_name = query.user.full_name
+        query.user_telegram_id = query.user.telegram_id
+        with SessionLocal() as db:
+            updated_data = query.update_time or {}
+            updated_data[str(status)] = str(datetime.now(tz=timezonetash))
+            db.query(models.Requests).filter(models.Requests.id == query.id).update({'update_time': updated_data})
+            CommitDb().update_data(db, query)
+            return query
+
 
 def getfillialname(name):
     with SessionLocal() as db:

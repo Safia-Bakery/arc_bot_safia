@@ -32,6 +32,8 @@ from telegram.ext import (
 import datetime
 from microser import transform_list,generate_text,data_transform,create_access_token,sendtotelegram,is_time_between,generate_random_string,inlinewebapp,sendtotelegramviewimage,info_string
 import requests
+from microser import confirmation_request
+from microser import send_iiko_document
 import crud
 import os 
 from dotenv import load_dotenv
@@ -827,17 +829,6 @@ async def finishing(update:Update,context:ContextTypes.DEFAULT_TYPE):
     if user_button=='Завершить ✅':
         request_db = crud.get_request_id(id=context.user_data['last_request'])
         if request_db.category_department==4:
-            #finish request data 
-            #request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=3)
-            #url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user.id}&department={request_list.category.department}&sub_id={request_list.category.sub_id}"
-            ##send message to request owner to rate request
-            #inlinewebapp(bot_token=BOTTOKEN,
-            #             chat_id=request_list.user.telegram_id,
-            #             message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
-            #             url=url)
-            #reply_keyboard = [['Мои заказы 📋'],['Адреса Филиалов📍']]
-            #await update.message.reply_text(
-            #f"Главное меню", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
             await update.message.reply_text("Входной фотоотчет",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад',"Пропустить"]],resize_keyboard=True))
             return ITPHOTOREPORT
         
@@ -911,12 +902,15 @@ async def it_photo_report(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     #finish request data 
     request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'],status=6)
-    url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
+    text_request = f"Уважаемый {request_list.user.full_name} , Ваша заявка #{request_list.id}s ИТ решена. \nПожалуйста, подтвердите, что она выполнена в соответствии с вашим запросом."
     #send message to request owner to rate request
-    inlinewebapp(bot_token=BOTTOKEN,
-                 chat_id=request_list.user_telegram_id,
-                 message_text=f"Уважаемый {request_list.user_full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
-                 url=url)
+    confirmation_request(bot_token=BOTTOKEN,chat_id=request_list.user_telegram_id,message_text=text_request)
+    # url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
+    # #send message to request owner to rate request
+    # inlinewebapp(bot_token=BOTTOKEN,
+    #              chat_id=request_list.user_telegram_id,
+    #              message_text=f"Уважаемый {request_list.user_full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
+    #              url=url)
     reply_keyboard = [['Мои заказы 📋']]
     await update.message.reply_text(
     f"Заявка решена", reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
@@ -934,8 +928,6 @@ async def location_branch(update:Update,context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_location(latitude=repsonsedata.latitude,longitude=repsonsedata.longtitude,reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
 
     return MANU
-
-
 
 
 
@@ -1023,8 +1015,38 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     await context.bot.send_message(chat_id=request_list.user.telegram_id,message_text=f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по Маркетингу: В процессе.")
                 except:
                     pass
-    if one_request.status == 1 and user:
-        pass
+    elif one_request.status == 1 and user:
+        if selected_option==10:
+            crud.tg_update_only_status(requestid=requests_id,status=3)
+            request_list = crud.tg_update_requst_st(requestid=requests_id,status=3)
+
+            try:
+                if request_list.category.department==1:
+                    send_iiko_document(request_id=requests_id)
+                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+                elif request_list.category.department==4:
+                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                elif request_list.category.department==2:
+                    send_iiko_document(request_id=requests_id)
+                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по инвентарь: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                else:
+                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
+                inlinewebapp(bot_token=BOTTOKEN,
+                             chat_id=request_list.user_telegram_id,
+                             message_text=message_text,
+                             url=url)
+            except:
+                pass
+        if selected_option==11:
+            request_list = crud.tg_update_requst_st(requestid=requests_id,status=7)
+
+            text_request = "Спасибо что обратную связь. Специалист по  свяжется с вами для решения вашей заявки. Статус вашей заявки: В процессе"
+            try:
+                await context.bot.send_message(chat_id=request_list.user_telegram_id,text=text_request)
+            except:
+                pass
+
     else:
         await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
