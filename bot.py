@@ -1021,18 +1021,18 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
             request_list = crud.tg_update_only_status(requestid=requests_id,status=3)
 
             try:
-                if request_list.category.department==1:
+                if request_list.category_department==1:
                     send_iiko_document(request_id=requests_id)
-                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
-                elif request_list.category.department==4:
-                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
-                elif request_list.category.department==2:
+                    message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк",
+                elif request_list.category_department==4:
+                    message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                elif request_list.category_department==2:
                     send_iiko_document(request_id=requests_id)
-                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s по инвентарь: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                    message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по инвентарь: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
                 else:
-                    message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
+                    message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
                 url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
-                await context.bot.send_message(chat_id=request_list.user_telegram_id,text=message_text,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('Оставить отзыв🌟',url=url)]],resize_keyboard=True))
+                await context.bot.send_message(chat_id=request_list.user_telegram_id,text=message_text,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('Оставить отзыв🌟',url=url)]]))
 
                 await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
                 # inlinewebapp(bot_token=BOTTOKEN,
