@@ -1032,14 +1032,19 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 else:
                     message_text = f"Уважаемый {request_list.user.full_name}, статус вашей заявки #{request_list.id}s Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку",
                 url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
-                inlinewebapp(bot_token=BOTTOKEN,
-                             chat_id=request_list.user_telegram_id,
-                             message_text=message_text,
-                             url=url)
+                await context.bot.send_message(chat_id=request_list.user_telegram_id,text=message_text,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('Оставить отзыв🌟',url=url)]],resize_keyboard=True))
+
+                await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+                # inlinewebapp(bot_token=BOTTOKEN,
+                #              chat_id=request_list.user_telegram_id,
+                #              message_text=message_text,
+                #              url=url)
+
             except:
                 pass
         elif selected_option==11:
             request_list = crud.tg_update_requst_st(requestid=requests_id,status=7)
+            await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
             text_request = "Спасибо что обратную связь. Специалист по  свяжется с вами для решения вашей заявки. Статус вашей заявки: В процессе"
             try:
