@@ -1017,8 +1017,8 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                     pass
     elif one_request.status == 1 and user:
         if selected_option==10:
-            crud.tg_update_only_status(requestid=requests_id,status=3)
-            request_list = crud.tg_update_requst_st(requestid=requests_id,status=3)
+
+            request_list = crud.tg_update_only_status(requestid=requests_id,status=3)
 
             try:
                 if request_list.category.department==1:
@@ -1038,7 +1038,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                              url=url)
             except:
                 pass
-        if selected_option==11:
+        elif selected_option==11:
             request_list = crud.tg_update_requst_st(requestid=requests_id,status=7)
 
             text_request = "Спасибо что обратную связь. Специалист по  свяжется с вами для решения вашей заявки. Статус вашей заявки: В процессе"
@@ -1046,6 +1046,9 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 await context.bot.send_message(chat_id=request_list.user_telegram_id,text=text_request)
             except:
                 pass
+        else:
+            await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
+
 
     else:
         await query.message.edit_text(text=text_of_order,reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
