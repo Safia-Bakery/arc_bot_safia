@@ -1022,7 +1022,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
 
             if request_list.category_department==1:
                 send_iiko_document(request_id=requests_id)
-                message_text = f'Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявк'
+                message_text = f'Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку'
             elif request_list.category_department==4:
                 message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку"
             elif request_list.category_department==2:
