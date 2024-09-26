@@ -28,24 +28,24 @@ async def uniformcategories(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.BRANCHES
+    try:
+        get_category = crud.getcategoryname(name=entered_data,department=context.user_data['type'])
+        context.user_data['category'] = get_category.id
+        context.user_data['category_name'] = get_category.name
+        context.user_data['price'] = get_category.price
+        uniformsizes = crud.get_products(category=entered_data)
+        context.user_data['uniformsizes'] = uniformsizes
+        reply_keyboard = bot.transform_list(uniformsizes,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text('Выберите размер',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.UNIFORMSIZE
+    except:
+        categories = crud.get_category_list(department=context.user_data['type'])
+        reply_keyboard = bot.transform_list(categories,3,'name')
+        reply_keyboard.append(['⬅️ Назад'])
 
-    get_category = crud.getcategoryname(name=entered_data,department=context.user_data['type'])
-    context.user_data['category'] = get_category.id
-    context.user_data['category_name'] = get_category.name
-    context.user_data['price'] = get_category.price
-    uniformsizes = crud.get_products(category=entered_data)
-    context.user_data['uniformsizes'] = uniformsizes
-    reply_keyboard = bot.transform_list(uniformsizes,3,'name')
-    reply_keyboard.append(['⬅️ Назад'])
-    await update.message.reply_text('Выберите размер',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    return bot.UNIFORMSIZE
-    # except:
-    #     categories = crud.get_category_list(department=context.user_data['type'])
-    #     reply_keyboard = bot.transform_list(categories,3,'name')
-    #     reply_keyboard.append(['⬅️ Назад'])
-    #
-    #     await update.message.reply_text('Выберите тип формы',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-    #     return bot.UNIFORMCATEGORIES
+        await update.message.reply_text('Выберите тип формы',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.UNIFORMCATEGORIES
 
 async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     entered_data = update.message.text
