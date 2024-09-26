@@ -381,7 +381,6 @@ def get_user_role(telegram_id):
         return query
 
 def get_products(category):
-    with SessionLocal() as db:
         query = db.query(models.Products).join(models.Category).filter(models.Category.name.ilike(f"%{category}%")).all()
         CommitDb().get_data(db,query)
         return query
