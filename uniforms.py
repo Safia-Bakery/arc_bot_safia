@@ -58,30 +58,30 @@ async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.message.reply_text('Выберите тип формы',
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMCATEGORIES
-    try:
-        uniformsize = crud.get_product_by_name(entered_data,category=context.user_data['category'])
-        if uniformsize:
-            context.user_data['uniformsize'] = uniformsize.id
-            context.user_data['uniformsize_name'] = uniformsize.name
-            reply_keyboard = [['1','2','3'],['4','5','6'],['7','8','9'],['⬅️ Назад']]
-            product_info = f"{context.user_data['category_name']} {entered_data} - {context.user_data['price']} сум"
-            await update.message.reply_text(product_info+'\n\nВыберите количество',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-            return bot.UNIFORMAMOUNT
-        else:
-            uniformsizes = crud.get_products(category=entered_data)
-            reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')
-            reply_keyboard.append(['⬅️ Назад'])
-            await update.message.reply_text('Выберите размер',
-                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-            return bot.UNIFORMSIZE
-    except:
+    # try:
+    uniformsize = crud.get_product_by_name(entered_data,category=context.user_data['category'])
+    if uniformsize:
+        context.user_data['uniformsize'] = uniformsize.id
+        context.user_data['uniformsize_name'] = uniformsize.name
+        reply_keyboard = [['1','2','3'],['4','5','6'],['7','8','9'],['⬅️ Назад']]
+        product_info = f"{context.user_data['category_name']} {entered_data} - {context.user_data['price']} сум"
+        await update.message.reply_text(product_info+'\n\nВыберите количество',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.UNIFORMAMOUNT
+    else:
         uniformsizes = crud.get_products(category=entered_data)
-        context.user_data['uniformsizes'] = uniformsizes
         reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')
         reply_keyboard.append(['⬅️ Назад'])
         await update.message.reply_text('Выберите размер',
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMSIZE
+    # except:
+    #     uniformsizes = crud.get_products(category=entered_data)
+    #     context.user_data['uniformsizes'] = uniformsizes
+    #     reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')
+    #     reply_keyboard.append(['⬅️ Назад'])
+    #     await update.message.reply_text('Выберите размер',
+    #                                     reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+    #     return bot.UNIFORMSIZE
 
 
 async def uniformamount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
