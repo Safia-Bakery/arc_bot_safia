@@ -91,6 +91,9 @@ class Users(Base):
     toolor = relationship("ToolsOrder", back_populates="user")
     communication = relationship("Communication", back_populates="user")
     arcexpense = relationship("ArcExpense", back_populates="user")
+    branch = relationship("ParentFillials", back_populates="user")
+    branch_id = Column(UUID, ForeignKey("parentfillials.id"), nullable=True)
+    finished_task = relationship("KruFinishedTasks", back_populates="user")
 
 #there are 2 types of fillials there is parent fillial that show which fillial is 
 class ParentFillials(Base):
@@ -104,6 +107,9 @@ class ParentFillials(Base):
     fillial_department = relationship("Fillials", back_populates="parentfillial")
     is_fabrica = Column(Integer, nullable=True)
     calendar = relationship('Calendars', back_populates='branch')
+    kru_finished_task = relationship("KruFinishedTasks", back_populates="branch")
+    branch = relationship("ParentFillials", back_populates="user")
+
 
 #fillial is departments of fillial bar, arc, etc
 class Fillials(Base):
@@ -451,3 +457,45 @@ class Calendars(Base):
     is_active = Column(Integer, default=1)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+
+class KruCategories(Base):
+    __tablename__ = "kru_categories"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    status = Column(Integer, default=1)
+    kru_task = relationship("KruTasks", back_populates="kru_category")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+
+
+class KruTasks(Base):
+    __tablename__ = "kru_tasks"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    status = Column(Integer, default=1)
+    kru_category_id = Column(Integer, ForeignKey("kru_categories.id"))
+    kru_category = relationship("KruCategories", back_populates="kru_task")
+    finished_task = relationship("KruFinishedTasks", back_populates="task")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+
+class KruFinishedTasks(Base):
+    __tablename__ = "kru_finished_tasks"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("kru_tasks.id"))
+    task = relationship("KruTasks", back_populates="finished_task")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("Users", back_populates="finished_task")
+    branch_id = Column(UUID, ForeignKey("parentfillials.id"))
+    branch = relationship("ParentFillials", back_populates="kru_finished_task")
+    comment = Column(String, nullable=True)
+    file = relationship("Files", back_populates="kru_finished_task")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
