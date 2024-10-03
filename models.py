@@ -287,6 +287,8 @@ class Files(Base):
     request = relationship("Requests", back_populates="file")
     request_id = Column(Integer, ForeignKey("requests.id"))
     status = Column(Integer, default=0)
+    kru_finished_task_id = Column(Integer, ForeignKey("kru_finished_tasks.id"))
+    kru_finished_task = relationship("KruFinishedTasks", back_populates="file")
 
 
 class ToolParents(Base):
