@@ -108,7 +108,7 @@ class ParentFillials(Base):
     is_fabrica = Column(Integer, nullable=True)
     calendar = relationship('Calendars', back_populates='branch')
     kru_finished_task = relationship("KruFinishedTasks", back_populates="branch")
-    branch = relationship("ParentFillials", back_populates="user")
+    branch = relationship("Users", back_populates="user")
 
 
 #fillial is departments of fillial bar, arc, etc
