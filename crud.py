@@ -431,6 +431,13 @@ def add_uniform_request(category_id,fillial_id,user_id,description,total_cum):
         return query
 
 
+def delete_request(id):
+    with SessionLocal() as db:
+        query = db.query(models.Requests).filter(models.Requests.id==id).first()
+        CommitDb().delete_data(db,query)
+        return query
+
+
 def add_uniform_product(product_id,amount,request_id):
     with SessionLocal() as db:
         query = models.OrderProducts(product_id=product_id,amount=amount,request_id=request_id)

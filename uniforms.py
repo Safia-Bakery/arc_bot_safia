@@ -154,19 +154,26 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         reply_keyboard = [['Подтвердить', "Добавить еще"], ['⬅️ Назад']]
         await update.message.reply_text('Выберите действие', reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMVERIFY
-    try:
-        user_query = crud.get_user_tel_id(id=update.message.from_user.id)
-        fillial_query = crud.getchildbranch(fillial=context.user_data['branch'], type=int(context.user_data['type']),
-                                            factory=1)
-        fillial_id = fillial_query.id
 
-        data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'],total_cum=float(context.user_data['total_summ']))
-        for i in context.user_data['card']:
+    user_query = crud.get_user_tel_id(id=update.message.from_user.id)
+    fillial_query = crud.getchildbranch(fillial=context.user_data['branch'], type=int(context.user_data['type']),
+                                        factory=1)
+    fillial_id = fillial_query.id
+
+    data = crud.add_uniform_request(user_id=user_query.id,category_id=context.user_data['category'],fillial_id=fillial_id, description=context.user_data['name'],total_cum=float(context.user_data['total_summ']))
+    for i in context.user_data['card']:
+        try:
             crud.add_uniform_product(request_id=data.id,product_id=int(i['product_id']),amount=i['amount'])
-        await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
-        return bot.MANU
-    except Exception as e:
-        text_to_send = """Укажите полное ФИО кому заказываете форму и должность сотрудника
-(Как сотрудник получит форму, итоговая сумма будет списана с его заработной платы)"""
-        await update.message.reply_text(text=text_to_send,reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return bot.UNIFORMNAME
+        except:
+            crud.delete_request(data.id)
+            await update.message.reply_text("Произошла ошибка, попробуйте снова",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
+            return bot.MANU
+
+
+    await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
+    return bot.MANU
+#     except Exception as e:
+#         text_to_send = """Укажите полное ФИО кому заказываете форму и должность сотрудника
+# (Как сотрудник получит форму, итоговая сумма будет списана с его заработной платы)"""
+#         await update.message.reply_text(text=text_to_send,reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+#         return bot.UNIFORMNAME
