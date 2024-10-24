@@ -244,6 +244,10 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(f"Выберите филиал",
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return LOCATION_BRANCH
+    elif text_manu == 'Оставить отзыв💬':
+        await update.message.reply_text("Пожалуйста введите текст отзыва",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
+
+        return INPUTCOMMENT
     else:
         await update.message.reply_text(f"Этот пункт в разработке",reply_markup=ReplyKeyboardMarkup(manu_buttons,resize_keyboard=True))
         return MANU
@@ -416,10 +420,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard.append(['<<<Предыдущий','Следующий>>>'])
         await update.message.reply_text(f"Выберите филиал или отдел:",reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return BRANCHES
-    elif type_name == 'Оставить отзыв💬':
-        await update.message.reply_text("Пожалуйста введите текст отзыва",reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']],resize_keyboard=True))
 
-        return INPUTCOMMENT
 
 
     else:
