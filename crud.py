@@ -456,3 +456,4 @@ def add_general_comment(comment,user_id):
     with SessionLocal() as db:
         query = models.Comments(comment=comment,user_id=user_id)
         CommitDb().insert_data(db,query)
+        return query
