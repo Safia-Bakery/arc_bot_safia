@@ -445,6 +445,13 @@ def add_uniform_product(product_id,amount,request_id):
         return query
 
 
+
 #def get_category_sphere(name,sphere_status):
 #    query = db.query(models.Category).filter(models.Category.name.ilike(f"%{name}%"),models.Category.sphere_status==sphere_status).first()
 #    return query
+
+
+def add_general_comment(comment,user_id):
+    with SessionLocal() as db:
+        query = models.Comments(comment=comment,user_id=user_id)
+        CommitDb().insert_data(db,query)

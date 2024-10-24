@@ -43,6 +43,7 @@ import ittech
 import comments
 import uniforms
 import video
+import ratings
 #from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 #from .food import meal_bread_size,meal_size
 load_dotenv()
@@ -61,7 +62,12 @@ marketing_cat_dict ={
 
 offsett = 70
 
-manu_buttons = [['Подать заявку📝'],['Обучение🧑‍💻','Информацияℹ️'],['Оставить отзыв💬','Адреса Филиалов📍'],['Настройки⚙️']]
+manu_buttons = [
+                ['Подать заявку📝'],
+                ['Обучение🧑‍💻', 'Информацияℹ️'],
+                ['Оставить отзыв💬',  'Адреса Филиалов📍'],
+                ['Настройки⚙️']
+]
 buttons_sphere = [['Фабрика','Розница']]
 sphere_dict = {'Фабрика':2,'Розница':1}
 
@@ -125,7 +131,8 @@ UNIFORMNAME,\
 UNIFORMAMOUNT,\
 PHONENUMBER,\
 ITPHONENUMBER,\
-    = range(52)
+INPUTCOMMENT,\
+    = range(53)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -371,13 +378,23 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif type_name=='Инвентарь📦':
         user= crud.get_user_tel_id(id=update.message.from_user.id)
+        if context.user_data['sphere_status']:
+            if int(context.user_data['sphere_status']) == 1:
+                department = 2
+            else:
+                department = 10
+        else:
+            context.user_data['sphere_status'] = 1
+            department = 2
+
         await update.message.reply_text(
         f"Пожалуйста нажмите кнопку: Инвентарь📦",
+
         
         reply_markup=ReplyKeyboardMarkup.from_button(
             KeyboardButton(
                 text="Инвентарь📦",
-                web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}")
+                web_app=WebAppInfo(url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}&department={department}")
             ),resize_keyboard=True))
         return INVETORY
     elif type_name=='Видеонаблюдение🎥':
@@ -1124,6 +1141,7 @@ def main() -> None:
             VERIFYUSER:[MessageHandler(filters.TEXT& ~filters.COMMAND,verify_user)],
             ITPHONENUMBER:[MessageHandler(filters.TEXT& ~filters.COMMAND,ittech.itphonenumber)],
             PHONENUMBER:[MessageHandler(filters.TEXT& ~filters.COMMAND,phonenumber)],
+            INPUTCOMMENT:[MessageHandler(filters.TEXT& ~filters.COMMAND,ratings.input_rating)],
 
             #IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
         },
