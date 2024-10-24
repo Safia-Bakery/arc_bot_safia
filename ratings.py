@@ -28,7 +28,9 @@ async def input_rating(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                                             reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
             return bot.MANU
         else:
-            crud.add_general_comment(user_id=context.user_data['user_id'],comment=entered_data)
+            get_user_id = crud.get_user_tel_id(id=update.message.from_user.id)
+
+            crud.add_general_comment(user_id=get_user_id.id,comment=entered_data)
             await update.message.reply_text(f"Главное меню",
                                             reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
             return bot.MANU
