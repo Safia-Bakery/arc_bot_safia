@@ -38,7 +38,7 @@ async def input_rating(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                                             reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
             #send message to another group by chat id
             current_formatted_date =  datetime.datetime.now(time_zone).strftime("%d.%m.%Y %H:%M")
-            text_to_send = f"💬 Новый отзыв #{rating_created.id}s\nАвтор: {get_user_id.full_name}\nНомер: {get_user_id.phone_number}\nОтзыв: {entered_data}\nДата: {current_formatted_date}\n\n✍️Комментарии:  {entered_data}"
+            text_to_send = f"💬 Новый отзыв #{rating_created.id}s\nАвтор: {get_user_id.full_name}\nНомер: +{get_user_id.phone_number}\nОтзыв: {entered_data}\nДата: {current_formatted_date}\n\n✍️Комментарии:  {entered_data}"
 
             await context.bot.send_message(chat_id='-1002223465896', text=text_to_send)
             return bot.MANU
