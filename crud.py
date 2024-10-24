@@ -91,6 +91,7 @@ def accept_request(id,brigada_id,user_manager):
             query.brigada_id = query.brigada.id
             query.parentfillial_name = query.fillial.parentfillial.name
             query.fillial_name = query.fillial.name
+            query.category_department = query.category.department
             with SessionLocal() as db:
                 updated_data = query.update_time or {}
                 updated_data[str(1)] = str(datetime.now(tz=timezonetash))

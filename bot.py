@@ -1023,7 +1023,7 @@ async def handle_callback_query(update:Update, context: ContextTypes.DEFAULT_TYP
                 #brigader_telid = crud.get_brigada_id(session,id=brigada_id)
             except:
                 pass
-            if request_list.category.department==1:
+            if request_list.category_department==1:
                 try:
                     await context.bot.send_message(chat_id=request_list.brigada_telegram_id,text=f"{request_list.brigada_name} вам назначена заявка, #{request_list.id}s {request_list.fillial_name}")
                 except:
