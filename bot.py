@@ -1069,7 +1069,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     # if selected_option is less than 0 it is about yes or no
     user = crud.get_user_tel_id(id=query.from_user.id)
     one_request = crud.get_request(id=requests_id)
-    topic_id = user.topic_id
 
     # if one_request.status== 3 and int(selected_option)==4:
     #    await context.bot.send_message(query.from_user.id,'please enter comment',reply_markup=ReplyKeyboardRemove())
@@ -1079,6 +1078,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     if department == 4:
         callback_data = query.data
         request = crud.get_request_id(requests_id)
+        topic_id = request.topic_id
         finishing_time = request.finishing_time
         message_id = query.message.message_id
         sla = request.sla
