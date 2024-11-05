@@ -341,20 +341,20 @@ def get_request_id(id):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id==id).first()
         CommitDb().get_data(db,query)
-        query.category_name = query.category.name if query.category_id else None
-        query.fillial_name = query.fillial.name if query.fillial_id else None
-        query.parentfillial_name = query.fillial.parentfillial.name if query.fillial_id else None
-        query.category_department = query.category.department if query.category_id else None
-        query.category_sphere_status = query.category.sphere_status if query.category_id else None
-        query.user_full_name = query.user.full_name if query.user_id else None
-        query.user_phone_number = query.user.phone_number if query.user_id else None
-        query.user_telegram_id = query.user.telegram_id if query.user_id else None
-        query.user_id = query.user.id if query.user_id else None
-        query.category_sub_id = query.category.sub_id if query.category_id else None
-        query.sla = query.category.ftime if query.category_id else None
-        query.brigada_name = query.brigada.name if query.brigada_id else None
+        query.category_name = query.category.name if query.category else None
+        query.fillial_name = query.fillial.name if query.fillial else None
+        query.parentfillial_name = query.fillial.parentfillial.name if query.fillial else None
+        query.category_department = query.category.department if query.category else None
+        query.category_sphere_status = query.category.sphere_status if query.category else None
+        query.user_full_name = query.user.full_name if query.user else None
+        query.user_phone_number = query.user.phone_number if query.user else None
+        query.user_telegram_id = query.user.telegram_id if query.user else None
+        query.user_id = query.user.id if query.user else None
+        query.category_sub_id = query.category.sub_id if query.category else None
+        query.sla = query.category.ftime if query.category else None
+        query.brigada_name = query.brigada.name if query.brigada else None
         query.file_url = query.file[0].url if query.file else None
-        query.topic_id = query.brigada.topic_id if query.brigada_id else None
+        query.topic_id = query.brigada.topic_id if query.brigada else None
 
         return query
 
