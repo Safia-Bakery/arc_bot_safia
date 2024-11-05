@@ -1081,14 +1081,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         request = crud.get_request_id(requests_id)
         finishing_time = request.finishing_time
         message_id = query.message.message_id
-        sla = int(request.sla)
+        sla = request.sla
         delta_minutes = 0
         if sla == 1:
             delta_minutes = 40
         elif sla == 1.5:
             delta_minutes = 60
         elif sla == 2:
-            delta_minutes = 2
+            delta_minutes = 90
         elif sla == 8:
             delta_minutes = 360
         elif sla == 24:
@@ -1126,7 +1126,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 ittech.request_notification(message_id=message_id, topic_id=topic_id, text=text_of_order,
                                             finishing_time=finishing_time, request_id=request.id)
                 message_id = request.tg_message_id
-                print(scheduled_time)
                 job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
                 scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                   args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
@@ -1149,7 +1148,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 if job.id.startswith(str(message_id)):
                     try:
                         scheduler.remove_job(job_id=job.id)
-                        print(f"Canceled message for {job.id}")
                     except JobLookupError:
                         print(f"Message - {job.id} not found or already has sent !")
             text = f"<s>{text_of_order}</s>\n\n" \
@@ -1173,8 +1171,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                  InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            print(context.user_data.keys())
-            print(context.user_data["user_message_id"])
             # if "user_message_id" not in context.user_data.keys():
             #     print("user_message_id - no")
             #     try:
@@ -1221,7 +1217,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await context.bot.edit_message_text(text=text, chat_id=request.user_telegram_id,
                                                 message_id=context.user_data['user_message_id'], reply_markup=None)
 
-            print(scheduled_time)
             job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
             scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                               args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
@@ -1272,15 +1267,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             message_id = request.tg_message_id
             status = request.status
             if status == 6:
+                request = crud.update_it_request(id=request.id, status=7)
                 lines = text_of_order.splitlines()  # Split string into lines
                 request_text = text_of_order
                 for i, line in enumerate(lines):
                     if "Комментарии" in line:  # Find the line with the keyword
                         request_text = '\n'.join(lines[:i + 1])  # Keep all lines up to and including the keyword line
                         break
-
-                # ittech.request_notification(message_id=message_id, topic_id=topic_id, text=text,
-                #                             finishing_time=finishing_time, request_id=request.id)
 
                 remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
                 text = f"{request_text}\n\n" \
@@ -1294,8 +1287,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                                                     message_id=message_id,
                                                     reply_markup=reply_markup, parse_mode='HTML')
 
-                # request = crud.update_it_request(id=request.id, status=7)
-                # message_id = request.tg_message_id
                 text = f'{request_text}\n\n' \
                        f'Статус вашей заявки:  Возобновлен 🔄'
                 await query.edit_message_text(text=text, reply_markup=None)
@@ -1304,7 +1295,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                                "Статус вашей заявки: Возобновлен 🔄"
                 await context.bot.send_message(chat_id=query.message.chat.id, text=text_request)
 
-                print(scheduled_time)
                 job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
                 scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                   args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
