@@ -1171,22 +1171,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                  InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            # if "user_message_id" not in context.user_data.keys():
-            #     print("user_message_id - no")
-            #     try:
+
             user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
                                                           reply_markup=reply_markup, parse_mode='HTML')
             context.user_data["user_message_id"] = user_message.message_id
-            #     except:
-            #         pass
-            # else:
-            #     print("user_message_id - yes")
-            #     try:
-            #         await context.bot.edit_message_text(chat_id=request.user_telegram_id, text=text,
-            #                                             message_id=context.user_data["user_message_id"],
-            #                                             reply_markup=reply_markup, parse_mode='HTML')
-            #     except:
-            #         pass
 
         elif callback_data == "resume_request":
             request = crud.update_it_request(id=request.id, status=7)
