@@ -138,7 +138,7 @@ def get_user_tel_id(id):
         if query:
             if query.brigada_id:
                 query.brigada_name = query.brigader.name
-                query.topic_id = query.brigader.topic_id
+                # query.topic_id = query.brigader.topic_id
 
         return query
 

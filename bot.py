@@ -1113,7 +1113,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             # Edit only the inline buttons (reply markup)
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
         elif callback_data == "confirm_request":
-            if user.brigada_id and topic_id:
+            if user.brigada_id:
                 request = crud.update_it_request(id=request.id, brigada_id=user.brigada_id, status=1)
                 message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s " \
                                f"назначен специалист👨‍💻: {request.brigada_name}\n" \
