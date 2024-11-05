@@ -1115,6 +1115,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         elif callback_data == "confirm_request":
             if user.brigada_id:
                 request = crud.update_it_request(id=request.id, brigada_id=user.brigada_id, status=1)
+                topic_id = request.topic_id
                 message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s " \
                                f"назначен специалист👨‍💻: {request.brigada_name}\n" \
                                f"Время выполнения: {sla} часов"
@@ -1178,6 +1179,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         elif callback_data == "resume_request":
             request = crud.update_it_request(id=request.id, status=7)
+            topic_id = request.topic_id
             formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
             formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M")
             remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
@@ -1256,6 +1258,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             status = request.status
             if status == 6:
                 request = crud.update_it_request(id=request.id, status=7)
+                topic_id = request.topic_id
                 lines = text_of_order.splitlines()  # Split string into lines
                 request_text = text_of_order
                 for i, line in enumerate(lines):

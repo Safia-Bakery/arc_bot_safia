@@ -311,6 +311,7 @@ def update_it_request(
         query.sla = query.category.ftime if query.category else None
         query.brigada_name = query.brigada.name if query.brigada else None
         query.file_url = query.file[0].url if query.file else None
+        query.topic_id = query.brigada.topic_id if query.brigada else None
 
     return query
 
