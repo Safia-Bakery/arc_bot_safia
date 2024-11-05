@@ -191,6 +191,8 @@ class Brigada(Base):
     sphere_status = Column(Integer, default=1)
     department = Column(Integer, nullable=True)
     is_outsource = Column(Boolean, default=False)
+    chat_id = Column(BIGINT, nullable=True, default=None)
+    topic_id = Column(Integer, nullable=True, default=None)
 
 
 class Expanditure(Base):
@@ -246,6 +248,8 @@ class Requests(Base):
     communication = relationship("Communication", back_populates="requestc")
     price = Column(Float, nullable=True)
     phone_number = Column(String, nullable=True)
+    tg_message_id = Column(Integer, nullable=True, default=None)
+
 
 class Communication(Base):
     __tablename__ = "communication"
