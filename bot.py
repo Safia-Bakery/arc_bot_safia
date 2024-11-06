@@ -1078,7 +1078,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     if department == 4:
         callback_data = query.data
         request = crud.get_request_id(requests_id)
-        topic_id = request.topic_id
         finishing_time = request.finishing_time
         message_id = query.message.message_id
         sla = request.sla
@@ -1113,9 +1112,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             # Edit only the inline buttons (reply markup)
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
         elif callback_data == "confirm_request":
-            topic_id = request.topic_id
-            if user.brigada_id and topic_id:
+            if user.brigada_id:
                 request = crud.update_it_request(id=request.id, brigada_id=user.brigada_id, status=1)
+                topic_id = request.topic_id
                 message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s " \
                                f"назначен специалист👨‍💻: {request.brigada_name}\n" \
                                f"Время выполнения: {sla} часов"
@@ -1130,6 +1129,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
                 scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                   args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
+            else:
+                await query.answer(text="Вы не можете принять заявку, вы не являетесь исполнителем!", show_alert=True)
 
         elif callback_data == "cancel_request":
             new_keyboard = [
@@ -1140,42 +1141,47 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             # Edit only the inline buttons (reply markup)
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
         elif callback_data == "complete_request":
-            request = crud.update_it_request(id=requests_id, status=6)
-            message_id = query.message.message_id
-            started_at = request.started_at
-            finished_at = datetime.datetime.now(tz=ittech.timezonetash)
-            finished_time = finished_at - started_at
-            for job in scheduler.get_jobs():
-                if job.id.startswith(str(message_id)):
-                    try:
-                        scheduler.remove_job(job_id=job.id)
-                    except JobLookupError:
-                        print(f"Message - {job.id} not found or already has sent !")
-            text = f"<s>{text_of_order}</s>\n\n" \
-                   f"<b> ✅ Вы завершили заявку за:</b>  {str(finished_time).split('.')[0]}"
-            new_keyboard = [
-                [InlineKeyboardButton("Возобновить", callback_data='resume_request'),
-                 InlineKeyboardButton("Отправить сообщение заказчику", callback_data='send_message_to_user')]
-            ]
-            new_reply_markup = InlineKeyboardMarkup(new_keyboard)
-            await query.edit_message_text(text=text, reply_markup=new_reply_markup, parse_mode='HTML')
+            if user.brigada_id == request.brigada_id:
+                request = crud.update_it_request(id=requests_id, status=6)
+                topic_id = request.topic_id
+                message_id = query.message.message_id
+                started_at = request.started_at
+                finished_at = datetime.datetime.now(tz=ittech.timezonetash)
+                finished_time = finished_at - started_at
+                for job in scheduler.get_jobs():
+                    if job.id.startswith(str(message_id)):
+                        try:
+                            scheduler.remove_job(job_id=job.id)
+                        except JobLookupError:
+                            print(f"Message - {job.id} not found or already has sent !")
+                text = f"<s>{text_of_order}</s>\n\n" \
+                       f"<b> ✅ Вы завершили заявку за:</b>  {str(finished_time).split('.')[0]}"
+                new_keyboard = [
+                    [InlineKeyboardButton("Возобновить", callback_data='resume_request'),
+                     InlineKeyboardButton("Отправить сообщение заказчику", callback_data='send_message_to_user')]
+                ]
+                new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+                await query.edit_message_text(text=text, reply_markup=new_reply_markup, parse_mode='HTML')
 
-            lines = text_of_order.splitlines()  # Split string into lines
-            for i, line in enumerate(lines):
-                if "Комментарии" in line:  # Find the line with the keyword
-                    text = '\n'.join(lines[:i + 1])  # Keep all lines up to and including the keyword line
-                    text += '\n\nСтатус вашей заявки:  Завершен ✅'
-                    break
+                lines = text_of_order.splitlines()  # Split string into lines
+                for i, line in enumerate(lines):
+                    if "Комментарии" in line:  # Find the line with the keyword
+                        text = '\n'.join(lines[:i + 1])  # Keep all lines up to and including the keyword line
+                        text += '\n\nСтатус вашей заявки:  Завершен ✅'
+                        break
 
-            keyboard = [
-                [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
-                 InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
+                keyboard = [
+                    [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
+                     InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
-            user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
-                                                          reply_markup=reply_markup, parse_mode='HTML')
-            context.user_data["user_message_id"] = user_message.message_id
+                user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
+                                                              reply_markup=reply_markup, parse_mode='HTML')
+                context.user_data["user_message_id"] = user_message.message_id
+            else:
+                await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
+                                        f"Исполнитель: {request.brigada_name}", show_alert=True)
 
         elif callback_data == "resume_request":
             request = crud.update_it_request(id=request.id, status=7)
@@ -1228,10 +1234,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     if job.id.startswith(str(message_id)):
                         try:
                             scheduler.remove_job(job_id=job.id)
-                            print(f"Canceled message for {job.id}")
                         except JobLookupError:
                             print(f"Message - {job.id} not found or already has sent !")
                 request = crud.update_it_request(id=request.id, status=3)
+                topic_id = request.topic_id
                 await query.edit_message_reply_markup(reply_markup=None)
                 await context.bot.edit_message_reply_markup(chat_id=IT_SUPERGROUP, message_id=request.tg_message_id,
                                                             reply_markup=None)

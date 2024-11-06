@@ -228,10 +228,13 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
+        try:
+            with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+                f.write(file_content)
+                f.close()
+        except:
+            print("There is no any folder such as 'files'")
 
-        with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
-            f.write(file_content)
-            f.close()
         context.user_data['image_it'] ='files/'+file_name
     #reply_keyboard = [['⬅️ Назад']]
     #await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
@@ -309,9 +312,10 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
     delete_url = f"{base_url}/deleteMessage"
     delete_payload = {
         'chat_id': IT_SUPERGROUP,
-        'message_thread_id': topic_id,
         'message_id': message_id
     }
+    if topic_id:
+        delete_payload["message_thread_id"] = topic_id
     # Send a POST request to the Telegram API to delete the message
     requests.post(delete_url, data=delete_payload).json()
 
@@ -329,11 +333,12 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
     send_payload = {
         'chat_id': IT_SUPERGROUP,
         'message_id': message_id,
-        'message_thread_id': topic_id,  # Include the thread ID for the specific topic
         'text': text,
         'reply_markup': json.dumps(inline_keyboard),
         'parse_mode': 'HTML'
     }
+    if topic_id:
+        send_payload["message_thread_id"] = topic_id
     response = requests.post(send_url, json=send_payload)
     response_data = response.json()
     new_message_id = response_data["result"]["message_id"]
