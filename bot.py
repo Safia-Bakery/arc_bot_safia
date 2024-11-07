@@ -1184,38 +1184,43 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                                         f"Исполнитель: {request.brigada_name}", show_alert=True)
 
         elif callback_data == "resume_request":
-            request = crud.update_it_request(id=request.id, status=7)
-            topic_id = request.topic_id
-            formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
-            formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M")
-            remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
-            text = f"📑Заявка № {request.id}\n\n" \
-                   f"📍Филиал: {request.parentfillial_name}\n" \
-                   f"👨‍💼Сотрудник: {request.user_full_name}\n" \
-                   f"📱Номер телефона: {request.phone_number}\n" \
-                   f"🔰Категория проблемы: {request.category_name}\n" \
-                   f"🕘Дата поступления заявки: {formatted_created_time}\n" \
-                   f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
-                   f"❗️SLA: {request.sla} часов\n" \
-                   f"💬Комментарии: {request.description}\n\n" \
-                   f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+            if user.brigada_id == request.brigada_id:
+                request = crud.update_it_request(id=request.id, status=7)
+                topic_id = request.topic_id
+                formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+                formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M")
+                remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
+                text = f"📑Заявка № {request.id}\n\n" \
+                       f"📍Филиал: {request.parentfillial_name}\n" \
+                       f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+                       f"📱Номер телефона: {request.phone_number}\n" \
+                       f"🔰Категория проблемы: {request.category_name}\n" \
+                       f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+                       f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+                       f"❗️SLA: {request.sla} часов\n" \
+                       f"💬Комментарии: {request.description}\n\n" \
+                       f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
 
-            keyboard = [
-                [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
-                 InlineKeyboardButton("Отправить сообщение заказчику", callback_data='send_message_to_user')]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='HTML')
+                keyboard = [
+                    [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
+                     InlineKeyboardButton("Отправить сообщение заказчику", callback_data='send_message_to_user')]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='HTML')
 
-            lines = text.splitlines()
-            text = "\n".join(lines[:-1])
-            text += '\n\nСтатус вашей заявки:  Возобновлен 🔄'
-            await context.bot.edit_message_text(text=text, chat_id=request.user_telegram_id,
-                                                message_id=context.user_data['user_message_id'], reply_markup=None)
+                lines = text.splitlines()
+                text = "\n".join(lines[:-1])
+                text += '\n\nСтатус вашей заявки:  Возобновлен 🔄'
+                await context.bot.edit_message_text(text=text, chat_id=request.user_telegram_id,
+                                                    message_id=context.user_data['user_message_id'], reply_markup=None)
 
-            job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
-            scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                              args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
+                job_id = f"{message_id}_{scheduled_time.strftime('%d.%m.%Y_%H:%M')}"
+                scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
+                                  args=[message_id, topic_id, text_of_order, finishing_time, request.id], id=job_id)
+
+            else:
+                await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
+                                        f"Исполнитель: {request.brigada_name}", show_alert=True)
 
         elif callback_data == "user_accept":
             new_keyboard = [

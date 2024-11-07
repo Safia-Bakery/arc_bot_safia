@@ -505,3 +505,13 @@ class KruFinishedTasks(Base):
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+
+class Logs(Base):
+    __tablename__ = "logs"
+    id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(Integer, ForeignKey("requests.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    status = Column(Integer, nullable=True)
+    request = relationship("Requests", back_populates="log")
+    user = relationship("Users", back_populates="log")

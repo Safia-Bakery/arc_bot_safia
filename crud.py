@@ -282,6 +282,7 @@ def update_it_request(
             query.tg_message_id = message_id
         if brigada_id is not None:
             query.brigada_id = brigada_id
+
         now = datetime.now(tz=timezonetash)
         if status is not None:
             query.status = status
@@ -294,6 +295,7 @@ def update_it_request(
                 query.finished_at = now
 
             db.query(models.Requests).filter(models.Requests.id == id).update({"update_time": updated_data})
+            create_log(db=db, request_id=id, status=status, user_id=query.brigada_id)
 
         CommitDb().update_data(db, query)
 
@@ -514,3 +516,15 @@ def add_general_comment(comment,user_id):
         query = models.Comments(comment=comment,user_id=user_id)
         CommitDb().insert_data(db,query)
         return query
+
+
+def create_log(db: Session, request_id, status, user_id):
+    query = models.Logs(
+        request_id=request_id,
+        user_id=user_id,
+        status=status
+    )
+    db.add(query)
+    db.commit()
+    db.refresh(query)
+    return query
