@@ -94,6 +94,8 @@ class Users(Base):
     branch = relationship("ParentFillials", back_populates="user")
     branch_id = Column(UUID, ForeignKey("parentfillials.id"), nullable=True)
     finished_task = relationship("KruFinishedTasks", back_populates="user")
+    log = relationship("Logs", back_populates="user")
+
 
 #there are 2 types of fillials there is parent fillial that show which fillial is 
 class ParentFillials(Base):
@@ -249,6 +251,7 @@ class Requests(Base):
     price = Column(Float, nullable=True)
     phone_number = Column(String, nullable=True)
     tg_message_id = Column(Integer, nullable=True, default=None)
+    log = relationship("Logs", back_populates="request")
 
 
 class Communication(Base):

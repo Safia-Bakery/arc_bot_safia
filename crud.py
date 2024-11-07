@@ -295,9 +295,11 @@ def update_it_request(
                 query.finished_at = now
 
             db.query(models.Requests).filter(models.Requests.id == id).update({"update_time": updated_data})
-            create_log(db=db, request_id=id, status=status, user_id=query.brigada_id)
 
-        CommitDb().update_data(db, query)
+        query = CommitDb().update_data(db, query)
+        user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
+        if status is not None:
+            create_log(db=db, request_id=id, status=status, user_id=user_of_brigada.id)
 
         query.category_name = query.category.name if query.category else None
         query.fillial_name = query.fillial.name if query.fillial else None
