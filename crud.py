@@ -274,7 +274,8 @@ def update_it_request(
         id,
         message_id: Optional[int] = None,
         brigada_id: Optional[int] = None,
-        status: Optional[int] = None
+        status: Optional[int] = None,
+        deny_reason: Optional[str] = None
     ):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id == id).first()
@@ -295,7 +296,8 @@ def update_it_request(
                 query.finished_at = now
 
             db.query(models.Requests).filter(models.Requests.id == id).update({"update_time": updated_data})
-
+        if deny_reason is not None:
+            query.deny_reason = deny_reason
         query = CommitDb().update_data(db, query)
         user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
         if status is not None:

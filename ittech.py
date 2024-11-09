@@ -251,8 +251,6 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment,phone_number=phone_number)
         if context.user_data['image_it'] is not None:
             crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
-        #reply_keyboard = [['⬅️ Назад']]
-        await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по IT🧑‍💻 принята.  Как ваша заявка будет назначена в работу, вы получите уведомление",reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons,resize_keyboard=True))
         formatted_created_time = data.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = data.finishing_time.strftime("%d.%m.%Y %H:%M")
         text = f"📑Заявка № {data.id}\n\n" \
@@ -265,9 +263,12 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
                f"❗️SLA: {category_query.ftime} часов\n" \
                f"💬Комментарии: {data.description}"
 
-        # sendtotelegram(bot_token=BOTTOKEN, chat_id=data.chat_id, message_text=text, buttons=[])
+        await update.message.reply_text(
+            text=text,
+            reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons, resize_keyboard=True)
+        )
         keyboard = [
-            [InlineKeyboardButton("Принять заявку", callback_data='accept_request')]
+            [InlineKeyboardButton("Принять заявку", callback_data='accept_action')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await context.bot.send_message(chat_id=IT_SUPERGROUP, text=text, reply_markup=reply_markup)
@@ -317,12 +318,14 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
     if topic_id:
         delete_payload["message_thread_id"] = topic_id
     # Send a POST request to the Telegram API to delete the message
-    requests.post(delete_url, data=delete_payload).json()
+    requests.post(delete_url, data=delete_payload)
 
     inline_keyboard = {
         "inline_keyboard": [
-            [{"text": "Завершить заявку", "callback_data": "complete_request"},
-             {"text": "Отправить сообщение заказчику", "callback_data": "send_message_to_user"}]
+            [
+                {"text": "Завершить заявку", "callback_data": "complete_request"},
+                {"text": "Отменить", "callback_data": "cancel_request"}
+            ]
         ]
     }
     remaining_time = finishing_time - datetime.datetime.now(tz=timezonetash)
@@ -332,7 +335,6 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
     send_url = f"{base_url}/sendMessage"
     send_payload = {
         'chat_id': IT_SUPERGROUP,
-        'message_id': message_id,
         'text': text,
         'reply_markup': json.dumps(inline_keyboard),
         'parse_mode': 'HTML'
@@ -340,7 +342,10 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
     if topic_id:
         send_payload["message_thread_id"] = topic_id
     response = requests.post(send_url, json=send_payload)
-    response_data = response.json()
-    new_message_id = response_data["result"]["message_id"]
-
-    crud.update_it_request(id=request_id, message_id=new_message_id)
+    if response.status_code == 200:
+        response_data = response.json()
+        new_message_id = response_data["result"]["message_id"]
+        crud.update_it_request(id=request_id, message_id=new_message_id)
+        return new_message_id
+    else:
+        return None
