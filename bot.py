@@ -1087,8 +1087,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         elif sla == 1.5:
             delta_minutes = 60
         elif sla == 2:
-            # delta_minutes = 90
-            delta_minutes = 2
+            delta_minutes = 90
+            # delta_minutes = 2
         elif sla == 8:
             delta_minutes = 360
         elif sla == 24:
