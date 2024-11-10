@@ -1141,7 +1141,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 message_id = ittech.request_notification(message_id=message_id, topic_id=topic_id, text=request_text,
                                                          request_id=request.id, finishing_time=finishing_time)
                 if delta_minutes > 0:
-                    job_id = f"delete_send_message"
+                    job_id = f"delete_send_message_for_{request.id}"
                     try:
                         scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                           args=[message_id, topic_id, request_text, finishing_time, request.id],
@@ -1166,7 +1166,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 finished_at = datetime.datetime.now(tz=ittech.timezonetash)
                 finished_time = finished_at - started_at
 
-                job_id = "delete_send_message"
+                job_id = f"delete_send_message_for_{request.id}"
                 try:
                     scheduler.remove_job(job_id=job_id)
                     # print(f"'{job_id}' job was removed before scheduling")
@@ -1222,7 +1222,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_reply_markup(reply_markup=reply_markup)
             else:
-                job_id = "delete_send_message"
+                job_id = f"delete_send_message_for_{request.id}"
                 try:
                     scheduler.remove_job(job_id=job_id)
                     # print(f"'{job_id}' job was removed before scheduling")
@@ -1266,7 +1266,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='HTML')
 
                 if delta_minutes > 0:
-                    job_id = f"delete_send_message"
+                    job_id = f"delete_send_message_for_{request.id}"
                     try:
                         scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                           args=[message_id, topic_id, request_text, finishing_time, request.id],
@@ -1340,7 +1340,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await context.bot.send_message(chat_id=query.message.chat.id, text=text_request)
 
                 if delta_minutes > 0:
-                    job_id = f"delete_send_message"
+                    job_id = f"delete_send_message_for_{request.id}"
                     try:
                         scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
                                           args=[message_id, topic_id, request_text, finishing_time, request.id],
