@@ -232,8 +232,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
         try:
-            # with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
-            with open(f"files/{file_name}",'wb+') as f:
+            with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
                 f.write(file_content)
                 f.close()
         except:
