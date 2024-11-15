@@ -1108,7 +1108,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         delay = datetime.timedelta(minutes=delta_minutes)
         scheduled_time = request.created_at + delay
 
-        topic_id = request.topic_id
         formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
         request_text = f"📑Заявка #{request.id}s\n\n" \
@@ -1261,20 +1260,24 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
 
         elif callback_data == "complete_request":
-            await query.delete_message()
-            request = crud.update_it_request(id=requests_id, status=6)
-            text = f'{request_text}\n\n' \
-                   f'Статус вашей заявки:  Завершен ✅'
+            if user.brigada_id == request.brigada_id:
+                await query.delete_message()
+                request = crud.update_it_request(id=requests_id, status=6)
+                text = f'{request_text}\n\n' \
+                       f'Статус вашей заявки:  Завершен ✅'
 
-            keyboard = [
-                [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
-                 InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
+                keyboard = [
+                    [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
+                     InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
-            user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
-                                                          reply_markup=reply_markup, parse_mode='HTML')
-            context.user_data["user_message_id"] = user_message.message_id
+                user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
+                                                              reply_markup=reply_markup, parse_mode='HTML')
+                context.user_data["user_message_id"] = user_message.message_id
+            else:
+                await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
+                                        f"Исполнитель: {request.brigada_name}", show_alert=True)
 
             # if user.brigada_id == request.brigada_id:
             #     request = crud.update_it_request(id=requests_id, status=6)
@@ -1445,10 +1448,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_reply_markup(reply_markup=reply_markup)
 
         elif callback_data == "user_not_accept":
-            message_id = request.tg_message_id
             status = request.status
             if status == 6:
-                request = crud.update_it_request(id=request.id, status=7)
                 topic_id = request.topic_id
                 now = datetime.datetime.now(tz=ittech.timezonetash)
                 remaining_time = finishing_time - now
@@ -1460,16 +1461,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     text = f"{request_text}\n\n" \
                            f"<b> ‼️ Просрочен на:</b>  {str(late_time).split('.')[0]}"
                 keyboard = [
-                    [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
-                     InlineKeyboardButton("Отменить", callback_data='cancel_request')]
+                    [
+                        InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
+                        InlineKeyboardButton("Отменить", callback_data='cancel_request')
+                    ],
+                    [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{request.file_url}")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 # await context.bot.edit_message_text(chat_id=IT_SUPERGROUP, text=text,
                 #                                     message_id=message_id,
                 #                                     reply_markup=reply_markup, parse_mode='HTML')
-                await context.bot.send_message(chat_id=IT_SUPERGROUP, message_thread_id=topic_id, text=text,
-                                               reply_markup=reply_markup, parse_mode='HTML')
-
+                message = await context.bot.send_message(chat_id=IT_SUPERGROUP, message_thread_id=topic_id, text=text,
+                                                         reply_markup=reply_markup, parse_mode='HTML')
+                message_id = message.message_id
+                request = crud.update_it_request(id=request.id, status=7, message_id=message_id)
                 text = f'{request_text}\n\n' \
                        f'Статус вашей заявки:  Возобновлен 🔄'
                 await query.edit_message_text(text=text, reply_markup=None)
