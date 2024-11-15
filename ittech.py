@@ -253,9 +253,8 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
         phone_number = context.user_data['phone_number']
         data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment,phone_number=phone_number)
-        file = None
         if context.user_data['image_it'] is not None:
-            file = crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+            crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         formatted_created_time = data.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = data.finishing_time.strftime("%d.%m.%Y %H:%M")
         text = f"📑Заявка #{data.id}s\n\n" \
@@ -276,7 +275,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         )
         keyboard = [
             [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
-            [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{file.url}")]
+            [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{context.user_data['image_it']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await context.bot.send_message(chat_id=IT_SUPERGROUP, text=text, reply_markup=reply_markup,
