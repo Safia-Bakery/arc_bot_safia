@@ -5,7 +5,7 @@ from typing import Optional
 import requests
 from sqlalchemy.sql import func
 from sqlalchemy import or_,and_,Date,cast
-from datetime import datetime
+from datetime import datetime, timedelta
 from database import SessionLocal
 timezonetash = pytz.timezone("Asia/Tashkent")
 
@@ -27,6 +27,7 @@ class CommitDb():
             db.refresh(data)
             return data
         except Exception as e:
+            # print(e)
             db.rollback()
             return False
 
@@ -190,6 +191,16 @@ def get_category_list(department,sub_id:Optional[int]=None,sphere_status:Optiona
         return query
 
 
+def get_child_category(parent_id):
+    with SessionLocal() as db:
+        parent = db.query(models.Category).filter(models.Category.id == parent_id)
+        childs = db.query(models.Category).filter(models.Category.parent_id == parent_id).filter(models.Category.status == 1)
+        if len(childs.all()) > 0:
+            result = parent.union(childs).all()
+            CommitDb().get_data(db, result)
+            return result
+        return False
+
 
 def getcategoryname(name,department:Optional[int]=None):
     with SessionLocal() as db:
@@ -275,7 +286,8 @@ def update_it_request(
         message_id: Optional[int] = None,
         brigada_id: Optional[int] = None,
         status: Optional[int] = None,
-        deny_reason: Optional[str] = None
+        deny_reason: Optional[str] = None,
+        category_id: Optional[int] = None
     ):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id == id).first()
@@ -294,10 +306,13 @@ def update_it_request(
                 query.started_at = now
             elif status == 6:
                 query.finished_at = now
-
             db.query(models.Requests).filter(models.Requests.id == id).update({"update_time": updated_data})
         if deny_reason is not None:
             query.deny_reason = deny_reason
+        if category_id is not None:
+            db.query(models.Requests).filter(models.Requests.id == id).update({"category_id": category_id})
+            query.finishing_time = (query.created_at + timedelta(hours=query.category.ftime)) if query.category.ftime is not None else None
+
         query = CommitDb().update_data(db, query)
         user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
         if status is not None:
@@ -318,7 +333,7 @@ def update_it_request(
         query.file_url = query.file[0].url if query.file else None
         query.topic_id = query.brigada.topic_id if query.brigada else None
 
-    return query
+        return query
 
 
 def add_meal_request(fillial_id,user_id,meal_size,bread_size,time_delivery,category_id):
@@ -481,9 +496,13 @@ def add_video_request(comment, category_id,fillial_id, user_id,vidfrom,vidto):
             query.parentfillial_name = None
         return query
 
+
 def get_child_categories(category_id):
     with SessionLocal() as db:
-        query = db.query(models.Category).filter(models.Category.parent_id==category_id,models.Category.status==1).order_by(models.Category.name).all()
+        query = db.query(models.Category).filter(
+            models.Category.parent_id == category_id,
+            models.Category.status == 1
+        ).order_by(models.Category.name).all()
 
         return query
 

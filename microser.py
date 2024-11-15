@@ -1,5 +1,4 @@
-
-
+import re
 from datetime import datetime,timedelta
 from typing import Union, Any
 from jose import jwt
@@ -20,6 +19,30 @@ backend_base_url = os.environ.get('BACKEND_BASE_URL')
 backend_pass = os.environ.get('BACKEND_PASS')
 
 
+def validate_phone_number(phone):
+    # Шаблон для проверки, чтобы номер содержал только "+" в начале (если есть) и цифры
+    # pattern = r"^\+?\d{9,}$"  # Начинается с "+" (если есть), за которым следуют не менее 9 цифр
+    pattern = r"^\+?\d+$"  # Номер содержит только "+" в начале (если есть) и цифры
+    if re.fullmatch(pattern, phone):
+        # Убираем "+" (если есть) и проверяем количество цифр
+        digit_count = len(re.sub(r"\D", "", phone))  # Убираем все символы, кроме цифр
+        if digit_count == 9 or digit_count == 12:  # Проверка строго на 9 или 12 цифр
+            return True
+
+    return False
+
+
+def clean_and_format_phone_number(phone):
+    # Удаляем все символы, кроме цифр и плюса
+    cleaned = re.sub(r"[^\d+]", "", phone)
+
+    # Добавляем "+" в начало, если его нет
+    if not cleaned.startswith('998') and len(cleaned) < 10:
+        cleaned = '+998' + cleaned
+    elif cleaned.startswith('998') and len(cleaned) > 10:
+        cleaned = '+' + cleaned
+
+    return cleaned
 
 
 def transform_list(lst, size, key):
@@ -171,7 +194,7 @@ info_string = f"""🔘 Отдел: АРС Розница -  +998(90)432-93-00\n\
 🔘 Отдел: АРС Учтепа -  +998(99)875-90-93\n\n
 🔘 Отдел: Маркетинг -  +998(33)334-00-23\n\n
 🔘 Отдел: Инвентарь -  +998(97)740-06-16\n\n
-🔘 Отдел: IT - +998(95)798-16-61, @safiasupport\n\n
+🔘 Отдел: IT - +998(77)133-00-11, @safiasupport\n\n
 🔘 Отдел: Логистика (Учтепа) - +998(95)475-14-15"""
 
 

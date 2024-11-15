@@ -6,22 +6,18 @@ import requests
 
 import bot
 import crud
-from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton,ReplyKeyboardRemove
+from telegram import ReplyKeyboardMarkup,Update, InlineKeyboardMarkup,InlineKeyboardButton
 from telegram.ext import (
-    Application,
-    CommandHandler,
     ContextTypes,
-    ConversationHandler,
-    MessageHandler,
-    filters,
-    CallbackQueryHandler,PicklePersistence
-
+    ConversationHandler
 
 )
-from microser import transform_list,sendtotelegram
+
+import microser
+from microser import transform_list, sendtotelegram, inlinewebapp
+
 BASE_URL = 'https://api.service.safiabakery.uz/'
 import datetime
-import calendar
 import re
 import pytz
 timezonetash = pytz.timezone("Asia/Tashkent")
@@ -43,7 +39,7 @@ async def it_sphere(update:Update,context:ContextTypes.DEFAULT_TYPE) ->int:
         reply_keyboard = transform_list(data,3,'name')
         reply_keyboard.append(['⬅️ Назад'])
         await update.message.reply_text('Выберите категорию',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
-    elif user_mess=='Обслуживание и тех.поддержка':
+    elif user_mess == 'Обслуживание и тех.поддержка':
         data = crud.get_category_list(department=4,sphere_status=4)
         reply_keyboard = transform_list(data,3,'name')
         reply_keyboard.append(['⬅️ Назад'])
@@ -175,24 +171,31 @@ async def it_comment(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         #    crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]
         reply_keyboard = [['⬅️ Назад']]
-        await update.message.reply_text('Введите номер телефона',
+        await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
                                         reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
         return bot.ITPHONENUMBER
 
 
-
-async  def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
+async def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         data = crud.get_category_list(department=4,sphere_status=4)
         reply_keyboard = transform_list(data,3,'name')
         reply_keyboard.append(['⬅️ Назад'])
         await update.message.reply_text('Выберите категорию заявки',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
         return bot.ITCATEGORY
+
     user_comment = update.message.text
-    context.user_data['phone_number'] = user_comment
-
-
+    is_phone_number = microser.validate_phone_number(user_comment)
     reply_keyboard = [['⬅️ Назад']]
+    if not is_phone_number:
+        # if len(user_comment) < 9:
+        await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
+                                        reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,
+                                                                         resize_keyboard=True))
+        return bot.ITPHONENUMBER
+
+    user_comment = microser.clean_and_format_phone_number(user_comment)
+    context.user_data['phone_number'] = user_comment
     await update.message.reply_text('Пожалуйста отправьте фото',
                                     reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
     return bot.ITFILES
@@ -207,7 +210,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             #data = crud.get_category_list(department=4,sphere_status=4)
             #reply_keyboard = transform_list(data,3,'name')
             reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('Введите номер телефона',
+            await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
                                             reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
             return bot.ITPHONENUMBER
 
@@ -229,13 +232,15 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             file_content = await getFile.download_as_bytearray()
             #files_open = {'files':file_content}
         try:
-            with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+            # with open(f"{bot.backend_location}files/{file_name}",'wb+') as f:
+            with open(f"files/{file_name}",'wb+') as f:
                 f.write(file_content)
                 f.close()
         except:
             print("There is no any folder such as 'files'")
 
         context.user_data['image_it'] ='files/'+file_name
+
     #reply_keyboard = [['⬅️ Назад']]
     #await update.message.reply_text('Введите комментарии к заявке',reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,resize_keyboard=True))
     if context.user_data['itsphere'] =='Обслуживание и тех.поддержка':
@@ -247,16 +252,17 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         user_query = crud.get_user_tel_id(id=update.message.from_user.id)
         finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
         phone_number = context.user_data['phone_number']
-        phone_number = phone_number if phone_number.startswith('+') else f"+{phone_number}"
         data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment,phone_number=phone_number)
+        file = None
         if context.user_data['image_it'] is not None:
-            crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+            file = crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         formatted_created_time = data.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = data.finishing_time.strftime("%d.%m.%Y %H:%M")
-        text = f"📑Заявка № {data.id}\n\n" \
+        text = f"📑Заявка #{data.id}s\n\n" \
                f"📍Филиал: {fillial_query.parent_fillial}\n" \
                f"👨‍💼Сотрудник: {user_query.full_name}\n" \
-               f"📱Номер телефона: {phone_number}\n" \
+               f"📱Номер телефона сотрудника: +{user_query.phone_number}\n" \
+               f"📱Номер телефона для заявки: {phone_number}\n" \
                f"🔰Категория проблемы: {data.category_name}\n" \
                f"🕘Дата поступления заявки: {formatted_created_time}\n" \
                f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
@@ -265,13 +271,16 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
         await update.message.reply_text(
             text=text,
-            reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons, resize_keyboard=True)
+            reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons, resize_keyboard=True),
+            parse_mode='HTML'
         )
         keyboard = [
-            [InlineKeyboardButton("Принять заявку", callback_data='accept_action')]
+            [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
+            [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{file.url}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        message = await context.bot.send_message(chat_id=IT_SUPERGROUP, text=text, reply_markup=reply_markup)
+        message = await context.bot.send_message(chat_id=IT_SUPERGROUP, text=text, reply_markup=reply_markup,
+                                                 parse_mode='HTML')
         crud.update_it_request(id=data.id, message_id=message.message_id, status=0)
 
     return bot.MANU
@@ -308,7 +317,42 @@ async def it_finishing(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     return bot.MANU
 
 
-def request_notification(message_id, topic_id, text, finishing_time, request_id: Optional[int] = None):
+async def it_deny_reason(update:Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_comment = update.message.text
+    request = crud.update_it_request(id=context.user_data['request_id'], status=4, deny_reason=user_comment)
+    # formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+    # formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M")
+    # request_text = f"📑Заявка № {request.id}\n\n" \
+    #                f"📍Филиал: {request.parentfillial_name}\n" \
+    #                f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+    #                f"📱Номер телефона: {request.phone_number}\n" \
+    #                f"🔰Категория проблемы: {request.category_name}\n" \
+    #                f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+    #                f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+    #                f"❗️SLA: {request.sla} часов\n" \
+    #                f"💬Комментарии: {request.description}"
+    #
+    # text = f"{request_text}\n\n" \
+    #        f"<b>Заявка отменена 🚫</b>\n" \
+    #        f"Причина отмены: {request.deny_reason}"
+
+    # await update.callback_query.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
+    message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
+                   f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
+                   f"рейтинг нашему решению по Вашей заявке от 1 до 5, и напишите свои комментарий."
+
+    url = f"{bot.FRONT_URL}tg/order-rating/{request.id}?user_id={request.user_id}&department={request.category_department}&sub_id={request.category_sub_id}"
+    inlinewebapp(
+        bot_token=BOTTOKEN,
+        chat_id=request.user_telegram_id,
+        message_text=message_text,
+        url=url
+    )
+    return ConversationHandler.END
+
+
+def request_notification(message_id, topic_id, text, finishing_time, request_id: Optional[int] = None,
+                         url: Optional[str] = None):
     base_url = f'https://api.telegram.org/bot{BOTTOKEN}'
     delete_url = f"{base_url}/deleteMessage"
     delete_payload = {
@@ -325,12 +369,21 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
             [
                 {"text": "Завершить заявку", "callback_data": "complete_request"},
                 {"text": "Отменить", "callback_data": "cancel_request"}
-            ]
+            ],
+            [{"text": "Посмотреть фото", "url": f"{BASE_URL}{url}"}]
         ]
     }
-    remaining_time = finishing_time - datetime.datetime.now(tz=timezonetash)
-    text = f"{text}\n\n" \
-           f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+    now = datetime.datetime.now(tz=timezonetash)
+    if finishing_time is not None:
+        remaining_time = finishing_time - now
+        late_time = now - finishing_time
+
+        if finishing_time >= now:
+            text = f"{text}\n\n" \
+                   f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+        else:
+            text = f"{text}\n\n" \
+                   f"<b> ‼️ Просрочен на:</b>  {str(late_time).split('.')[0]}"
 
     send_url = f"{base_url}/sendMessage"
     send_payload = {

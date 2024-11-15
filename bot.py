@@ -17,6 +17,8 @@ import json
 import re
 from telegram.constants import ParseMode
 from sqlalchemy.orm import Session
+from telegram.error import BadRequest
+
 import inventory
 
 from telegram import ReplyKeyboardMarkup, Update, WebAppInfo, KeyboardButton, InlineKeyboardMarkup, \
@@ -33,6 +35,8 @@ from telegram.ext import (
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
+
+from ittech import BOTTOKEN
 from microser import transform_list, generate_text, data_transform, create_access_token, sendtotelegram, \
     is_time_between, generate_random_string, inlinewebapp, sendtotelegramviewimage, info_string
 import requests
@@ -82,7 +86,7 @@ sphere_dict = {'Фабрика': 2, 'Розница': 1}
 buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
-# backend_location='/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+# backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -139,8 +143,7 @@ PHONE, \
     UNIFORMAMOUNT, \
     PHONENUMBER, \
     ITPHONENUMBER, \
-    INPUTCOMMENT, \
-    = range(53)
+    INPUTCOMMENT = range(53)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -1099,39 +1102,134 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             delta_minutes = 2880
         elif sla == 96:
             delta_minutes = 4320
+        # elif sla == 0.05:
+        #     delta_minutes = 2
 
         delay = datetime.timedelta(minutes=delta_minutes)
         scheduled_time = request.created_at + delay
 
         topic_id = request.topic_id
         formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
-        formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M")
-        request_text = f"📑Заявка № {request.id}\n\n" \
+        formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
+        request_text = f"📑Заявка #{request.id}s\n\n" \
                        f"📍Филиал: {request.parentfillial_name}\n" \
                        f"👨‍💼Сотрудник: {request.user_full_name}\n" \
-                       f"📱Номер телефона: {request.phone_number}\n" \
+                       f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
+                       f"📱Номер телефона для заявки: {request.phone_number}\n" \
                        f"🔰Категория проблемы: {request.category_name}\n" \
                        f"🕘Дата поступления заявки: {formatted_created_time}\n" \
                        f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
                        f"❗️SLA: {request.sla} часов\n" \
                        f"💬Комментарии: {request.description}"
 
-        if callback_data == "accept_action":
+        if callback_data == "accept_action" or callback_data == "back_to_accept_action":
             new_keyboard = [
-                [InlineKeyboardButton("Подтвердить", callback_data='confirm_request'),
-                 InlineKeyboardButton("Отменить", callback_data='cancel_action')]
+                [
+                    InlineKeyboardButton("Подтвердить", callback_data='confirm_request'),
+                    InlineKeyboardButton("Изменить категорию", callback_data='change_request_category')
+                ],
+                [InlineKeyboardButton("Назад ⬅️", callback_data='cancel_action')]
             ]
             new_reply_markup = InlineKeyboardMarkup(new_keyboard)
 
             # Edit only the inline buttons (reply markup)
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
+
+        elif callback_data == "change_request_category" or callback_data == "back_to_change_request_category":
+            category_list = crud.get_category_list(department=4, sphere_status=4)
+            new_keyboard = [[InlineKeyboardButton(f"{item.name}", callback_data=f'{item.id}') for item in category_list[i:i + 3]] for i in range(0, len(category_list), 3)]
+            new_keyboard.append([InlineKeyboardButton("Назад ⬅️", callback_data='back_to_accept_action')])
+            new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+            await query.edit_message_reply_markup(reply_markup=new_reply_markup)
+
+        elif callback_data.isdigit():
+            category_id = int(callback_data)
+            category_list = crud.get_child_category(parent_id=category_id)
+            if not category_list:
+                request = crud.update_it_request(id=request.id, category_id=category_id)
+                formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+                formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
+                request_text = f"📑Заявка #{request.id}s\n\n" \
+                               f"📍Филиал: {request.parentfillial_name}\n" \
+                               f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+                               f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
+                               f"📱Номер телефона для заявки: {request.phone_number}\n" \
+                               f"🔰Категория проблемы: {request.category_name}\n" \
+                               f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+                               f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+                               f"❗️SLA: {request.sla} часов\n" \
+                               f"💬Комментарии: {request.description}"
+                new_keyboard = [
+                    [
+                        InlineKeyboardButton("Подтвердить", callback_data='confirm_request'),
+                        InlineKeyboardButton("Изменить категорию", callback_data='change_request_category')
+                    ],
+                    [InlineKeyboardButton("Назад ⬅️", callback_data='cancel_action')]
+                ]
+                new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+                await query.edit_message_text(text=request_text, reply_markup=new_reply_markup)
+
+                message_text = f"Уважаемый {request.user_full_name}, категория вашей заявки #{request.id}s " \
+                               f"изменен на: {request.category_name}\n" \
+                               f"Время выполнения: {request.sla} часов"
+
+                try:
+                    await context.bot.send_message(chat_id=request.user_telegram_id, text=message_text)
+                except:
+                    pass
+
+                await query.answer("Категория успешно изменена!")
+            else:
+                try:
+                    new_keyboard = [
+                        [InlineKeyboardButton(f"{item.name}", callback_data=f'{item.id}') for item in category_list[i:i + 3]]
+                        for i in range(0, len(category_list), 3)
+                    ]
+                    new_keyboard.append([InlineKeyboardButton("Назад ⬅️", callback_data='back_to_change_request_category')])
+                    new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+                    await query.edit_message_reply_markup(reply_markup=new_reply_markup)
+                except BadRequest as e:
+                    request = crud.update_it_request(id=request.id, category_id=category_id)
+                    formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+                    formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
+                    request_text = f"📑Заявка #{request.id}s\n\n" \
+                                   f"📍Филиал: {request.parentfillial_name}\n" \
+                                   f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+                                   f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
+                                   f"📱Номер телефона для заявки: {request.phone_number}\n" \
+                                   f"🔰Категория проблемы: {request.category_name}\n" \
+                                   f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+                                   f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+                                   f"❗️SLA: {request.sla} часов\n" \
+                                   f"💬Комментарии: {request.description}"
+                    new_keyboard = [
+                        [
+                            InlineKeyboardButton("Подтвердить", callback_data='confirm_request'),
+                            InlineKeyboardButton("Изменить категорию", callback_data='change_request_category')
+                        ],
+                        [InlineKeyboardButton("Назад ⬅️", callback_data='cancel_action')]
+                    ]
+                    new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+                    await query.edit_message_text(text=request_text, reply_markup=new_reply_markup)
+
+                    message_text = f"Уважаемый {request.user_full_name}, категория вашей заявки #{request.id}s " \
+                                   f"изменен на: {request.category_name}\n" \
+                                   f"Время выполнения: {request.sla} часов"
+
+                    try:
+                        await context.bot.send_message(chat_id=request.user_telegram_id, text=message_text)
+                    except:
+                        pass
+
+                    await query.answer("Категория успешно изменена!")
+
         elif callback_data == "confirm_request":
             if user.brigada_id:
                 request = crud.update_it_request(id=request.id, brigada_id=user.brigada_id, status=1)
                 topic_id = request.topic_id
                 message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s " \
                                f"назначен специалист👨‍💻: {request.brigada_name}\n" \
-                               f"Время выполнения: {sla} часов"
+                               f"Время выполнения: {request.sla} часов"
 
                 try:
                     await context.bot.send_message(chat_id=request.user_telegram_id, text=message_text)
@@ -1139,12 +1237,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     pass
 
                 message_id = ittech.request_notification(message_id=message_id, topic_id=topic_id, text=request_text,
-                                                         request_id=request.id, finishing_time=finishing_time)
+                                                         finishing_time=finishing_time, request_id=request.id,
+                                                         url=request.file_url)
                 if delta_minutes > 0:
                     job_id = f"delete_send_message_for_{request.id}"
                     try:
                         scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                                          args=[message_id, topic_id, request_text, finishing_time, request.id],
+                                          args=[message_id, topic_id, request_text, finishing_time, request.id,
+                                                request.file_url],
                                           id=job_id, replace_existing=True)
                     except ConflictingIdError:
                         print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
@@ -1153,49 +1253,65 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         elif callback_data == "cancel_action":
             new_keyboard = [
-                [InlineKeyboardButton("Принять заявку", callback_data='accept_action')]
+                [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
+                [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{request.file_url}")]
             ]
             new_reply_markup = InlineKeyboardMarkup(new_keyboard)
             # Edit only the inline buttons (reply markup)
             await query.edit_message_reply_markup(reply_markup=new_reply_markup)
 
         elif callback_data == "complete_request":
-            if user.brigada_id == request.brigada_id:
-                request = crud.update_it_request(id=requests_id, status=6)
-                started_at = request.started_at
-                finished_at = datetime.datetime.now(tz=ittech.timezonetash)
-                finished_time = finished_at - started_at
+            await query.delete_message()
+            request = crud.update_it_request(id=requests_id, status=6)
+            text = f'{request_text}\n\n' \
+                   f'Статус вашей заявки:  Завершен ✅'
 
-                job_id = f"delete_send_message_for_{request.id}"
-                try:
-                    scheduler.remove_job(job_id=job_id)
-                    # print(f"'{job_id}' job was removed before scheduling")
-                except JobLookupError:
-                    print(f"'{job_id}' job not found or already has completed !")
+            keyboard = [
+                [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
+                 InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
 
-                text = f"<s>{request_text}</s>\n\n" \
-                       f"<b> ✅ Вы завершили заявку за:</b>  {str(finished_time).split('.')[0]}"
-                new_keyboard = [
-                    [InlineKeyboardButton("Возобновить", callback_data='resume_request')]
-                ]
-                new_reply_markup = InlineKeyboardMarkup(new_keyboard)
-                await query.edit_message_text(text=text, reply_markup=new_reply_markup, parse_mode='HTML')
+            user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
+                                                          reply_markup=reply_markup, parse_mode='HTML')
+            context.user_data["user_message_id"] = user_message.message_id
 
-                text = f'{request_text}\n\n' \
-                       f'Статус вашей заявки:  Завершен ✅'
-
-                keyboard = [
-                    [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
-                     InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
-                ]
-                reply_markup = InlineKeyboardMarkup(keyboard)
-
-                user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
-                                                              reply_markup=reply_markup, parse_mode='HTML')
-                context.user_data["user_message_id"] = user_message.message_id
-            else:
-                await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
-                                        f"Исполнитель: {request.brigada_name}", show_alert=True)
+            # if user.brigada_id == request.brigada_id:
+            #     request = crud.update_it_request(id=requests_id, status=6)
+            #     started_at = request.started_at
+            #     finished_at = datetime.datetime.now(tz=ittech.timezonetash)
+            #     finished_time = finished_at - started_at
+            #
+            #     job_id = f"delete_send_message_for_{request.id}"
+            #     try:
+            #         scheduler.remove_job(job_id=job_id)
+            #         # print(f"'{job_id}' job was removed before scheduling")
+            #     except JobLookupError:
+            #         print(f"'{job_id}' job not found or already has completed !")
+            #
+            #     text = f"<s>{request_text}</s>\n\n" \
+            #            f"<b> ✅ Вы завершили заявку за:</b>  {str(finished_time).split('.')[0]}"
+            #     new_keyboard = [
+            #         [InlineKeyboardButton("Возобновить", callback_data='resume_request')]
+            #     ]
+            #     new_reply_markup = InlineKeyboardMarkup(new_keyboard)
+            #     await query.edit_message_text(text=text, reply_markup=new_reply_markup, parse_mode='HTML')
+            #
+            #     text = f'{request_text}\n\n' \
+            #            f'Статус вашей заявки:  Завершен ✅'
+            #
+            #     keyboard = [
+            #         [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
+            #          InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
+            #     ]
+            #     reply_markup = InlineKeyboardMarkup(keyboard)
+            #
+            #     user_message = await context.bot.send_message(chat_id=request.user_telegram_id, text=text,
+            #                                                   reply_markup=reply_markup, parse_mode='HTML')
+            #     context.user_data["user_message_id"] = user_message.message_id
+            # else:
+            #     await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
+            #                             f"Исполнитель: {request.brigada_name}", show_alert=True)
 
         elif callback_data == "cancel_request":
             if user.brigada_id == request.brigada_id:
@@ -1203,7 +1319,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     [InlineKeyboardButton("Не правильная заявка", callback_data='deny_reason=Не правильная заявка')],
                     [InlineKeyboardButton("Повторная заявка", callback_data='deny_reason=Повторная заявка')],
                     [InlineKeyboardButton("Тестовая заявка", callback_data='deny_reason=Тестовая заявка')],
-                    [InlineKeyboardButton("Не смогли дозвониться", callback_data='deny_reason=Не смогли дозвониться')],
+                    [InlineKeyboardButton("Не смогли дозвониться 5 раз за 30мин", callback_data='deny_reason=Не смогли дозвониться')],
+                    # [InlineKeyboardButton("Другое", callback_data='deny_reason=Другое')],
                     [InlineKeyboardButton("⬅️ Назад", callback_data='deny_reason=Назад к командам')]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -1217,11 +1334,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if deny_reason == "Назад к командам":
                 keyboard = [
                     [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
-                     InlineKeyboardButton("Отменить", callback_data='cancel_request')]
+                     InlineKeyboardButton("Отменить", callback_data='cancel_request')],
+                    [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{request.file_url}")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_reply_markup(reply_markup=reply_markup)
             else:
+                if deny_reason == 'Не смогли дозвониться':
+                    deny_reason += ' 5 раз за 30мин'
                 job_id = f"delete_send_message_for_{request.id}"
                 try:
                     scheduler.remove_job(job_id=job_id)
@@ -1229,11 +1349,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 except JobLookupError:
                     print(f"'{job_id}' job not found or already has completed !")
 
-                request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
+                context.user_data['request_id'] = request.id
+
                 text = f"{request_text}\n\n" \
                        f"<b>Заявка отменена 🚫</b>\n" \
-                       f"Причина отмены: {request.deny_reason}"
+                       f"Причина отмены: {deny_reason}"
                 await query.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
+
+                request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
                 message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
                                f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
                                f"рейтинг нашему решению по Вашей заявке от 1 до 5, и напишите свои комментарий."
@@ -1246,37 +1369,44 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     url=url
                 )
 
-        elif callback_data == "resume_request":
-            if user.brigada_id == request.brigada_id:
-                request = crud.update_it_request(id=request.id, status=7)
-                user_text = f'{request_text}\n\n' \
-                            f'Статус вашей заявки:  Возобновлен 🔄'
-                await context.bot.edit_message_text(text=user_text, chat_id=request.user_telegram_id,
-                                                    message_id=context.user_data['user_message_id'], reply_markup=None)
-
-                remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
-                text = f"{request_text}\n\n" \
-                       f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
-
-                keyboard = [
-                    [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
-                     InlineKeyboardButton("Отменить", callback_data='cancel_request')]
-                ]
-                reply_markup = InlineKeyboardMarkup(keyboard)
-                await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='HTML')
-
-                if delta_minutes > 0:
-                    job_id = f"delete_send_message_for_{request.id}"
-                    try:
-                        scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                                          args=[message_id, topic_id, request_text, finishing_time, request.id],
-                                          id=job_id, replace_existing=True)
-                    except ConflictingIdError:
-                        print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
-
-            else:
-                await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
-                                        f"Исполнитель: {request.brigada_name}", show_alert=True)
+        # elif callback_data == "resume_request":
+        #     if user.brigada_id == request.brigada_id:
+        #         request = crud.update_it_request(id=request.id, status=7)
+        #         user_text = f'{request_text}\n\n' \
+        #                     f'Статус вашей заявки:  Возобновлен 🔄'
+        #         await context.bot.edit_message_text(text=user_text, chat_id=request.user_telegram_id,
+        #                                             message_id=context.user_data['user_message_id'], reply_markup=None)
+        #
+        #         now = datetime.datetime.now(tz=ittech.timezonetash)
+        #         remaining_time = finishing_time - now
+        #         late_time = now - finishing_time
+        #         if finishing_time >= now:
+        #             text = f"{request_text}\n\n" \
+        #                    f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+        #         else:
+        #             text = f"{request_text}\n\n" \
+        #                    f"<b> ‼️ Просрочен на:</b>  {str(late_time).split('.')[0]}"
+        #
+        #         keyboard = [
+        #             [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
+        #              InlineKeyboardButton("Отменить", callback_data='cancel_request')]
+        #         ]
+        #         reply_markup = InlineKeyboardMarkup(keyboard)
+        #         await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='HTML')
+        #
+        #         if delta_minutes > 0:
+        #             job_id = f"delete_send_message_for_{request.id}"
+        #             try:
+        #                 scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
+        #                                   args=[message_id, topic_id, request_text, finishing_time, request.id,
+        #                                         request.file_url],
+        #                                   id=job_id, replace_existing=True)
+        #             except ConflictingIdError:
+        #                 print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
+        #
+        #     else:
+        #         await query.answer(text="Вы не можете завершить заявку, вы не являетесь исполнителем этой заявки!\n"
+        #                                 f"Исполнитель: {request.brigada_name}", show_alert=True)
 
         elif callback_data == "user_accept":
             new_keyboard = [
@@ -1293,17 +1423,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if status == 6:
                 request = crud.update_it_request(id=request.id, status=3)
                 await query.edit_message_reply_markup(reply_markup=None)
-                await context.bot.edit_message_reply_markup(chat_id=IT_SUPERGROUP, message_id=request.tg_message_id,
-                                                            reply_markup=None)
-                message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s по IT: Завершен." \
+                # await context.bot.edit_message_reply_markup(chat_id=IT_SUPERGROUP, message_id=request.tg_message_id,
+                #                                             reply_markup=None)
+                message_text = f"Уважаемый {request.user_full_name}, статус вашей заявки #{request.id}s по IT: Закрыт." \
                                f"\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку"
                 url = f"{FRONT_URL}tg/order-rating/{request.id}?user_id={request.user_id}&department={request.category_department}&sub_id={request.category_sub_id}"
                 inlinewebapp(bot_token=BOTTOKEN,
                              chat_id=request.user_telegram_id,
                              message_text=message_text,
                              url=url)
-            else:
+            elif status == 3:
                 await query.edit_message_reply_markup(reply_markup=None)
+                await query.answer(text="Данная заявка уже закрыта!", show_alert=True)
 
         elif callback_data == "user_cancel":
             keyboard = [
@@ -1319,17 +1450,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if status == 6:
                 request = crud.update_it_request(id=request.id, status=7)
                 topic_id = request.topic_id
-                remaining_time = finishing_time - datetime.datetime.now(tz=ittech.timezonetash)
-                text = f"{request_text}\n\n" \
-                       f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+                now = datetime.datetime.now(tz=ittech.timezonetash)
+                remaining_time = finishing_time - now
+                late_time = now - finishing_time
+                if finishing_time >= now:
+                    text = f"{request_text}\n\n" \
+                           f"<b> ‼️ Оставщиеся время:</b>  {str(remaining_time).split('.')[0]}"
+                else:
+                    text = f"{request_text}\n\n" \
+                           f"<b> ‼️ Просрочен на:</b>  {str(late_time).split('.')[0]}"
                 keyboard = [
                     [InlineKeyboardButton("Завершить заявку", callback_data='complete_request'),
                      InlineKeyboardButton("Отменить", callback_data='cancel_request')]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
-                await context.bot.edit_message_text(chat_id=IT_SUPERGROUP, text=text,
-                                                    message_id=message_id,
-                                                    reply_markup=reply_markup, parse_mode='HTML')
+                # await context.bot.edit_message_text(chat_id=IT_SUPERGROUP, text=text,
+                #                                     message_id=message_id,
+                #                                     reply_markup=reply_markup, parse_mode='HTML')
+                await context.bot.send_message(chat_id=IT_SUPERGROUP, message_thread_id=topic_id, text=text,
+                                               reply_markup=reply_markup, parse_mode='HTML')
 
                 text = f'{request_text}\n\n' \
                        f'Статус вашей заявки:  Возобновлен 🔄'
@@ -1343,13 +1482,15 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     job_id = f"delete_send_message_for_{request.id}"
                     try:
                         scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                                          args=[message_id, topic_id, request_text, finishing_time, request.id],
+                                          args=[message_id, topic_id, request_text, finishing_time, request.id,
+                                                request.file_url],
                                           id=job_id, replace_existing=True)
                     except ConflictingIdError:
                         print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
 
-            else:
+            elif status == 3:
                 await query.edit_message_reply_markup(reply_markup=None)
+                await query.answer(text="Данная заявка уже закрыта!", show_alert=True)
 
     else:
         selected_option = int(query.data)
@@ -1424,8 +1565,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                              message_text=message_text,
                              url=url)
 
-
-
             elif selected_option == 11:
                 request_list = crud.tg_update_requst_st(requestid=requests_id, status=7)
                 await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
@@ -1442,14 +1581,73 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         else:
             await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
+    return -1
+
+
+async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = update.message
+    reply_text = message.text
+    original_message = message.reply_to_message.text
+    # response = f"You replied to: '{original_message}' with '{reply_text}'"
+    # request_id = context.user_data['request_id']
+    request_id = re.findall(r'\d+', original_message)[0]
+    request = crud.get_request_id(id=request_id)
+    user = crud.get_user_tel_id(id=message.from_user.id)
+    deny_reason = reply_text
+    if request.status == 1:
+        if user.brigada_id == request.brigada_id:
+            request = crud.update_it_request(id=request_id, status=4, deny_reason=deny_reason)
+            formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+            formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
+            request_text = f"📑Заявка #{request.id}s\n\n" \
+                           f"📍Филиал: {request.parentfillial_name}\n" \
+                           f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+                           f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
+                           f"📱Номер телефона для заявки: {request.phone_number}\n" \
+                           f"🔰Категория проблемы: {request.category_name}\n" \
+                           f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+                           f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+                           f"❗️SLA: {request.sla} часов\n" \
+                           f"💬Комментарии: {request.description}"
+
+            job_id = f"delete_send_message_for_{request_id}"
+            try:
+                scheduler.remove_job(job_id=job_id)
+                # print(f"'{job_id}' job was removed before scheduling")
+            except JobLookupError:
+                print(f"'{job_id}' job not found or already has completed !")
+
+            text = f"{request_text}\n\n" \
+                   f"<b>Заявка отменена 🚫</b>\n" \
+                   f"Причина отмены: {deny_reason}"
+            # await update.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
+            await message.reply_to_message.edit_text(text=text, reply_markup=None, parse_mode='HTML')
+
+            message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
+                           f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
+                           f"рейтинг нашему решению по Вашей заявке от 1 до 5, и напишите свои комментарий."
+
+            url = f"{FRONT_URL}tg/order-rating/{request.id}?user_id={request.user_id}&department={request.category_department}&sub_id={request.category_sub_id}"
+            inlinewebapp(
+                bot_token=BOTTOKEN,
+                chat_id=request.user_telegram_id,
+                message_text=message_text,
+                url=url
+            )
+        else:
+            await update.message.reply_text(text=f"Вы не можете завершить заявку #{request.id}s, вы не являетесь исполнителем этой заявки!\n"
+                                                 f"Исполнитель: {request.brigada_name}")
+    else:
+        await update.message.reply_text(f"Заявка #{request.id}s не была ещё принята !")
+
 
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    callback_query_handler = CallbackQueryHandler(handle_callback_query)
     persistence = PicklePersistence(filepath="conversationbot")
     application = Application.builder().token(BOTTOKEN).persistence(persistence).build()
-    application.add_handler(callback_query_handler)
+    application.add_handler(CallbackQueryHandler(handle_callback_query)) # pattern=r'^(?!deny_reason=other$).+'
+    application.add_handler(MessageHandler(filters.REPLY, reply_message_handler))
     # add states phone fullname category desction and others
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -1527,6 +1725,11 @@ def main() -> None:
             ITPHONENUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, ittech.itphonenumber)],
             PHONENUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, phonenumber)],
             INPUTCOMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, ratings.input_rating)],
+            # CALLBACK_STATE: [CallbackQueryHandler(handle_callback_query)],  # pattern=r'^deny_reason=other$'
+            # DENY_REASON: [
+            #     # [CallbackQueryHandler(deny_reason_handle_callback_query, filters.Regex(r'^deny_reason=other$'))],
+            #     MessageHandler(filters.TEXT & ~filters.COMMAND, ittech.it_deny_reason)
+            # ]
 
             # IT_PASSWORD:[MessageHandler(filters.TEXT& ~filters.COMMAND,it_password)],
         },
@@ -1536,6 +1739,7 @@ def main() -> None:
         allow_reentry=True,
         name="my_conversation",
         persistent=True,
+        per_chat=True
     )
 
     application.add_handler(conv_handler)
@@ -1546,3 +1750,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
