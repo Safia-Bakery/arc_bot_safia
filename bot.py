@@ -1640,10 +1640,10 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
                 url=url
             )
         else:
-            await update.message.reply_text(text=f"Вы не можете завершить заявку #{request.id}s, вы не являетесь исполнителем этой заявки!\n"
+            await update.message.reply_text(text=f"Вы не можете отменить заявку #{request.id}s, вы не являетесь исполнителем этой заявки!\n"
                                                  f"Исполнитель: {request.brigada_name}")
     else:
-        await update.message.reply_text(f"Заявка #{request.id}s не была ещё принята !")
+        await update.message.reply_text(f"Заявка #{request.id}s не была ещё принята или уже отменена !")
 
 
 def main() -> None:
