@@ -1599,7 +1599,7 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
     request = crud.get_request_id(id=request_id)
     user = crud.get_user_tel_id(id=message.from_user.id)
     deny_reason = reply_text
-    if request.status == 1:
+    if request.status == 1 or request.status == 7:
         if user.brigada_id == request.brigada_id:
             request = crud.update_it_request(id=request_id, status=4, deny_reason=deny_reason)
             formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
