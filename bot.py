@@ -1345,6 +1345,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             else:
                 if deny_reason == 'Не смогли дозвониться':
                     deny_reason += ' 5 раз за 30мин'
+
                 job_id = f"delete_send_message_for_{request.id}"
                 try:
                     scheduler.remove_job(job_id=job_id)
@@ -1354,11 +1355,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
                 context.user_data['request_id'] = request.id
 
-                text = f"{request_text}\n\n" \
-                       f"<b>Заявка отменена 🚫</b>\n" \
-                       f"Причина отмены: {deny_reason}"
-                await query.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
-
+                # text = f"{request_text}\n\n" \
+                #        f"<b>Заявка отменена 🚫</b>\n" \
+                #        f"Причина отмены: {deny_reason}"
+                # await query.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
+                await query.delete_message()
                 request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
                 message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
                                f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
@@ -1602,31 +1603,32 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
     if request.status == 1 or request.status == 7:
         if user.brigada_id == request.brigada_id:
             request = crud.update_it_request(id=request_id, status=4, deny_reason=deny_reason)
-            formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
-            formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
-            request_text = f"📑Заявка #{request.id}s\n\n" \
-                           f"📍Филиал: {request.parentfillial_name}\n" \
-                           f"👨‍💼Сотрудник: {request.user_full_name}\n" \
-                           f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
-                           f"📱Номер телефона для заявки: {request.phone_number}\n" \
-                           f"🔰Категория проблемы: {request.category_name}\n" \
-                           f"🕘Дата поступления заявки: {formatted_created_time}\n" \
-                           f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
-                           f"❗️SLA: {request.sla} часов\n" \
-                           f"💬Комментарии: {request.description}"
+            # formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
+            # formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
+            # request_text = f"📑Заявка #{request.id}s\n\n" \
+            #                f"📍Филиал: {request.parentfillial_name}\n" \
+            #                f"👨‍💼Сотрудник: {request.user_full_name}\n" \
+            #                f"📱Номер телефона сотрудника: +{request.user_phone_number}\n" \
+            #                f"📱Номер телефона для заявки: {request.phone_number}\n" \
+            #                f"🔰Категория проблемы: {request.category_name}\n" \
+            #                f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+            #                f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+            #                f"❗️SLA: {request.sla} часов\n" \
+            #                f"💬Комментарии: {request.description}"
 
-            job_id = f"delete_send_message_for_{request_id}"
+            job_id = f"delete_send_message_for_{request.id}"
             try:
                 scheduler.remove_job(job_id=job_id)
                 # print(f"'{job_id}' job was removed before scheduling")
             except JobLookupError:
                 print(f"'{job_id}' job not found or already has completed !")
 
-            text = f"{request_text}\n\n" \
-                   f"<b>Заявка отменена 🚫</b>\n" \
-                   f"Причина отмены: {deny_reason}"
+            # text = f"{request_text}\n\n" \
+            #        f"<b>Заявка отменена 🚫</b>\n" \
+            #        f"Причина отмены: {deny_reason}"
             # await update.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
-            await message.reply_to_message.edit_text(text=text, reply_markup=None, parse_mode='HTML')
+            # await message.reply_to_message.edit_text(text=text, reply_markup=None, parse_mode='HTML')
+            await message.reply_to_message.delete()
 
             message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
                            f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
@@ -1643,7 +1645,7 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
             await update.message.reply_text(text=f"Вы не можете отменить заявку #{request.id}s, вы не являетесь исполнителем этой заявки!\n"
                                                  f"Исполнитель: {request.brigada_name}")
     else:
-        await update.message.reply_text(f"Заявка #{request.id}s не была ещё принята или уже отменена !")
+        await update.message.reply_text(f"Заявка #{request.id}s не была ещё принята или уже отменена/завершена !")
 
 
 def main() -> None:
