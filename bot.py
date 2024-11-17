@@ -34,6 +34,7 @@ from telegram.ext import (
 )
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
 
 from ittech import BOTTOKEN
@@ -61,6 +62,7 @@ from database import engine, SessionLocal
 # Base.metadata.create_all(bind=engine)
 BOTTOKEN = os.environ.get('BOT_TOKEN')
 IT_SUPERGROUP = os.environ.get('IT_SUPERGROUP')
+SCHEDULER_DATABASE_URL = os.environ.get('SCHEDULER_DATABASE_URL')
 
 marketing_cat_dict = {
     'Проектная работа для дизайнеров': 1,
@@ -147,7 +149,13 @@ PHONE, \
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
-scheduler = BackgroundScheduler()
+
+# Configure job store
+jobstores = {
+    "default": SQLAlchemyJobStore(url=SCHEDULER_DATABASE_URL)
+}
+
+scheduler = BackgroundScheduler(jobstores=jobstores)
 scheduler.start()
 
 
@@ -256,7 +264,7 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 
-    elif text_manu == 'Обучение🧑‍💻':
+    elif text_manu == 'Инструкция подачи заявки 🧑‍💻':
         # await context.bot.send_video(chat_id=update.message.chat_id,video=open('/Users/gayratbekakhmedov/projects/backend/arc_bot/Untitled.mp4','rb'), supports_streaming=True)
         await update.message.reply_text(text="<a href='https://telegra.ph/Obuchenie-09-06-2'>Обучение🧑‍💻</a>",
                                         reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True),
@@ -1106,7 +1114,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         #     delta_minutes = 2
 
         delay = datetime.timedelta(minutes=delta_minutes)
-        scheduled_time = request.created_at + delay
+        deleting_scheduled_time = request.created_at + delay - datetime.timedelta(seconds=2)
+        sending_scheduled_time = request.created_at + delay
 
         formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
@@ -1235,18 +1244,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 except:
                     pass
 
-                message_id = ittech.request_notification(message_id=message_id, topic_id=topic_id, text=request_text,
-                                                         finishing_time=finishing_time, request_id=request.id,
-                                                         url=request.file_url)
+                ittech.delete_from_chat(message_id=request.tg_message_id, topic_id=topic_id)
+                message_id = ittech.send_notification(topic_id=topic_id, text=request_text,
+                                                      finishing_time=finishing_time, request_id=request.id,
+                                                      url=request.file_url)
                 if delta_minutes > 0:
-                    job_id = f"delete_send_message_for_{request.id}"
+                    delete_job_id = f"delete_message_for_{request.id}"
                     try:
-                        scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                                          args=[message_id, topic_id, request_text, finishing_time, request.id,
-                                                request.file_url],
-                                          id=job_id, replace_existing=True)
+                        scheduler.add_job(ittech.delete_from_chat, 'date', run_date=deleting_scheduled_time,
+                                          args=[message_id, topic_id], id=delete_job_id, replace_existing=True)
                     except ConflictingIdError:
-                        print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
+                        print(f"Job '{delete_job_id}' already scheduled or was missed by time. Skipping ...")
+
+                    send_job_id = f"send_message_for_{request.id}"
+                    try:
+                        scheduler.add_job(ittech.send_notification, 'date', run_date=sending_scheduled_time,
+                                          args=[topic_id, request_text, finishing_time, request.id, request.file_url],
+                                          id=send_job_id, replace_existing=True)
+                    except ConflictingIdError:
+                        print(f"Job '{send_job_id}' already scheduled or was missed by time. Skipping ...")
             else:
                 await query.answer(text="Вы не можете принять заявку, вы не являетесь исполнителем!", show_alert=True)
 
@@ -1485,14 +1501,21 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await context.bot.send_message(chat_id=query.message.chat.id, text=text_request)
 
                 if delta_minutes > 0:
-                    job_id = f"delete_send_message_for_{request.id}"
+                    delete_job_id = f"delete_message_for_{request.id}"
                     try:
-                        scheduler.add_job(ittech.request_notification, 'date', run_date=scheduled_time,
-                                          args=[message_id, topic_id, request_text, finishing_time, request.id,
-                                                request.file_url],
-                                          id=job_id, replace_existing=True)
+                        scheduler.add_job(ittech.delete_from_chat, 'date', run_date=deleting_scheduled_time,
+                                          args=[request.tg_message_id, topic_id], id=delete_job_id,
+                                          replace_existing=True)
                     except ConflictingIdError:
-                        print(f"Job '{job_id}' already scheduled or was missed by time. Skipping ...")
+                        print(f"Job '{delete_job_id}' already scheduled or was missed by time. Skipping ...")
+
+                    send_job_id = f"send_message_for_{request.id}"
+                    try:
+                        scheduler.add_job(ittech.send_notification, 'date', run_date=sending_scheduled_time,
+                                          args=[topic_id, request_text, finishing_time, request.id, request.file_url],
+                                          id=send_job_id, replace_existing=True)
+                    except ConflictingIdError:
+                        print(f"Job '{send_job_id}' already scheduled or was missed by time. Skipping ...")
 
             elif status == 3:
                 await query.edit_message_reply_markup(reply_markup=None)

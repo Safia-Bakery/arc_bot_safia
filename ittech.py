@@ -349,19 +349,27 @@ async def it_deny_reason(update:Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return ConversationHandler.END
 
 
-def request_notification(message_id, topic_id, text, finishing_time, request_id: Optional[int] = None,
-                         url: Optional[str] = None):
-    base_url = f'https://api.telegram.org/bot{BOTTOKEN}'
-    delete_url = f"{base_url}/deleteMessage"
-    delete_payload = {
+def delete_from_chat(message_id, topic_id: Optional[int] = None):
+    url = f'https://api.telegram.org/bot{BOTTOKEN}/deleteMessage'
+    payload = {
         'chat_id': IT_SUPERGROUP,
         'message_id': message_id
     }
     if topic_id:
-        delete_payload["message_thread_id"] = topic_id
-    # Send a POST request to the Telegram API to delete the message
-    requests.post(delete_url, data=delete_payload)
+        payload["message_thread_id"] = topic_id
 
+    # Send a POST request to the Telegram API to delete the message
+    response = requests.post(url, data=payload)
+    response_data = response.json()
+    # Check the response status
+    if response.status_code == 200:
+        return response_data
+    else:
+        return False
+
+
+def send_notification(topic_id, text, finishing_time, request_id: Optional[int] = None,
+                      url: Optional[str] = None):
     inline_keyboard = {
         "inline_keyboard": [
             [
@@ -383,16 +391,16 @@ def request_notification(message_id, topic_id, text, finishing_time, request_id:
             text = f"{text}\n\n" \
                    f"<b> ‼️ Просрочен на:</b>  {str(late_time).split('.')[0]}"
 
-    send_url = f"{base_url}/sendMessage"
-    send_payload = {
+    url = f'https://api.telegram.org/bot{BOTTOKEN}/sendMessage'
+    payload = {
         'chat_id': IT_SUPERGROUP,
         'text': text,
         'reply_markup': json.dumps(inline_keyboard),
         'parse_mode': 'HTML'
     }
     if topic_id:
-        send_payload["message_thread_id"] = topic_id
-    response = requests.post(send_url, json=send_payload)
+        payload["message_thread_id"] = topic_id
+    response = requests.post(url, json=payload)
     if response.status_code == 200:
         response_data = response.json()
         new_message_id = response_data["result"]["message_id"]
