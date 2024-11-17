@@ -1280,6 +1280,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if user.brigada_id == request.brigada_id:
                 await query.delete_message()
                 request = crud.update_it_request(id=requests_id, status=6)
+                delete_job_id = f"delete_message_for_{request.id}"
+                try:
+                    scheduler.remove_job(job_id=delete_job_id)
+                    # print(f"'{job_id}' job was removed before scheduling")
+                except JobLookupError:
+                    print(f"'{delete_job_id}' job not found or already has completed !")
+
+                send_job_id = f"send_message_for_{request.id}"
+                try:
+                    scheduler.remove_job(job_id=send_job_id)
+                    # print(f"'{job_id}' job was removed before scheduling")
+                except JobLookupError:
+                    print(f"'{send_job_id}' job not found or already has completed !")
+
                 text = f'{request_text}\n\n' \
                        f'Статус вашей заявки:  Завершен ✅'
 
@@ -1362,13 +1376,21 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             else:
                 if deny_reason == 'Не смогли дозвониться':
                     deny_reason += ' 5 раз за 30мин'
-
-                job_id = f"delete_send_message_for_{request.id}"
+                await query.delete_message()
+                request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
+                delete_job_id = f"delete_message_for_{request.id}"
                 try:
-                    scheduler.remove_job(job_id=job_id)
+                    scheduler.remove_job(job_id=delete_job_id)
                     # print(f"'{job_id}' job was removed before scheduling")
                 except JobLookupError:
-                    print(f"'{job_id}' job not found or already has completed !")
+                    print(f"'{delete_job_id}' job not found or already has completed !")
+
+                send_job_id = f"send_message_for_{request.id}"
+                try:
+                    scheduler.remove_job(job_id=send_job_id)
+                    # print(f"'{job_id}' job was removed before scheduling")
+                except JobLookupError:
+                    print(f"'{send_job_id}' job not found or already has completed !")
 
                 context.user_data['request_id'] = request.id
 
@@ -1376,8 +1398,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 #        f"<b>Заявка отменена 🚫</b>\n" \
                 #        f"Причина отмены: {deny_reason}"
                 # await query.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
-                await query.delete_message()
-                request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
+
                 message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
                                f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
                                f"рейтинг нашему решению по Вашей заявке от 1 до 5, и напишите свои комментарий."
@@ -1626,7 +1647,6 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
     deny_reason = reply_text
     if request.status == 1 or request.status == 7:
         if user.brigada_id == request.brigada_id:
-            request = crud.update_it_request(id=request_id, status=4, deny_reason=deny_reason)
             # formatted_created_time = request.created_at.strftime("%d.%m.%Y %H:%M")
             # formatted_finishing_time = request.finishing_time.strftime("%d.%m.%Y %H:%M") if request.finishing_time is not None else None
             # request_text = f"📑Заявка #{request.id}s\n\n" \
@@ -1640,19 +1660,27 @@ async def reply_message_handler(update: Update, context: ContextTypes.DEFAULT_TY
             #                f"❗️SLA: {request.sla} часов\n" \
             #                f"💬Комментарии: {request.description}"
 
-            job_id = f"delete_send_message_for_{request.id}"
+            await message.reply_to_message.delete()
+            request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
+            delete_job_id = f"delete_message_for_{request.id}"
             try:
-                scheduler.remove_job(job_id=job_id)
+                scheduler.remove_job(job_id=delete_job_id)
                 # print(f"'{job_id}' job was removed before scheduling")
             except JobLookupError:
-                print(f"'{job_id}' job not found or already has completed !")
+                print(f"'{delete_job_id}' job not found or already has completed !")
+
+            send_job_id = f"send_message_for_{request.id}"
+            try:
+                scheduler.remove_job(job_id=send_job_id)
+                # print(f"'{job_id}' job was removed before scheduling")
+            except JobLookupError:
+                print(f"'{send_job_id}' job not found or already has completed !")
 
             # text = f"{request_text}\n\n" \
             #        f"<b>Заявка отменена 🚫</b>\n" \
             #        f"Причина отмены: {deny_reason}"
             # await update.edit_message_text(text=text, reply_markup=None, parse_mode='HTML')
             # await message.reply_to_message.edit_text(text=text, reply_markup=None, parse_mode='HTML')
-            await message.reply_to_message.delete()
 
             message_text = f"❌Ваша заявка #{request.id}s по IT👨🏻‍💻 отменена по причине: {request.deny_reason}\n\n" \
                            f"Если Вы с этим не согласны, поставьте, пожалуйста, " \
