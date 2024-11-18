@@ -151,12 +151,12 @@ persistence = PicklePersistence(filepath='hello.pickle')
 
 
 # Configure job store
-# jobstores = {
-#     "default": SQLAlchemyJobStore(url=SCHEDULER_DATABASE_URL)
-# }
+jobstores = {
+    "default": SQLAlchemyJobStore(url=SCHEDULER_DATABASE_URL)
+}
 
-# scheduler = BackgroundScheduler(jobstores=jobstores)
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler(jobstores=jobstores)
+# scheduler = BackgroundScheduler()
 scheduler.start()
 
 
