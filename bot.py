@@ -1706,7 +1706,7 @@ def main() -> None:
     persistence = PicklePersistence(filepath="conversationbot")
     application = Application.builder().token(BOTTOKEN).persistence(persistence).build()
     application.add_handler(CallbackQueryHandler(handle_callback_query)) # pattern=r'^(?!deny_reason=other$).+'
-    application.add_handler(MessageHandler(filters.REPLY, reply_message_handler))
+    # application.add_handler(MessageHandler(filters.REPLY, reply_message_handler))
     # add states phone fullname category desction and others
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
