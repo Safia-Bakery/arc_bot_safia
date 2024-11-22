@@ -238,6 +238,7 @@ def add_request(category_id,fillial_id,description,user_id,is_bot,product:Option
         query.fillial_name = query.fillial.name
         query.parentfillial_name = query.fillial.parentfillial.name
         query.manager_name = query.fillial.manager.name if query.fillial.manager else ' '
+        query.sla = query.category.ftime
         return query
 
 

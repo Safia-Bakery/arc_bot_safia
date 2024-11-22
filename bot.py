@@ -829,12 +829,13 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 fillial_name = f"📍*Менеджеры*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
 
             text = (
-                f"📑*Заявка №*: {add_request.id}\n\n"
+                f"📑*Заявка №* {add_request.id}\n\n"
                 f"{fillial_name}\n"
                 f"🕘*Дата поступления заявки*: {formatted_datetime_str}\n\n"
                 f"🔰*Категория проблемы*: {add_request.category.name}\n"
                 f"⚙️*Название оборудования*: {add_request.product}\n"
                 f"💬*Комментарии*: {add_request.description}"
+                f"🕘*Время выполнения*: {add_request.sla} часов"
             )
 
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
