@@ -75,7 +75,7 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     #         break
     #
     # print(context.user_data['division_id'])
-    entered_data = re.sub('\t',r'\s+', entered_data)
+    entered_data = re.sub(r'\s+','\t', entered_data)
     current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
     context.user_data['division_id'] = current_division.id
     await update.message.reply_text(f"Пожалуйста выберите категорию:",
