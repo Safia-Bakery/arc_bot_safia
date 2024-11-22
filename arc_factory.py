@@ -63,7 +63,7 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     current_divisions = crud.get_manager_divisions(context.user_data['manager'])
     for i in current_divisions:
         await update.message.reply_text(i.name)
-        if i.name == entered_data:
+        if str(i.name).strip() == entered_data:
             context.user_data['division_id'] = i.id
             break
 
