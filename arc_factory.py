@@ -34,7 +34,9 @@ async  def arc_factory_managers(update: Update, context: ContextTypes.DEFAULT_TY
         reply_keyboard.append(['⬅️ Назад'])
         context.user_data['manager'] = get_manager_divisions[0].id
         await update.message.reply_text('Выберите отдел',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        print('returning')
         return bot.ARCFACTORYDIVISIONS
+    print('is not returing')
 
     # except:
     #     managers = crud.get_arc_factory_managers()
@@ -47,6 +49,8 @@ async  def arc_factory_managers(update: Update, context: ContextTypes.DEFAULT_TY
 
 async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     entered_data = update.message.text
+    print(entered_data)
+    print('in divisions')
     if entered_data == '⬅️ Назад':
         managers = crud.get_arc_factory_managers()
         reply_keyboard = bot.transform_list(managers, 2, 'name')
