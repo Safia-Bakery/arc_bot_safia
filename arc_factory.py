@@ -54,22 +54,22 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
         await update.message.reply_text('Выберите менеджера',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.ARCFACTORYMANAGER
 
-    try:
-        categories = crud.get_category_list(department=1,sphere_status=2)
-        reply_keyboard = bot.transform_list(categories, 2, 'name')
-        reply_keyboard.append(['⬅️ Назад'])
-        current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
-        context.user_data['division_id'] = current_division.id
-        await update.message.reply_text(f"Пожалуйста выберите категорию:",
-                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+    # try:
+    categories = crud.get_category_list(department=1,sphere_status=2)
+    reply_keyboard = bot.transform_list(categories, 2, 'name')
+    reply_keyboard.append(['⬅️ Назад'])
+    current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
+    context.user_data['division_id'] = current_division.id
+    await update.message.reply_text(f"Пожалуйста выберите категорию:",
+                                    reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
 
-        return bot.CATEGORY
+    return bot.CATEGORY
 
-    except:
-        divisions = crud.get_manager_divisions(manager_id=context.user_data['manager'])
-        reply_keyboard = bot.transform_list(divisions, 2, 'name')
-        reply_keyboard.append(['⬅️ Назад'])
-        await update.message.reply_text('Выберите отдел',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return bot.ARCFACTORYDIVISIONS
+    # except:
+    #     divisions = crud.get_manager_divisions(manager_id=context.user_data['manager'])
+    #     reply_keyboard = bot.transform_list(divisions, 2, 'name')
+    #     reply_keyboard.append(['⬅️ Назад'])
+    #     await update.message.reply_text('Выберите отдел',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    #     return bot.ARCFACTORYDIVISIONS
 
 
