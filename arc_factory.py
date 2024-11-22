@@ -55,6 +55,7 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
         return bot.ARCFACTORYMANAGER
 
     # try:
+    print('hello worlod')
     categories = crud.get_category_list(department=1,sphere_status=2)
     reply_keyboard = bot.transform_list(categories, 2, 'name')
     reply_keyboard.append(['⬅️ Назад'])
