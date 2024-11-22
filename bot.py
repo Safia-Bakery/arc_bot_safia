@@ -350,7 +350,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['page_number'] = 0
         context.user_data['type'] = 1
         if context.user_data['sphere_status'] == 1:
-            qrequest_db = crud.get_branch_list(sphere_status=1)
+            request_db = crud.get_branch_list(sphere_status=1)
             reply_keyboard = transform_list(request_db, 2, 'name')
 
             reply_keyboard.insert(0, ['⬅️ Назад'])
