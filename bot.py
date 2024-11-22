@@ -843,7 +843,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if add_request.category.sphere_status == 2 and add_request.category.department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
             await update.message.reply_text(
-                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.",
+                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\nВремя выполнения: {add_request.sla} часов",
                 reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
 
             context.user_data['files'] = []
