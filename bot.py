@@ -822,11 +822,11 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 crud.create_files(request_id=add_request.id, filename=file_url)
                 keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
 
-            formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
+            formatted_datetime_str = add_request.created_at.strftime("%d.%m.%Y %H:%M")
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 fillial_name = f"📍*Филиал*: {add_request.parentfillial_name}"
             else:
-                fillial_name = f"📍*Менеджеры*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
+                fillial_name = f"📍*Бригадир*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
 
             text = (
                 f"📑*Заявка №* {add_request.id}\n\n"
