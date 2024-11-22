@@ -560,7 +560,7 @@ def get_arc_factory_managers(name: Optional[str] = None):
         if name is not None:
             query = query.filter(models.Managers.name.ilike(f"%{name}%"))
 
-        return query.all()
+        return query.filter(models.Managers.status==1).all()
 
 
 def get_manager_divisions(manager_id):
@@ -569,7 +569,7 @@ def get_manager_divisions(manager_id):
         return query
 
 
-def get_manager_division_by_name(name):
+def get_manager_division_by_name(name,manager_id):
     with SessionLocal() as db:
         query = db.query(models.Fillials).filter(models.Fillials.name.ilike(f"%{name}%")).filter(models.Fillials.arc==1).first()
         return query
