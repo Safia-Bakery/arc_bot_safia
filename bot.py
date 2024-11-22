@@ -824,15 +824,18 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
-                fillial_name = f"📍Филиал{add_request.parentfillial_name}"
+                fillial_name = f"📍*Филиал*: {add_request.parentfillial_name}"
             else:
-                fillial_name =f"📍Менеджеры {add_request.manager_name}\n" + f"📍Отдел {add_request.fillial_name}"
-            text = f"📑Заявка № {add_request.id}\n\n{fillial_name}\n" \
-                   f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
-                   f"🔰Категория проблемы: {add_request.category.name}\n" \
-                   f"⚙️Название оборудования: {add_request.product}\n" \
-                   f"💬Комментарии: {add_request.description}"\
+                fillial_name = f"📍*Менеджеры*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
 
+            text = (
+                f"📑*Заявка №*: {add_request.id}\n\n"
+                f"{fillial_name}\n"
+                f"🕘*Дата поступления заявки*: {formatted_datetime_str}\n\n"
+                f"🔰*Категория проблемы*: {add_request.category.name}\n"
+                f"⚙️*Название оборудования*: {add_request.product}\n"
+                f"💬*Комментарии*: {add_request.description}"
+            )
 
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
