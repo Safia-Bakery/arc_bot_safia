@@ -1,5 +1,5 @@
 #from bot import MEALSIZE, MEALBREADSIZE, MANU, transform_list,session,BRANCHES,manu_buttons
-from typing import re
+import re
 
 import bot
 import crud
