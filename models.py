@@ -112,6 +112,16 @@ class ParentFillials(Base):
     kru_finished_task = relationship("KruFinishedTasks", back_populates="branch")
     user = relationship("Users", back_populates="branch")
 
+class Managers(Base):
+    __tablename__ = "managers"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String,nullable=True)
+    description = Column(String,nullable=True)
+    status = Column(Integer,nullable=True)
+    division = relationship("Fillials", back_populates="manager")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now())
+
 
 #fillial is departments of fillial bar, arc, etc
 class Fillials(Base):
@@ -130,15 +140,7 @@ class Fillials(Base):
 
 
 
-class Managers(Base):
-    __tablename__ = "managers"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String,nullable=True)
-    description = Column(String,nullable=True)
-    status = Column(Integer,nullable=True)
-    division = relationship("Fillials", back_populates="manager")
-    created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now())
+
 
 #suppliers are fillial suppliers that delivers product to fillial
 class Suppliers(Base):
