@@ -551,3 +551,25 @@ def create_log(db: Session, request_id, status, user_id):
     db.commit()
     db.refresh(query)
     return query
+
+
+def get_arc_factory_managers(name: Optional[str] = None):
+    with SessionLocal() as db:
+        query = db.query(models.Managers)
+        if name is not None:
+            query = query.filter(models.Managers.name.ilike(f"%{name}%"))
+
+        return query.all()
+
+
+def get_manager_divisions(manager_id):
+    with SessionLocal() as db:
+        query = db.query(models.Fillials).filter(models.Fillials.manager_id == manager_id).all()
+        return query
+
+
+def get_manager_division_by_name(name):
+    with SessionLocal() as db:
+        query = db.query(models.Fillials).filter(models.Fillials.name.ilike(f"%{name}%")).filter(models.Fillials.arc==1).first()
+        return query
+

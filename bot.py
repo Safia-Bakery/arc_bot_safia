@@ -145,7 +145,9 @@ PHONE, \
     UNIFORMAMOUNT, \
     PHONENUMBER, \
     ITPHONENUMBER, \
-    INPUTCOMMENT = range(53)
+    INPUTCOMMENT,\
+    ARCFACTORYMANAGER,\
+    ARCFACTORYDIVISIONS= range(53)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -640,15 +642,22 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if context.user_data['sphere_status'] == 1:
 
                 request_db = crud.get_branch_list(sphere_status=1)
-            else:
                 context.user_data['page_number'] = 0
                 request_db = crud.getfillialchildfabrica(offset=0)
-            reply_keyboard = transform_list(request_db, 3, 'name')
-            reply_keyboard.insert(0, ['⬅️ Назад'])
-            reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
-            await update.message.reply_text(f"Выберите филиал или отдел:",
-                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-            return BRANCHES
+                reply_keyboard = transform_list(request_db, 3, 'name')
+                reply_keyboard.insert(0, ['⬅️ Назад'])
+                reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
+                await update.message.reply_text(f"Выберите филиал или отдел:",
+                                                reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+                return BRANCHES
+            else:
+
+                devisions = crud.get_manager_divisions(manager_id=context.user_data['manager'])
+
+                reply_keyboard = transform_list(devisions, 3, 'name')
+                reply_keyboard.append(['⬅️ Назад'])
+
+
         elif int(context.user_data['type']) == 5:
             if context.user_data['sphere_status'] == 1:
 
@@ -772,16 +781,21 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             category_query = crud.getcategoryname(name=context.user_data['category'],
                                                   department=int(context.user_data['type']))
-            fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],
-                                                type=int(context.user_data['type']),
-                                                factory=int(context.user_data['sphere_status']))
+            if int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2:
+                fillial_id = context.user_data['division']
+            else:
+
+                fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],
+                                                    type=int(context.user_data['type']),
+                                                    factory=int(context.user_data['sphere_status']))
+                fillial_id = fillial_query.id
             user_query = crud.get_user_tel_id(id=update.message.from_user.id)
             list_data = [None, 'АРС🛠', None, 'Маркетигну📈']
             if context.user_data['type'] == 3:
                 product = None
             if context.user_data['type'] == 1:
                 product = context.user_data['product']
-            add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_query.id,
+            add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_id,
                                            product=product, description=context.user_data['description'],
                                            user_id=user_query.id, phone_number=context.user_data['phone_number'])
             keyboard = [

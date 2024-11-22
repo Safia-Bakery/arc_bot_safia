@@ -124,6 +124,22 @@ class Fillials(Base):
     origin = Column(Integer, default=0)
     status = Column(Integer, default=0)
     supplier = relationship("Suppliers", back_populates="store")
+    tool_balance = relationship("ToolBalance", back_populates="store")
+    arc = Column(Integer, default=0)
+    manager_id = Column(BIGINT, ForeignKey("managers.id"))
+    manager = relationship("Managers", back_populates="division")
+
+
+
+class Managers(Base):
+    __tablename__ = "managers"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String,nullable=True)
+    description = Column(String,nullable=True)
+    status = Column(Integer,nullable=True)
+    division = relationship("Fillials", back_populates="manager")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now())
 
 #suppliers are fillial suppliers that delivers product to fillial
 class Suppliers(Base):
