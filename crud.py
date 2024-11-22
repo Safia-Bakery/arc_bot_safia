@@ -571,6 +571,6 @@ def get_manager_divisions(manager_id):
 
 def get_manager_division_by_name(name,manager_id):
     with SessionLocal() as db:
-        query = db.query(models.Fillials).filter(models.Fillials.name.ilike(f"%{name}%")).filter(models.Fillials.manager_id==manager_id).first()
+        query = db.query(models.Fillials).filter(models.Fillials.name.ilike(f"%{name}%")).filter(models.Fillials.manager_id==int(manager_id)).first()
         return query
 
