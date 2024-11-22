@@ -59,13 +59,10 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
         return bot.ARCFACTORYMANAGER
 
     # try:
-    print('hello worlod')
     categories = crud.get_category_list(department=1,sphere_status=2)
     reply_keyboard = bot.transform_list(categories, 2, 'name')
     reply_keyboard.append(['⬅️ Назад'])
     current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
-    print(entered_data)
-
     print(current_division)
     # context.user_data['division_id'] = current_division.id
     await update.message.reply_text(f"Пожалуйста выберите категорию:",
