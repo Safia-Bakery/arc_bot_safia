@@ -53,6 +53,7 @@ import comments
 import uniforms
 import video
 import ratings
+import arc_factory
 
 # from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 # from .food import meal_bread_size,meal_size
@@ -89,6 +90,7 @@ buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','И
 buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
+# backend_location = '/Users/gayratbekakhmedov/projects/backend/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -147,7 +149,7 @@ PHONE, \
     ITPHONENUMBER, \
     INPUTCOMMENT,\
     ARCFACTORYMANAGER,\
-    ARCFACTORYDIVISIONS= range(53)
+    ARCFACTORYDIVISIONS= range(55)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -292,7 +294,6 @@ async def manu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     elif text_manu == 'Оставить отзыв💬':
         await update.message.reply_text("Пожалуйста введите текст отзыва",
                                         reply_markup=ReplyKeyboardMarkup([['⬅️ Назад']], resize_keyboard=True))
-
         return INPUTCOMMENT
     else:
         await update.message.reply_text(f"Этот пункт в разработке",
@@ -350,18 +351,29 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['type'] = 1
         if context.user_data['sphere_status'] == 1:
             request_db = crud.get_branch_list(sphere_status=1)
+            reply_keyboard = transform_list(request_db, 2, 'name')
+
+            reply_keyboard.insert(0, ['⬅️ Назад'])
+            reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
+            await update.message.reply_text(f"Выберите филиал или отдел:",
+                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+            return BRANCHES
             # request_db = requests.get(f"{BASE_URL}fillials/list/tg").json()
+
         else:
-            request_db = crud.getfillialchildfabrica(offset=0)
+            # request_db = crud.getfillialchildfabrica(offset=0)
             # request_db = requests.get(f"{BASE_URL}get/fillial/fabrica/tg").json()
+            managers = crud.get_arc_factory_managers()
+            reply_keyboard = transform_list(managers, 2, 'name')
+            reply_keyboard.insert(0, ['⬅️ Назад'])
+            await  update.message.reply_text(
+                'Выберите Manager',
+                          reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+            return ARCFACTORYMANAGER
 
-        reply_keyboard = transform_list(request_db, 2, 'name')
 
-        reply_keyboard.insert(0, ['⬅️ Назад'])
-        reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
-        await update.message.reply_text(f"Выберите филиал или отдел:",
-                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-        return BRANCHES
+
+
     elif type_name == '⬅️ Назад':
         await update.message.reply_text(f"Главное меню",
                                         reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
@@ -625,7 +637,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return UNIFORMCATEGORIES
     else:
         sphere_status = context.user_data['sphere_status']
-    request_db = crud.get_category_list(sphere_status=sphere_status, qdepartment=int(context.user_data['type']))
+    request_db = crud.get_category_list(sphere_status=sphere_status, department=int(context.user_data['type']))
 
     reply_keyboard = transform_list(request_db, 3, 'name')
     reply_keyboard.append(['⬅️ Назад'])
@@ -656,6 +668,9 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
                 reply_keyboard = transform_list(devisions, 3, 'name')
                 reply_keyboard.append(['⬅️ Назад'])
+                await update.message.reply_text(f"Выберите филиал или отдел:",
+                                                reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+                return ARCFACTORYDIVISIONS
 
 
         elif int(context.user_data['type']) == 5:
@@ -682,6 +697,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     if int(context.user_data['type']) == 1:
         get_category = crud.getcategoryname(name=inserted_data, department=int(context.user_data['type']))
+
         if get_category.is_child:
             pass
         else:
@@ -782,7 +798,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             category_query = crud.getcategoryname(name=context.user_data['category'],
                                                   department=int(context.user_data['type']))
             if int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2:
-                fillial_id = context.user_data['division']
+                fillial_id = context.user_data['division_id']
             else:
 
                 fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],
@@ -808,14 +824,15 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             formatted_datetime_str = add_request.created_at.strftime("%Y-%m-%d %H:%M")
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
-                fillial_name = add_request.parentfillial_name
+                fillial_name = f"📍Филиал{add_request.parentfillial_name}"
             else:
-                fillial_name = add_request.fillial_name
-            text = f"📑Заявка № {add_request.id}\n\n📍Филиал: {fillial_name}\n" \
+                fillial_name =f"📍Менеджеры {add_request.manager_name}\n" + f"📍Отдел {add_request.fillial_name}"
+            text = f"📑Заявка № {add_request.id}\n\n{fillial_name}\n" \
                    f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
                    f"🔰Категория проблемы: {add_request.category.name}\n" \
                    f"⚙️Название оборудования: {add_request.product}\n" \
-                   f"💬Комментарии: {add_request.description}"
+                   f"💬Комментарии: {add_request.description}"\
+
 
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
@@ -1798,6 +1815,8 @@ def main() -> None:
             ITPHONENUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, ittech.itphonenumber)],
             PHONENUMBER: [MessageHandler(filters.TEXT & ~filters.COMMAND, phonenumber)],
             INPUTCOMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, ratings.input_rating)],
+            ARCFACTORYMANAGER : [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_managers)],
+            ARCFACTORYDIVISIONS: [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_divisions)],
             # CALLBACK_STATE: [CallbackQueryHandler(handle_callback_query)],  # pattern=r'^deny_reason=other$'
             # DENY_REASON: [
             #     # [CallbackQueryHandler(deny_reason_handle_callback_query, filters.Regex(r'^deny_reason=other$'))],

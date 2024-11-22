@@ -60,6 +60,8 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
         reply_keyboard.append(['⬅️ Назад'])
         current_division = crud.get_manager_division_by_name(name=entered_data)
         context.user_data['division_id'] = current_division.id
+        await update.message.reply_text(f"Пожалуйста выберите категорию:",
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
 
         return bot.CATEGORY
 
