@@ -24,24 +24,24 @@ async  def arc_factory_managers(update: Update, context: ContextTypes.DEFAULT_TY
                                         reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
         return bot.MANU
 
-    try:
-        get_manager_divisions = crud.get_arc_factory_managers(name=entered_data)
-        if get_manager_divisions:
+    # try:
+    get_manager_divisions = crud.get_arc_factory_managers(name=entered_data)
+    if get_manager_divisions:
 
 
-            divisions = crud.get_manager_divisions(manager_id=get_manager_divisions[0].id)
-            reply_keyboard = bot.transform_list(divisions, 2, 'name')
-            reply_keyboard.append(['⬅️ Назад'])
-            context.user_data['manager'] = get_manager_divisions[0].id
-            await update.message.reply_text('Выберите отдел',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-            return bot.ARCFACTORYDIVISIONS
-
-    except:
-        managers = crud.get_arc_factory_managers()
-        reply_keyboard = bot.transform_list(managers, 2, 'name')
+        divisions = crud.get_manager_divisions(manager_id=get_manager_divisions[0].id)
+        reply_keyboard = bot.transform_list(divisions, 2, 'name')
         reply_keyboard.append(['⬅️ Назад'])
-        await update.message.reply_text('Выберите менеджера',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
-        return bot.ARCFACTORYMANAGER
+        context.user_data['manager'] = get_manager_divisions[0].id
+        await update.message.reply_text('Выберите отдел',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        return bot.ARCFACTORYDIVISIONS
+
+    # except:
+    #     managers = crud.get_arc_factory_managers()
+    #     reply_keyboard = bot.transform_list(managers, 2, 'name')
+    #     reply_keyboard.append(['⬅️ Назад'])
+    #     await update.message.reply_text('Выберите менеджера',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+    #     return bot.ARCFACTORYMANAGER
 
 
 
