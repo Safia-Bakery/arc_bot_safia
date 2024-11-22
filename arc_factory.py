@@ -65,6 +65,7 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
         await update.message.reply_text(i.name)
         if str(i.name).strip() == entered_data:
             context.user_data['division_id'] = i.id
+            await update.message.reply_text('found')
             break
 
     print(context.user_data['division_id'])
@@ -72,7 +73,6 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     # context.user_data['division_id'] = current_division.id
     await update.message.reply_text(f"Пожалуйста выберите категорию:",
                                     reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-
     return bot.CATEGORY
 
     # except:
