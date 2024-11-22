@@ -625,7 +625,7 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return UNIFORMCATEGORIES
     else:
         sphere_status = context.user_data['sphere_status']
-    request_db = crud.get_category_list(sphere_status=sphere_status, department=int(context.user_data['type']))
+    request_db = crud.get_category_list(sphere_status=sphere_status, qdepartment=int(context.user_data['type']))
 
     reply_keyboard = transform_list(request_db, 3, 'name')
     reply_keyboard.append(['⬅️ Назад'])
