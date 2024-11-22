@@ -42,7 +42,7 @@ async  def arc_factory_managers(update: Update, context: ContextTypes.DEFAULT_TY
         managers = crud.get_arc_factory_managers()
         reply_keyboard = bot.transform_list(managers, 2, 'name')
         reply_keyboard.append(['⬅️ Назад'])
-        await update.message.reply_text('Выберите менеджера',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
+        await update.message.reply_text('Выберите своего Бригадира:',reply_markup=ReplyKeyboardMarkup(reply_keyboard,resize_keyboard=True))
         return bot.ARCFACTORYMANAGER
 
 

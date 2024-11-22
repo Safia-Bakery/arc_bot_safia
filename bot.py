@@ -367,7 +367,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_keyboard = transform_list(managers, 2, 'name')
             reply_keyboard.insert(0, ['⬅️ Назад'])
             await  update.message.reply_text(
-                'Выберите Manager',
+                'Выберите своего Бригадира:',
                           reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
             return ARCFACTORYMANAGER
 
