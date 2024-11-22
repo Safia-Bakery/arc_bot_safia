@@ -1,4 +1,6 @@
 #from bot import MEALSIZE, MEALBREADSIZE, MANU, transform_list,session,BRANCHES,manu_buttons
+from typing import re
+
 import bot
 import crud
 from telegram import ReplyKeyboardMarkup,Update,WebAppInfo,KeyboardButton,InlineKeyboardMarkup,InlineKeyboardButton,ReplyKeyboardRemove
@@ -60,21 +62,22 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     categories = crud.get_category_list(department=1,sphere_status=2)
     reply_keyboard = bot.transform_list(categories, 2, 'name')
     reply_keyboard.append(['⬅️ Назад'])
-    current_divisions = crud.get_manager_divisions(context.user_data['manager'])
-    print(entered_data)
-    for i in current_divisions:
-        await update.message.reply_text(i.name)
+    # current_divisions = crud.get_manager_divisions(context.user_data['manager'])
 
-        print(i.name)
-        if str(i.name).strip() == str(entered_data):
-            print('found')
-            context.user_data['division_id'] = i.id
-            await update.message.reply_text('found')
-            break
-
-    print(context.user_data['division_id'])
-    # current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
-    # context.user_data['division_id'] = current_division.id
+    # for i in current_divisions:
+    #     await update.message.reply_text(i.name)
+    #
+    #     print(i.name)
+    #     if str(i.name).strip() == str(entered_data):
+    #         print()
+    #         context.user_data['division_id'] = i.id
+    #         await update.message.reply_text('found')
+    #         break
+    #
+    # print(context.user_data['division_id'])
+    entered_data = re.sub('\t',r'\s+', entered_data)
+    current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
+    context.user_data['division_id'] = current_division.id
     await update.message.reply_text(f"Пожалуйста выберите категорию:",
                                     reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
     return bot.CATEGORY
