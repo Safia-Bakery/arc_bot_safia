@@ -49,8 +49,6 @@ async  def arc_factory_managers(update: Update, context: ContextTypes.DEFAULT_TY
 
 async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     entered_data = update.message.text
-    print(entered_data)
-    print('in divisions')
     if entered_data == '⬅️ Назад':
         managers = crud.get_arc_factory_managers()
         reply_keyboard = bot.transform_list(managers, 2, 'name')
@@ -62,8 +60,12 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     categories = crud.get_category_list(department=1,sphere_status=2)
     reply_keyboard = bot.transform_list(categories, 2, 'name')
     reply_keyboard.append(['⬅️ Назад'])
-    current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
-    print(current_division)
+    current_divisions = crud.get_manager_divisions(context.user_data['manager'])
+    for i in current_divisions:
+        if i.name == entered_data:
+            context.user_data['division_id'] = i.id
+        break
+    # current_division = crud.get_manager_division_by_name(name=entered_data,manager_id=context.user_data['manager'])
     # context.user_data['division_id'] = current_division.id
     await update.message.reply_text(f"Пожалуйста выберите категорию:",
                                     reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
