@@ -834,7 +834,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 f"🕘*Дата поступления заявки*: {formatted_datetime_str}\n\n"
                 f"🔰*Категория проблемы*: {add_request.category.name}\n"
                 f"⚙️*Название оборудования*: {add_request.product}\n"
-                f"💬*Комментарии*: {add_request.description}"
+                f"💬*Комментарии*: {add_request.description}\n\n"
                 f"🕘*Время выполнения*: {add_request.sla} часов"
             )
 
