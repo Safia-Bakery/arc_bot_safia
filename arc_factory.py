@@ -61,9 +61,13 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
     reply_keyboard = bot.transform_list(categories, 2, 'name')
     reply_keyboard.append(['⬅️ Назад'])
     current_divisions = crud.get_manager_divisions(context.user_data['manager'])
+    print(entered_data)
     for i in current_divisions:
         await update.message.reply_text(i.name)
+
+        print(i.name)
         if str(i.name).strip() == str(entered_data):
+            print('found')
             context.user_data['division_id'] = i.id
             await update.message.reply_text('found')
             break
