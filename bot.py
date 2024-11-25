@@ -823,6 +823,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
 
             formatted_datetime_str = add_request.created_at.strftime("%d.%m.%Y %H:%M")
+            formatted_finishing_time = (add_request.created_at + datetime.timedelta(hours=add_request.sla)).strftime("%d.%m.%Y %H:%M")
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
                 fillial_name = f"📍*Филиал*: {add_request.parentfillial_name}"
             else:
@@ -831,11 +832,11 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             text = (
                 f"📑*Заявка №* {add_request.id}\n\n"
                 f"{fillial_name}\n"
-                f"🕘*Дата поступления заявки*: {formatted_datetime_str}\n\n"
+                f"🕘*Время поступления*: {formatted_datetime_str}\n"
+                f"🕘*Время выполнения до*: {formatted_finishing_time}\n"
                 f"🔰*Категория проблемы*: {add_request.category.name}\n"
                 f"⚙️*Название оборудования*: {add_request.product}\n"
                 f"💬*Комментарии*: {add_request.description}\n\n"
-                f"🕘*Время выполнения*: {add_request.sla} часов"
             )
 
             if add_request.category_sphere_status == 1 and add_request.category_department == 1:
@@ -843,7 +844,10 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if add_request.category.sphere_status == 2 and add_request.category.department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
             await update.message.reply_text(
-                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\nВремя выполнения: {add_request.sla} часов",
+                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
+                f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
+                f"Время поступления: {formatted_datetime_str}\n"
+                f"Время выполнения до: {formatted_finishing_time}",
                 reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
 
             context.user_data['files'] = []
