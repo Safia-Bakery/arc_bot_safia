@@ -352,7 +352,6 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if context.user_data['sphere_status'] == 1:
             request_db = crud.get_branch_list(sphere_status=1)
             reply_keyboard = transform_list(request_db, 2, 'name')
-
             reply_keyboard.insert(0, ['⬅️ Назад'])
             reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
             await update.message.reply_text(f"Выберите филиал или отдел:",
