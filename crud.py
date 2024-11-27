@@ -400,8 +400,9 @@ def tg_update_requst_st(requestid,status):
         query.user_phone_number = query.user.phone_number if query.user else None
         query.sla = query.category.ftime if query.category else None
         with SessionLocal() as db:
+            user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
             if status is not None:
-                create_log(db=db, request_id=query.id, status=status, user_id=query.brigada.user.id)
+                create_log(db=db, request_id=query.id, status=status, user_id=user_of_brigada.id)
             updated_data = query.update_time or {}
             updated_data[str(status)] = str(datetime.now(tz=timezonetash))
             db.query(models.Requests).filter(models.Requests.id==query.id).update({'update_time':updated_data})
