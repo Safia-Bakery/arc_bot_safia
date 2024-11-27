@@ -68,6 +68,7 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 conversationbot
+conversationbot_backup
 
 # Flask stuff:
 instance/
