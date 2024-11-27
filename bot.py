@@ -1055,15 +1055,53 @@ async def it_photo_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # finish request data
     request_list = crud.tg_update_requst_st(requestid=context.user_data['last_request'], status=6)
-    text_request = f"Уважаемый {request_list.user.full_name} , Ваша заявка #{request_list.id}s ИТ решена. \nПожалуйста, подтвердите, что она выполнена в соответствии с вашим запросом."
-    # send message to request owner to rate request
-    confirmation_request(bot_token=BOTTOKEN, chat_id=request_list.user_telegram_id, message_text=text_request)
-    # url = f"{FRONT_URL}tg/order-rating/{request_list.id}?user_id={request_list.user_id}&department={request_list.category_department}&sub_id={request_list.category_sub_id}"
-    # #send message to request owner to rate request
-    # inlinewebapp(bot_token=BOTTOKEN,
-    #              chat_id=request_list.user_telegram_id,
-    #              message_text=f"Уважаемый {request_list.user_full_name}, Ваша заявка #{request_list.id}s решена (отменена).В течение 3-х дней вы можете сказать \"Спасибо\" или пожаловаться на выполнение. Поставьте, пожалуйста, рейтинг решения вашей заявки от 1 до 5.",
-    #              url=url)
+    department = request_list.category_department
+    if department == 4:
+        await context.bot.delete_message(chat_id=IT_SUPERGROUP, message_id=request_list.tg_message_id)
+        delete_job_id = f"delete_message_for_{request_list.id}"
+        try:
+            scheduler.remove_job(job_id=delete_job_id)
+            # print(f"'{job_id}' job was removed before scheduling")
+        except JobLookupError:
+            print(f"'{delete_job_id}' job not found or already has completed !")
+
+        send_job_id = f"send_message_for_{request_list.id}"
+        try:
+            scheduler.remove_job(job_id=send_job_id)
+            # print(f"'{job_id}' job was removed before scheduling")
+        except JobLookupError:
+            print(f"'{send_job_id}' job not found or already has completed !")
+
+        formatted_created_time = request_list.created_at.strftime("%d.%m.%Y %H:%M")
+        formatted_finishing_time = request_list.finishing_time.strftime("%d.%m.%Y %H:%M") if request_list.finishing_time is not None else None
+        request_text = f"📑Заявка #{request_list.id}s\n\n" \
+                       f"📍Филиал: {request_list.parentfillial_name}\n" \
+                       f"👨‍💼Сотрудник: {request_list.user_full_name}\n" \
+                       f"📱Номер телефона сотрудника: +{request_list.user_phone_number}\n" \
+                       f"📱Номер телефона для заявки: {request_list.phone_number}\n" \
+                       f"🔰Категория проблемы: {request_list.category_name}\n" \
+                       f"🕘Дата поступления заявки: {formatted_created_time}\n" \
+                       f"🕘Дата дедлайна заявки: {formatted_finishing_time}\n" \
+                       f"❗️SLA: {request_list.sla} часов\n" \
+                       f"💬Комментарии: {request_list.description}"
+        text = f'{request_text}\n\n' \
+               f'Статус вашей заявки:  Завершен ✅'
+
+        keyboard = [
+            [InlineKeyboardButton("Выполнен/Принимаю", callback_data='user_accept'),
+             InlineKeyboardButton("Не выполнен/Не принимаю", callback_data='user_not_accept')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        user_message = await context.bot.send_message(chat_id=request_list.user_telegram_id, text=text,
+                                                      reply_markup=reply_markup, parse_mode='HTML')
+        context.user_data["user_message_id"] = user_message.message_id
+
+    else:
+        text_request = f"Уважаемый {request_list.user_full_name} , Ваша заявка #{request_list.id}s ИТ решена. \nПожалуйста, подтвердите, что она выполнена в соответствии с вашим запросом."
+        # send message to request owner to rate request
+        confirmation_request(bot_token=BOTTOKEN, chat_id=request_list.user_telegram_id, message_text=text_request)
+
     reply_keyboard = [['Мои заказы 📋']]
     await update.message.reply_text(
         f"Заявка решена", reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
