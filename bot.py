@@ -86,8 +86,8 @@ manu_buttons = [
 buttons_sphere = [['Фабрика', 'Розница']]
 sphere_dict = {'Фабрика': 2, 'Розница': 1}
 
-buttons_sphere_1 = [['Арс🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
-buttons_sphere_2 = [['Арс🛠',"IT🧑‍💻"],['Инвентарь📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
+buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
+buttons_sphere_2 = [['Арс Фабрика🛠',"IT🧑‍💻"],['Инвентарь Фабрика📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
 # backend_location = '/Users/gayratbekakhmedov/projects/backend/arc_backend/'
@@ -346,7 +346,7 @@ async def chosensphere(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
     type_name = update.message.text
-    if type_name.lower() == 'арс🛠':
+    if 'Арс' in type_name:
         context.user_data['page_number'] = 0
         context.user_data['type'] = 1
         if context.user_data['sphere_status'] == 1:
@@ -455,7 +455,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return MANU
 
 
-    elif type_name == 'Инвентарь📦':
+    elif  'Инвентарь' in type_name:
         user = crud.get_user_tel_id(id=update.message.from_user.id)
         if context.user_data['sphere_status']:
             if int(context.user_data['sphere_status']) == 1:
