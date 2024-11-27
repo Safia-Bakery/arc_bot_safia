@@ -396,7 +396,12 @@ def tg_update_requst_st(requestid,status):
         query.category_sub_id = query.category.sub_id
         query.user_full_name = query.user.full_name
         query.user_telegram_id = query.user.telegram_id
+        query.parentfillial_name = query.fillial.parentfillial.name if query.fillial else None
+        query.user_phone_number = query.user.phone_number if query.user else None
+        query.sla = query.category.ftime if query.category else None
         with SessionLocal() as db:
+            if status is not None:
+                create_log(db=db, request_id=id, status=status, user_id=query.user.id)
             updated_data = query.update_time or {}
             updated_data[str(status)] = str(datetime.now(tz=timezonetash))
             db.query(models.Requests).filter(models.Requests.id==query.id).update({'update_time':updated_data})
