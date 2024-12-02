@@ -318,7 +318,7 @@ def update_it_request(
         query = CommitDb().update_data(db, query)
         user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
         if status is not None:
-            create_log(db=db, request_id=id, status=status, user_id=user_of_brigada.id)
+            create_log(request_id=id, status=status, user_id=user_of_brigada.id)
 
         query.category_name = query.category.name if query.category else None
         query.fillial_name = query.fillial.name if query.fillial else None
@@ -402,7 +402,7 @@ def tg_update_requst_st(requestid,status):
         with SessionLocal() as db:
             user_of_brigada = db.query(models.Users).filter(models.Users.brigada_id == query.brigada_id).first()
             if status is not None:
-                create_log(db=db, request_id=query.id, status=status, user_id=user_of_brigada.id)
+                create_log( request_id=query.id, status=status, user_id=user_of_brigada.id)
             updated_data = query.update_time or {}
             updated_data[str(status)] = str(datetime.now(tz=timezonetash))
             db.query(models.Requests).filter(models.Requests.id==query.id).update({'update_time':updated_data})
@@ -549,16 +549,18 @@ def add_general_comment(comment,user_id):
         return query
 
 
-def create_log(db: Session, request_id, status, user_id):
-    query = models.Logs(
-        request_id=request_id,
-        user_id=user_id,
-        status=status
-    )
-    db.add(query)
-    db.commit()
-    db.refresh(query)
-    return query
+def create_log(request_id, status, user_id):
+    with SessionLocal() as db:
+
+        query = models.Logs(
+            request_id=request_id,
+            user_id=user_id,
+            status=status
+        )
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+        return query
 
 
 def get_arc_factory_managers(name: Optional[str] = None):
@@ -580,4 +582,21 @@ def get_manager_division_by_name(name,manager_id):
     with SessionLocal() as db:
         query = db.query(models.Fillials).filter(models.Fillials.name.ilike(f"%{name}%")).first()
         return query
+
+
+def create_coint_request(user_id,branch_id,amount,description,category):
+    with SessionLocal() as db:
+        query = models.Requests(
+            fillial_id=branch_id,
+            price=amount,
+            description=description,
+            user_id=user_id,
+            category_id=category
+        )
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+        return query
+
+
 

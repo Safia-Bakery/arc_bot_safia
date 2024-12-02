@@ -39,6 +39,7 @@ import comments
 import crud
 import food
 import inventory
+import coins
 import ittech
 import ratings
 import uniforms
@@ -79,7 +80,7 @@ manu_buttons = [
 buttons_sphere = [['Фабрика', 'Розница']]
 sphere_dict = {'Фабрика': 2, 'Розница': 1}
 
-buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','⬅️ Назад']]
+buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Монеты💰'],['⬅️ Назад']]
 buttons_sphere_2 = [['Арс Фабрика🛠',"IT🧑‍💻"],['Инвентарь Фабрика📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
@@ -142,7 +143,9 @@ PHONE, \
     ITPHONENUMBER, \
     INPUTCOMMENT,\
     ARCFACTORYMANAGER,\
-    ARCFACTORYDIVISIONS= range(55)
+    ARCFACTORYDIVISIONS,\
+    COINAMOUNT,\
+    COINDESCRIPTION= range(57)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -481,6 +484,18 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return BRANCHES
 
+    elif type_name == 'Монеты💰':
+        context.user_data['type'] = 11
+        request_db = crud.get_branch_list(sphere_status=1)
+        reply_keyboard = transform_list(request_db, 2, 'name')
+        reply_keyboard.insert(0, ['⬅️ Назад'])
+        reply_keyboard.append(['<<<Предыдущий', 'Следующий>>>'])
+        await update.message.reply_text(f"Выберите филиал или отдел:",
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        return BRANCHES
+
+
+
 
 
     else:
@@ -618,6 +633,13 @@ async def branches(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text('Выберите тип формы',
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return UNIFORMCATEGORIES
+    if int(context.user_data['type'])==11:
+        reply_keyboard = [['⬅️ Назад']]
+        await update.message.reply_text('Пожалуйста, введите количество монет в числовом формате.',
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+
+        return COINAMOUNT
+
     else:
         sphere_status = context.user_data['sphere_status']
     request_db = crud.get_category_list(sphere_status=sphere_status, department=int(context.user_data['type']))
@@ -1821,6 +1843,9 @@ def main() -> None:
             INPUTCOMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, ratings.input_rating)],
             ARCFACTORYMANAGER : [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_managers)],
             ARCFACTORYDIVISIONS: [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_divisions)],
+            COINAMOUNT:[MessageHandler(filters.TEXT & ~filters.COMMAND, coins.coin_amount)],
+            COINDESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, coins.coin_description)]
+
             # CALLBACK_STATE: [CallbackQueryHandler(handle_callback_query)],  # pattern=r'^deny_reason=other$'
             # DENY_REASON: [
             #     # [CallbackQueryHandler(deny_reason_handle_callback_query, filters.Regex(r'^deny_reason=other$'))],
