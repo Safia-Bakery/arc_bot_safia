@@ -55,6 +55,8 @@ def clean_and_format_phone_number(phone):
         cleaned = '+998' + cleaned
     elif cleaned.startswith('998') and len(cleaned) > 10:
         cleaned = '+' + cleaned
+    else:
+        cleaned = '+' + cleaned
 
     return cleaned
 
