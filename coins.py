@@ -73,7 +73,7 @@ async def coin_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         amount=context.user_data['amount']
                                      )
 
-    reply_text = f"Спасибо, ваш заявка #{data.id}s на заказ монет принят."
+    reply_text = f"Спасибо, ваша заявка #{data.id}s на заказ монет создана."
 
 
 

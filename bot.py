@@ -47,7 +47,7 @@ import video
 from microser import confirmation_request, delete_from_chat, send_notification
 from microser import send_iiko_document
 from microser import transform_list, generate_text, data_transform, create_access_token, sendtotelegram, \
-    is_time_between, generate_random_string, inlinewebapp, info_string, JobScheduler
+    is_time_between, generate_random_string, inlinewebapp, info_string, JobScheduler,sendtotelegramviewimage
 
 
 # from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
