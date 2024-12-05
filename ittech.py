@@ -167,7 +167,7 @@ async def it_comment(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         #    crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
         #reply_keyboard = [['⬅️ Назад']]
         reply_keyboard = [['⬅️ Назад']]
-        await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
+        await update.message.reply_text('Введите номер телефона с кодом страны в формате: 998941114411\n998 - код страны',
                                         reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
         return bot.ITPHONENUMBER
 
@@ -184,8 +184,7 @@ async def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
     is_phone_number = microser.validate_phone_number(user_comment)
     reply_keyboard = [['⬅️ Назад']]
     if not is_phone_number:
-        # if len(user_comment) < 9:
-        await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
+        await update.message.reply_text('Введите номер телефона с кодом страны в формате: 998941114411\n998 - код страны',
                                         reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,
                                                                          resize_keyboard=True))
         return bot.ITPHONENUMBER
@@ -206,7 +205,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             #data = crud.get_category_list(department=4,sphere_status=4)
             #reply_keyboard = transform_list(data,3,'name')
             reply_keyboard = [['⬅️ Назад']]
-            await update.message.reply_text('Введите номер телефона в формате: 998941114411 или 941114411',
+            await update.message.reply_text('Введите номер телефона с кодом страны в формате: 998941114411\n998 - код страны',
                                             reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
             return bot.ITPHONENUMBER
 

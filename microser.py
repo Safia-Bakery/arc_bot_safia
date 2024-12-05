@@ -39,7 +39,8 @@ def validate_phone_number(phone):
     if re.fullmatch(pattern, phone):
         # Убираем "+" (если есть) и проверяем количество цифр
         digit_count = len(re.sub(r"\D", "", phone))  # Убираем все символы, кроме цифр
-        if digit_count == 9 or digit_count == 12:  # Проверка строго на 9 или 12 цифр
+        # if digit_count == 9 or digit_count == 12:  # Проверка строго на 9 или 12 цифр
+        if digit_count >= 9:  # Проверка строго на 9 и более цифр
             return True
 
     return False
