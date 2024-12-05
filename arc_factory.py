@@ -67,7 +67,8 @@ async def arc_factory_divisions(update: Update, context: ContextTypes.DEFAULT_TY
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.CATEGORY
 
-    except:
+    except Exception as e:
+        await update.message.reply_text(str(e))
         divisions = crud.get_manager_divisions(manager_id=context.user_data['manager'])
         reply_keyboard = bot.transform_list(divisions, 2, 'name')
         reply_keyboard.append(['⬅️ Назад'])
