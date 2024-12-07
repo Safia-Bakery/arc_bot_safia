@@ -48,14 +48,14 @@ def validate_phone_number(phone):
 
 def clean_and_format_phone_number(phone):
     # Удаляем все символы, кроме цифр и плюса
-    cleaned = re.sub(r"[^\d+]", "", phone)
+    cleaned = re.sub(r"[^\d]", "", phone)
 
     # Добавляем "+" в начало, если его нет
     if not cleaned.startswith('998') and len(cleaned) < 10:
         cleaned = '+998' + cleaned
-    elif cleaned.startswith('998') and len(cleaned) > 10:
+    elif cleaned.startswith('998') and len(cleaned) > 9:
         cleaned = '+' + cleaned
-    else:
+    elif len(cleaned) > 10:
         cleaned = '+' + cleaned
 
     return cleaned
