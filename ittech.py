@@ -189,8 +189,7 @@ async def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
                                                                          resize_keyboard=True))
         return bot.ITPHONENUMBER
 
-    user_comment = microser.clean_and_format_phone_number(user_comment)
-    context.user_data['phone_number'] = user_comment
+    context.user_data['phone_number'] = is_phone_number
     await update.message.reply_text('Пожалуйста отправьте фото',
                                     reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard, resize_keyboard=True))
     return bot.ITFILES
