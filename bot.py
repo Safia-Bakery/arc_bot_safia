@@ -1449,7 +1449,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 if deny_reason == 'Не смогли дозвониться':
                     deny_reason += ' 5 раз за 30мин'
                 await query.delete_message()
-                request = crud.update_it_request(id=request.id, status=4, deny_reason=deny_reason)
+                request = crud.update_it_request(id=request.id, status=8, deny_reason=deny_reason)
                 delete_job_id = f"delete_message_for_{request.id}"
                 job_scheduler.remove_job(job_id=delete_job_id)
                 send_job_id = f"send_message_for_{request.id}"
