@@ -497,7 +497,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif type_name == 'Официальное оформление 🧾':
         user = crud.get_user_tel_id(id=update.message.from_user.id)
-        # print("username: ", user.username)
+        print("username: ", user.username)
         # department = 12
         await update.message.reply_text(
             "Пожалуйста нажмите кнопку: Оформиться 🧾",
