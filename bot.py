@@ -80,7 +80,7 @@ manu_buttons = [
 buttons_sphere = [['Фабрика', 'Розница']]
 sphere_dict = {'Фабрика': 2, 'Розница': 1}
 
-buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Монеты💰'],['⬅️ Назад']]
+buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Монеты💰'], ['Официальное оформление 🧾'], ['⬅️ Назад']]
 buttons_sphere_2 = [['Арс Фабрика🛠',"IT🧑‍💻"],['Инвентарь Фабрика📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
 backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
@@ -493,6 +493,26 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Выберите филиал или отдел:",
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return BRANCHES
+
+
+    elif type_name == 'Официальное оформление 🧾':
+        user = crud.get_user_tel_id(id=update.message.from_user.id)
+        # print("username: ", user.username)
+        # department = 12
+        await update.message.reply_text(
+            "Пожалуйста нажмите кнопку: Оформиться 🧾",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text="Оформиться 🧾",
+                            web_app=WebAppInfo(
+                                url=f"{FRONT_URL}/tg/hr-registery/main?key={create_access_token(user.username)}")
+                        )
+                    ]
+                ]
+            )
+        )
 
 
 
