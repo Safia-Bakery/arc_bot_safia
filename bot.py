@@ -979,7 +979,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if request_db.category_sphere_status == 1 and request_db.category_department == 1:
         fillial_name = f"📍*Филиал*: {request_db.parentfillial_name}"
     else:
-        fillial_name = f"📍*Бригадир*: {request_db.parentfillial_name}\n📍*Отдел*: {request_db.fillial_name}"
+        fillial_name = f"📍*Отдел*: {request_db.parentfillial_name}\n📍*Бригадир*:  {request_db.fillial_name}"
 
 
     # parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
