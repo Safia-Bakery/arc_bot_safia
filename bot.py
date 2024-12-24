@@ -985,7 +985,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
 
     formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
-    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {fillial_name}\n" \
+    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n {fillial_name}\n" \
                                     f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
                                     f"🔰Категория проблемы: {request_db.category_name}\n" \
                                     f"⚙️Название оборудования: {request_db.product}\n" \
