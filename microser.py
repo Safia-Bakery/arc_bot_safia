@@ -33,15 +33,22 @@ backend_pass = os.environ.get('BACKEND_PASS')
 
 
 def validate_phone_number(phone):
-    # Шаблон для проверки, чтобы номер содержал только "+" в начале (если есть) и цифры
-    # pattern = r"^\+?\d{9,}$"  # Начинается с "+" (если есть), за которым следуют не менее 9 цифр
-    pattern = r"^\+?\d+$"  # Номер содержит только "+" в начале (если есть) и цифры
-    if re.fullmatch(pattern, phone):
-        # Убираем "+" (если есть) и проверяем количество цифр
-        digit_count = len(re.sub(r"\D", "", phone))  # Убираем все символы, кроме цифр
-        # if digit_count == 9 or digit_count == 12:  # Проверка строго на 9 или 12 цифр
-        if digit_count >= 9:  # Проверка строго на 9 и более цифр
-            return True
+    # pattern = r"^\d+$"  # Номер содержит только цифры
+    # if re.fullmatch(pattern, phone):
+    #     digit_count = len(re.sub(r"\D", "", phone))  # Убираем все символы, кроме цифр
+    #     if digit_count >= 9:  # Проверка строго на 9 и более цифр
+    #         return True
+
+    if not phone.isdigit():
+        return False
+
+    # Check specific conditions based on the prefix
+    if phone.startswith("998"):
+        if len(phone) == 12:
+            return f"+{phone}"
+    elif phone.startswith("7"):
+        if len(phone) >= 11:
+            return f"+{phone}"
 
     return False
 
