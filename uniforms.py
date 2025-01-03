@@ -33,16 +33,6 @@ async def uniformcategories(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         context.user_data['category'] = get_category.id
         context.user_data['category_name'] = get_category.name
         context.user_data['price'] = get_category.price
-        if get_category.universal_size is True:
-            uniformsize = crud.get_product_by_name("universal", category=context.user_data['category'])
-            if uniformsize:
-                context.user_data['uniformsize'] = uniformsize.id
-                context.user_data['uniformsize_name'] = uniformsize.name
-                reply_keyboard = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['⬅️ Назад']]
-                product_info = f"{context.user_data['category_name']} - {context.user_data['price']} сум"
-                await update.message.reply_text(product_info + '\n\nВыберите количество',
-                                                reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-                return bot.UNIFORMAMOUNT
         uniformsizes = crud.get_products(category=entered_data)
         context.user_data['uniformsizes'] = uniformsizes
         reply_keyboard = bot.transform_list(uniformsizes,3,'name')
@@ -69,7 +59,7 @@ async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return bot.UNIFORMCATEGORIES
     try:
-        uniformsize = crud.get_product_by_name(entered_data, category=context.user_data['category'])
+        uniformsize = crud.get_product_by_name(entered_data,category=context.user_data['category'])
         if uniformsize:
             context.user_data['uniformsize'] = uniformsize.id
             context.user_data['uniformsize_name'] = uniformsize.name
@@ -97,34 +87,23 @@ async def uniformsize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 async def uniformamount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     entered_data = update.message.text
     if entered_data == '⬅️ Назад':
-        if context.user_data['uniformsize_name'] == "universal":
-            categories = crud.get_category_list(department=context.user_data['type'])
-            reply_keyboard = bot.transform_list(categories, 3, 'name')
-            reply_keyboard.append(['⬅️ Назад'])
-
-            await update.message.reply_text('Выберите тип формы',
-                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-            return bot.UNIFORMCATEGORIES
-        else:
-            uniformsizes = context.user_data['uniformsizes']
-            reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')
-            reply_keyboard.append(['⬅️ Назад'])
-            await update.message.reply_text('Выберите размер',
-                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-            return bot.UNIFORMSIZE
+        uniformsizes = context.user_data['uniformsizes']
+        reply_keyboard = bot.transform_list(uniformsizes, 3, 'name')
+        reply_keyboard.append(['⬅️ Назад'])
+        await update.message.reply_text('Выберите размер',
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        return bot.UNIFORMSIZE
     try:
         amount = int(entered_data)
 
         context.user_data['card'].append({'product_id':context.user_data['uniformsize'],'amount':amount,'price':context.user_data['price'],'category_name':context.user_data['category_name'],'uniformsize_name':context.user_data['uniformsize_name']})
         text_to_send = "Товар добавлен в корзину\n\n"
         total_summ = 0
-        context.user_data['products_info'] = ""
         for item in context.user_data['card']:
             if item['price'] is not None:
                 total_summ += item['price']*item['amount']
-            product_info = f"{item['category_name']} [ {item['uniformsize_name']} ] - {item['price']} сум x {item['amount']}шт\n"
-            context.user_data['products_info'] += product_info
-            text_to_send += product_info
+            product_info = f"{item['category_name']} {item['uniformsize_name']} - {item['price']} сум - {item['amount']} шт"
+            text_to_send += product_info+'\n'
         text_to_send += f"\nИтого: {total_summ} сум"
         context.user_data['total_summ'] = total_summ
         await update.message.reply_text(text_to_send)
@@ -190,14 +169,8 @@ async def uniformname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             await update.message.reply_text("Произошла ошибка, попробуйте снова",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
             return bot.MANU
 
-    await update.message.reply_text(
-        f"Спасибо, ваша заявка #{data.id}s на форму оформлена.\n\n"
-        f"Вы заказали:\n"
-        f"{context.user_data['products_info']}\n"
-        f"Кому: {context.user_data['name']}\n"
-        f"Как ваша заявка будет готова, вы будете оповещены!",
-        reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True)
-    )
+
+    await update.message.reply_text(f"Спасибо, ваша заявка #{data.id}s по форме принята.",reply_markup= ReplyKeyboardMarkup(bot.manu_buttons,resize_keyboard=True))
     return bot.MANU
 #     except Exception as e:
 #         text_to_send = """Укажите полное ФИО кому заказываете форму и должность сотрудника

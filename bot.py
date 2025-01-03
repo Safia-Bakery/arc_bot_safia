@@ -976,10 +976,16 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if request_db.file_url is not None:
         keyboard.append([InlineKeyboardButton('Посмотреть фото/видео', url=f"{BASE_URL}{request_db.file_url}")])
 
+    if request_db.category_sphere_status == 1 and request_db.category_department == 1:
+        fillial_name = f"📍*Филиал*: {request_db.parentfillial_name}"
+    else:
+        fillial_name = f"📍*Отдел*: {request_db.parentfillial_name}\n📍*Бригадир*:  {request_db.fillial_name}"
+
+
     # parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
 
     formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
-    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n📍Филиал: {request_db.parentfillial_name}\n" \
+    await update.message.reply_text(f"📑Заявка № {request_db.id}\n\n {fillial_name}\n" \
                                     f"🕘Дата поступления заявки: {formatted_datetime_str}\n\n" \
                                     f"🔰Категория проблемы: {request_db.category_name}\n" \
                                     f"⚙️Название оборудования: {request_db.product}\n" \
