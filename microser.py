@@ -282,6 +282,13 @@ def send_notification(topic_id, text, finishing_time, request_id: Optional[int] 
                 {"text": "Отменить", "callback_data": "cancel_request"}
             ],
             [{"text": "Посмотреть фото", "url": f"{BASE_URL}{url}"}]
+        ] if url is not None
+        else
+        [
+            [
+                {"text": "Завершить заявку", "callback_data": "complete_request"},
+                {"text": "Отменить", "callback_data": "cancel_request"}
+            ]
         ]
     }
     now = datetime.now(tz=timezonetash)

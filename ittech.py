@@ -182,7 +182,7 @@ async def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
     user_comment = update.message.text
     is_phone_number = microser.validate_phone_number(user_comment)
-    reply_keyboard = [['⬅️ Назад']]
+    reply_keyboard = [['⬅️ Назад'], ['➡️ Пропустить']]
     if not is_phone_number:
         await update.message.reply_text('Введите номер телефона с кодом страны в формате: 998941114411\n998 - код страны',
                                         reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,
@@ -246,8 +246,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
         finishing_time = datetime.timedelta(hours=category_query.ftime)+datetime.datetime.now(tz=timezonetash)
         phone_number = context.user_data['phone_number']
         data = crud.add_it_request(category_id=category_query.id,fillial_id=fillial_id,user_id=user_query.id,size=None,finishing_time=finishing_time,comment=user_comment,phone_number=phone_number)
-        if context.user_data['image_it'] is not None:
-            crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+
         formatted_created_time = data.created_at.strftime("%d.%m.%Y %H:%M")
         formatted_finishing_time = data.finishing_time.strftime("%d.%m.%Y %H:%M")
         text = f"📑Заявка #{data.id}s\n\n" \
@@ -266,10 +265,16 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons, resize_keyboard=True),
             parse_mode='HTML'
         )
-        keyboard = [
-            [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
-            [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{context.user_data['image_it']}")]
-        ]
+        if context.user_data['image_it'] is not None:
+            crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+            keyboard = [
+                [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
+                [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{context.user_data['image_it']}")]
+            ]
+        else:
+            keyboard = [
+                [InlineKeyboardButton("Принять заявку", callback_data='accept_action')]
+            ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await context.bot.send_message(chat_id=IT_SUPERGROUP, text=text, reply_markup=reply_markup,
                                                  parse_mode='HTML')
