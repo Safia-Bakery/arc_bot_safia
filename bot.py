@@ -982,6 +982,7 @@ async def orderstg(update: Update, context: ContextTypes.DEFAULT_TYPE):
         fillial_name = f"📍*Отдел*: {request_db.parentfillial_name}\n📍*Бригадир*:  {request_db.fillial_name}"
 
 
+
     # parsed_datetime = datetime.strptime(request_db.created_at,"%Y-%m-%dT%H:%M:%S.%f")
 
     formatted_datetime_str = request_db.created_at.strftime("%Y-%m-%d %H:%M")
