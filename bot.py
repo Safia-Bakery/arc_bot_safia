@@ -831,7 +831,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                                                     factory=int(context.user_data['sphere_status']))
                 fillial_id = fillial_query.id
             user_query = crud.get_user_tel_id(id=update.message.from_user.id)
-            list_data = [None, 'АРС🛠', None, 'Маркетигну📈']
+            list_data = [None, 'АРС🛠', None, 'Маркетингу📈']
             if context.user_data['type'] == 3:
                 product = None
             if context.user_data['type'] == 1:
