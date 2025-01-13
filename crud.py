@@ -228,9 +228,10 @@ def getchildbranch(fillial,type,factory):
         query.parent_fillial = query.parentfillial.name
         return query
 
-def add_request(category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None,phone_number:Optional[str]=None):
+def add_request(category_id,fillial_id,description,user_id,is_bot,product:Optional[str]=None,phone_number:Optional[str]=None,finishing_time:Optional[datetime]=None):
     with SessionLocal() as db:
-        db_add_request = models.Requests(phone_number=phone_number,category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,update_time = {'0':str(datetime.now(tz=timezonetash))})
+
+        db_add_request = models.Requests(phone_number=phone_number,category_id=category_id,description=description,fillial_id = fillial_id,product=product,user_id=user_id,is_bot=is_bot,finishing_time=finishing_time,update_time = {'0':str(datetime.now(tz=timezonetash))})
         query = CommitDb().insert_data(db,db_add_request)
         query.category_sphere_status  = query.category.sphere_status
         query.category_department = query.category.department

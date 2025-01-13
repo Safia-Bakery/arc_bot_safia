@@ -44,11 +44,12 @@ import ittech
 import ratings
 import uniforms
 import video
-from microser import confirmation_request, delete_from_chat, send_notification
+from microser import confirmation_request, delete_from_chat, send_notification, timezonetash
 from microser import send_iiko_document
 from microser import transform_list, generate_text, data_transform, create_access_token, sendtotelegram, \
     is_time_between, generate_random_string, inlinewebapp, info_string, JobScheduler,sendtotelegramviewimage
-
+import pytz
+timezonetash = pytz.timezone("Asia/Tashkent")
 
 # from .cars import choose_current_hour,choose_day,choose_month,choose_size,comment_car,month_list,input_image_car
 # from .food import meal_bread_size,meal_size
@@ -836,9 +837,14 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 product = None
             if context.user_data['type'] == 1:
                 product = context.user_data['product']
+            if category_query.ftime:
+                finishing_time = datetime.datetime.now(tz=timezonetash)+datetime.timedelta(hours=category_query.ftime)
+            else:
+                finishing_time = None
+
             add_request = crud.add_request(is_bot=1, category_id=category_query.id, fillial_id=fillial_id,
                                            product=product, description=context.user_data['description'],
-                                           user_id=user_query.id, phone_number=context.user_data['phone_number'])
+                                           user_id=user_query.id, phone_number=context.user_data['phone_number'],finishing_time=finishing_time)
             keyboard = [
             ]
 
