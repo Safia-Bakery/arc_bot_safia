@@ -20,7 +20,7 @@ import re
 
 from dotenv import load_dotenv
 from telegram import ReplyKeyboardMarkup, Update, WebAppInfo, KeyboardButton, InlineKeyboardMarkup, \
-    InlineKeyboardButton, ReplyKeyboardRemove
+    InlineKeyboardButton, ReplyKeyboardRemove, InputMediaDocument
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -93,6 +93,7 @@ FRONT_URL = 'https://service.safiabakery.uz/'
 PHONE, \
     FULLNAME, \
     MANU, \
+    OFFICIAL_EMPLOYMENT, \
     BRANCHES, \
     CATEGORY, \
     DESCRIPTION, \
@@ -146,7 +147,7 @@ PHONE, \
     ARCFACTORYMANAGER,\
     ARCFACTORYDIVISIONS,\
     COINAMOUNT,\
-    COINDESCRIPTION= range(57)
+    COINDESCRIPTION= range(58)
 
 persistence = PicklePersistence(filepath='hello.pickle')
 
@@ -501,23 +502,24 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # print("username: ", user.username)
         # department = 12
         await update.message.reply_text(
-            "Пожалуйста нажмите кнопку: Оформиться 🧾",
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
+            "Пожалуйста, выберите действие: ",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
                     [
-                        InlineKeyboardButton(
-                            text="Оформиться 🧾",
-                            web_app=WebAppInfo(
-                                url=f"{FRONT_URL}tg/hr-registery/main?key={create_access_token(user.username)}")
-                        )
+                        KeyboardButton(
+                            text="Оформление  🧾",
+                            web_app=WebAppInfo(url=f"{FRONT_URL}tg/hr-registery/main?key={create_access_token(user.username)}")
+                        ),
+                        KeyboardButton(text="Шаблоны документов")
+                    ],
+                    [
+                        KeyboardButton(text="⬅️ Назад")
                     ]
-                ]
+                ],
+                resize_keyboard=True
             )
         )
-
-
-
-
+        return OFFICIAL_EMPLOYMENT
 
     else:
         if int(context.user_data['sphere_status']) == 2:
@@ -529,6 +531,37 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"Этот пункт в разработке",
                                             reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return TYPE
+
+
+async def official_employment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_input = update.message.text
+    chat_id = update.message.chat.id
+    if user_input == '⬅️ Назад':
+        reply_keyboard = buttons_sphere_1
+
+        await update.message.reply_text(f"Пожалуйста выберите направление:",
+                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        return TYPE
+
+    elif user_input == 'Шаблоны документов':
+        folder_path = "/var/www/arc_bot_safia/employment_files"  # Replace with your folder path
+        # folder_path = "C:\\Users\\User\Desktop\Projects\Service_Desk\\arc_bot_safia\employment_files"  # Replace with your folder path
+        try:
+            file_list = [
+                os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))
+            ]
+            if not file_list:
+                await update.message.reply_text("Папка файлов пуста")
+                return
+            media_group = [InputMediaDocument(media=open(file_path, "rb")) for file_path in file_list]
+            await context.bot.send_media_group(
+                chat_id=chat_id,
+                media=media_group
+            )
+            # send files
+        except:
+            await update.message.reply_text(text="Нет файлов")
+
 
 
 async def marketingstbutton(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -1877,7 +1910,8 @@ def main() -> None:
             ARCFACTORYMANAGER : [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_managers)],
             ARCFACTORYDIVISIONS: [MessageHandler(filters.TEXT & ~filters.COMMAND,arc_factory.arc_factory_divisions)],
             COINAMOUNT:[MessageHandler(filters.TEXT & ~filters.COMMAND, coins.coin_amount)],
-            COINDESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, coins.coin_description)]
+            COINDESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, coins.coin_description)],
+            OFFICIAL_EMPLOYMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, official_employment)]
 
             # CALLBACK_STATE: [CallbackQueryHandler(handle_callback_query)],  # pattern=r'^deny_reason=other$'
             # DENY_REASON: [
