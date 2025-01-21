@@ -1842,7 +1842,7 @@ def main() -> None:
             PRODUCT: [MessageHandler(filters.TEXT & ~filters.COMMAND, product)],
             FILES: [MessageHandler(
                 filters.PHOTO | filters.Document.DOCX | filters.Document.IMAGE | filters.Document.PDF | filters.TEXT | filters.Document.MimeType(
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') | filters.Document.MimeType('image/vnd.adobe.photoshop') & ~filters.COMMAND, files)],
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')  | filters.Document.MimeType('image/vnd.adobe.photoshop') & ~filters.COMMAND, files)],
             BRIG_MANU: [MessageHandler(filters.TEXT & ~filters.COMMAND, brig_manu)],
             BRANCHES: [MessageHandler(filters.TEXT & ~filters.COMMAND, branches)],
             TYPE: [MessageHandler(filters.TEXT & ~filters.COMMAND, types)],
