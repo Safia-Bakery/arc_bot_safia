@@ -1759,6 +1759,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             else:
                 await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))
 
+        elif one_request.status is None and user:
+            await query.edit_message_reply_markup(reply_markup=None)
+            if selected_option == 100:
+                crud.tg_update_only_status(requestid=one_request.id, status=0)
+                crud.update_expenditures(request_id=one_request.id)
+                await context.bot.send_message(
+                    chat_id=one_request.user_telegram_id,
+                    text=f"Уважаемый {one_request.user_full_name}, ваша заявка #{one_request.id} по Inventary: Создана."
+                )
+            elif selected_option == 101:
+                await context.bot.send_message(
+                    chat_id=one_request.user_telegram_id,
+                    text=f"Уважаемый {one_request.user_full_name}, ваша заявка #{one_request.id} по Inventary: Отклонена."
+                )
 
         else:
             await query.message.edit_text(text=text_of_order, reply_markup=InlineKeyboardMarkup(blank_reply_murkup))

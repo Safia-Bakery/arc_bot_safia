@@ -364,6 +364,8 @@ class Tools(Base):
     tool_need = relationship("NeededTools", back_populates="need_tool")
     status= Column(Integer, default=1)
     cattool = relationship("CategoryTools", back_populates="tool")
+    confirmation = Column(Boolean, default=False)
+    confirmer = Column(BIGINT)
 
 
 
