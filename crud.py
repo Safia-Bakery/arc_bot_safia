@@ -52,6 +52,29 @@ class CommitDb():
 
 
 
+def update_expenditures(request_id):
+    with SessionLocal() as db:
+        query = db.query(models.Expanditure).filter(models.Expanditure.request_id == request_id).all()
+        for exp in query:
+            exp.status = 0
+            db.commit()
+
+
+def create_expanditure(amount, tool_id, request_id, status: Optional[int] = 0):
+    with SessionLocal() as db:
+        query = models.Expanditure(
+            amount=amount,
+            tool_id=tool_id,
+            request_id=request_id,
+            status=status
+        )
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+
+    return query
+
+
 def getlistbrigada(sphere_status,department):
     with SessionLocal() as db:
         query = db.query(models.Brigada).filter(models.Brigada.status==1,models.Brigada.department==department)
@@ -71,7 +94,9 @@ def get_request(id):
         query.category_name = query.category.name
         query.fillial_name = query.fillial.name
         query.parentfillial_name = query.fillial.parentfillial.name
-
+        query.expanditures = query.expanditure
+        query.user_telegram_id = query.user.telegram_id
+        query.user_full_name = query.user.full_name
 
         return query
 

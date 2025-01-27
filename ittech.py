@@ -182,7 +182,8 @@ async def itphonenumber(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
 
     user_comment = update.message.text
     is_phone_number = microser.validate_phone_number(user_comment)
-    reply_keyboard = [['⬅️ Назад'], ['➡️ Пропустить']]
+    # reply_keyboard = [['⬅️ Назад'], ['➡️ Пропустить']]
+    reply_keyboard = [['⬅️ Назад']]
     if not is_phone_number:
         await update.message.reply_text('Введите номер телефона с кодом страны в формате: 998941114411\n998 - код страны',
                                         reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,
@@ -209,7 +210,12 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             return bot.ITPHONENUMBER
 
         else:
-            context.user_data['image_it'] = None
+            # context.user_data['image_it'] = None
+            reply_keyboard = [['⬅️ Назад']]
+            await update.message.reply_text('Пожалуйста отправьте фото',
+                                            reply_markup=ReplyKeyboardMarkup(keyboard=reply_keyboard,
+                                                                             resize_keyboard=True))
+            return bot.ITFILES
     else:
         file_name = ''
         file_content = ''
