@@ -1729,12 +1729,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 request_list = crud.tg_update_only_status(requestid=requests_id, status=3)
 
                 if request_list.category_department == 1:
-                    send_iiko_document(request_id=requests_id)
+                    # send_iiko_document(request_id=requests_id)
                     message_text = f'Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по APC: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку'
                 elif request_list.category_department == 4:
                     message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по IT: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку"
                 elif request_list.category_department == 2:
-                    send_iiko_document(request_id=requests_id)
+                    # send_iiko_document(request_id=requests_id)
                     message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s по инвентарь: Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку"
                 else:
                     message_text = f"Уважаемый {request_list.user_full_name}, статус вашей заявки #{request_list.id}s Завершен.\n\nПожалуйста нажмите на кнопку Оставить отзыв🌟и  оцените заявку"
