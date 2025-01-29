@@ -337,7 +337,7 @@ def update_it_request(
             query.update_time = updated_data
             if status == 1:
                 query.started_at = now
-            elif status in [3, 4, 6, 8]:
+            elif status in [4, 6, 8]:
                 query.finished_at = now
             db.query(models.Requests).filter(models.Requests.id == id).update({"update_time": updated_data})
         if deny_reason is not None:
