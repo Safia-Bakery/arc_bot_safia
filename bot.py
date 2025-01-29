@@ -926,12 +926,13 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 for file in context.user_data['files']:
                     extension = file.lower().rsplit('.', 1)[-1]
                     if extension in suff_list and count==0:
+                        count += 1
                         group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb'),caption=text))
                     elif extension in suff_list and count!=0:
                         group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb')))
                     else:
                         as_reply.append(file)
-                    count+=1
+
                 if group_photo:
 
                     sended_message = await context.bot.send_media_group(
