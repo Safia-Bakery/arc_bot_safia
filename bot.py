@@ -20,7 +20,7 @@ import re
 
 from dotenv import load_dotenv
 from telegram import ReplyKeyboardMarkup, Update, WebAppInfo, KeyboardButton, InlineKeyboardMarkup, \
-    InlineKeyboardButton, ReplyKeyboardRemove, InputMediaDocument
+    InlineKeyboardButton, ReplyKeyboardRemove, InputMediaDocument,InputMediaPhoto
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -924,17 +924,15 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 suff_list = ['jpg', 'png','JPG']
                 for file in context.user_data['files']:
                     if str(file).endswith(tuple(suff_list)):
-                        with open(f"{backend_location}files/{file}", 'rb') as f:
-                            group_photo.append(f)
+                        group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb')))
                     else:
-                        with open(f"{backend_location}files/{file}", 'rb') as f:
-                            as_reply.append(f)
+
+                        as_reply.append(file)
                 if group_photo:
                     group_photo[0].caption = text
                     sended_message = await context.bot.send_media_group(
                         media=group_photo,
                         chat_id=add_request.category_telegram,
-
                     )
                 else:
                     sended_message = await context.bot.send_message(
@@ -944,11 +942,11 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
                 if as_reply:
                     for i in as_reply:
-
-                        await context.bot.send_document(
-                            document=i,
-                            reply_to_message_id=sended_message.message_id
-                        )
+                        with open(f"{backend_location}files/{i}", 'rb') as f:
+                            await context.bot.send_document(
+                                document=f,
+                                reply_to_message_id=sended_message.message_id
+                            )
 
                 # await context.bot.send_media_group(
                 #     caption=
