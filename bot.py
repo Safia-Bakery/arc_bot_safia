@@ -921,15 +921,15 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 text = f"Заказ: #{add_request.id}\n"
                 group_photo = []
                 as_reply = []
-                suff_list = ['jpg', 'png','JPG']
+                suff_list = ['jpg', 'png','JPG','jpeg']
                 count = 0
                 for file in context.user_data['files']:
-                    if str(file).endswith(tuple(suff_list)) and count==0:
+                    extension = file.lower().rsplit('.', 1)[-1]
+                    if extension in suff_list and count==0:
                         group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb'),caption=text))
-                    if str(file).endswith(tuple(suff_list)) and count!=0:
+                    elif extension in suff_list and count!=0:
                         group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb')))
                     else:
-
                         as_reply.append(file)
                     count+=1
                 if group_photo:
