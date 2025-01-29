@@ -908,11 +908,53 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if add_request.category.sphere_status == 2 and add_request.category.department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
             await update.message.reply_text(
-                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
+                f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
                 f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
                 f"Время поступления: {formatted_datetime_str}\n"
                 f"Время выполнения до: {formatted_finishing_time}",
                 reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
+
+
+
+
+            if add_request.category_department==3 and add_request.category_telegram is not None:
+                text = f"Заказ: #{add_request.id}\n"
+                group_photo = []
+                as_reply = []
+                suff_list = ['jpg', 'png','JPG']
+                for file in context.user_data['files']:
+                    if str(file).endswith(tuple(suff_list)):
+                        with open(f"{backend_location}{file}", 'rb') as f:
+                            group_photo.append(f)
+                    else:
+                        with open(f"{backend_location}{file}", 'rb') as f:
+                            as_reply.append(f)
+                if group_photo:
+                    sended_message = await context.bot.send_media_group(
+                        caption=text,
+                        media=group_photo,
+                        chat_id=add_request.category_telegram,
+
+                    )
+                else:
+                    sended_message = await context.bot.send_message(
+                        chat_id=add_request.category_telegram,
+                        text=text,
+                    )
+
+                if as_reply:
+                    for i in as_reply:
+
+                        await context.bot.send_document(
+                            document=i,
+                            reply_to_message_id=sended_message.message_id
+                        )
+
+                # await context.bot.send_media_group(
+                #     caption=
+                # )
+
+
 
             context.user_data['files'] = []
             return MANU
