@@ -924,10 +924,10 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 suff_list = ['jpg', 'png','JPG']
                 for file in context.user_data['files']:
                     if str(file).endswith(tuple(suff_list)):
-                        with open(f"{backend_location}{file}", 'rb') as f:
+                        with open(f"{backend_location}files/{file}", 'rb') as f:
                             group_photo.append(f)
                     else:
-                        with open(f"{backend_location}{file}", 'rb') as f:
+                        with open(f"{backend_location}files/{file}", 'rb') as f:
                             as_reply.append(f)
                 if group_photo:
                     sended_message = await context.bot.send_media_group(
