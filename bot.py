@@ -930,8 +930,8 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         with open(f"{backend_location}files/{file}", 'rb') as f:
                             as_reply.append(f)
                 if group_photo:
+                    group_photo[0].caption = text
                     sended_message = await context.bot.send_media_group(
-                        caption=text,
                         media=group_photo,
                         chat_id=add_request.category_telegram,
 
