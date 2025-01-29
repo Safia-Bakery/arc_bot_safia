@@ -918,7 +918,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
             if add_request.category_department==3 and add_request.category_telegram is not None:
-                text = f"Заказ: #{add_request.id}\n"
+                text = f"Заказ: #{add_request.id}\n\ns Имя: {add_request.client_name}\n Номер: {add_request.phone_number}\n Точка: {add_request.parentfillial_name} \n\nКомментарии: {add_request.description}"
                 group_photo = []
                 as_reply = []
                 suff_list = ['jpg', 'png','JPG','jpeg']
