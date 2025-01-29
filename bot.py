@@ -949,7 +949,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         with open(f"{backend_location}files/{i}", 'rb') as f:
                             await context.bot.send_document(
                                 document=f,
-                                reply_to_message_id=sended_message.message_id,
+                                reply_to_message_id=sended_message[0].message_id,
                                 chat_id=add_request.category_telegram,
                             )
 
