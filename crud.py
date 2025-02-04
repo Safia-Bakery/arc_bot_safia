@@ -265,7 +265,13 @@ def add_request(category_id,fillial_id,description,user_id,is_bot,product:Option
         query.fillial_name = query.fillial.name
         query.parentfillial_name = query.fillial.parentfillial.name
         query.manager_name = query.fillial.manager.name if query.fillial.manager else ' '
+        query.client_name = query.user.full_name
         query.sla = query.category.ftime
+        if query.category.telegram:
+
+            query.category_telegram = query.category.telegram.chat_id
+        else:
+            query.category_telegram = None
         return query
 
 

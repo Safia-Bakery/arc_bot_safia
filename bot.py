@@ -20,7 +20,7 @@ import re
 
 from dotenv import load_dotenv
 from telegram import ReplyKeyboardMarkup, Update, WebAppInfo, KeyboardButton, InlineKeyboardMarkup, \
-    InlineKeyboardButton, ReplyKeyboardRemove, InputMediaDocument
+    InlineKeyboardButton, ReplyKeyboardRemove, InputMediaDocument,InputMediaPhoto
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -908,11 +908,57 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if add_request.category.sphere_status == 2 and add_request.category.department == 1:
                 sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
             await update.message.reply_text(
-                f"Спасибо , ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
+                f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
                 f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
                 f"Время поступления: {formatted_datetime_str}\n"
                 f"Время выполнения до: {formatted_finishing_time}",
                 reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
+
+
+
+
+            if add_request.category_department==3 and add_request.category_telegram is not None:
+                text = f"Заказ: #{add_request.id}s\n\nИмя: {add_request.client_name}\nНомер: {add_request.phone_number}\nТочка: {add_request.parentfillial_name} \n\nКомментарии: {add_request.description}"
+                group_photo = []
+                as_reply = []
+                suff_list = ['jpg', 'png','JPG','jpeg']
+                count = 0
+                for file in context.user_data['files']:
+                    extension = file.lower().rsplit('.', 1)[-1]
+                    if extension in suff_list and count==0:
+                        count += 1
+                        group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb'),caption=text))
+                    elif extension in suff_list and count!=0:
+                        group_photo.append(InputMediaPhoto(open(f"{backend_location}files/{file}", 'rb')))
+                    else:
+                        as_reply.append(file)
+
+                if group_photo:
+
+                    sended_message = await context.bot.send_media_group(
+                        media=group_photo,
+                        chat_id=add_request.category_telegram,
+                    )
+                else:
+                    sended_message = await context.bot.send_message(
+                        chat_id=add_request.category_telegram,
+                        text=text,
+                    )
+
+                if as_reply:
+                    for i in as_reply:
+                        with open(f"{backend_location}files/{i}", 'rb') as f:
+                            await context.bot.send_document(
+                                document=f,
+                                reply_to_message_id=sended_message[0].message_id,
+                                chat_id=add_request.category_telegram,
+                            )
+
+                # await context.bot.send_media_group(
+                #     caption=
+                # )
+
+
 
             context.user_data['files'] = []
             return MANU
