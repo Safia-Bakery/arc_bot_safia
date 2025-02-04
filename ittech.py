@@ -226,7 +226,7 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             new_file = await context.bot.get_file(file_id=file_id)
             file_content = await new_file.download_as_bytearray()
             #files_open = {'files':file_content}
-        if update.message.photo:
+        elif update.message.photo:
             file_name = f"{update.message.photo[-1].file_id}.jpg"
             getFile = await context.bot.getFile(update.message.photo[-1].file_id)
             file_content = await getFile.download_as_bytearray()
@@ -271,8 +271,10 @@ async def it_files(update:Update,context:ContextTypes.DEFAULT_TYPE) -> int:
             reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons, resize_keyboard=True),
             parse_mode='HTML'
         )
+        print("image_it: ", context.user_data['image_it'])
         if context.user_data['image_it'] is not None:
-            crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+            saved_photo = crud.create_files(request_id=data.id,filename=context.user_data['image_it'])
+            # print("saved_photo: ", saved_photo)
             keyboard = [
                 [InlineKeyboardButton("Принять заявку", callback_data='accept_action')],
                 [InlineKeyboardButton("Посмотреть фото", url=f"{BASE_URL}{context.user_data['image_it']}")]

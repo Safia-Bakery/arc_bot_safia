@@ -18,6 +18,7 @@ class CommitDb():
             db.refresh(data)
             return data
         except Exception as e:
+            print(e)
             db.rollback()
             return False
 
