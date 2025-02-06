@@ -596,7 +596,7 @@ async def marketingcat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                                         reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
         return MARKETINGSTBUTTON
     id_cat = marketing_cat_dict[type_name]
-    request_db = crud.get_category_list(sub_id=id_cat, sphere_status=context.user_data['sphere_status'],
+    request_db = crud.get_category_list(sub_id=id_cat,
                                         department=context.user_data['type'])
     reply_keyboard = transform_list(request_db, 3, 'name')
     reply_keyboard.append(['⬅️ Назад'])
