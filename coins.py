@@ -38,8 +38,13 @@ async def coin_amount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         input_value = int(input_text)
         context.user_data['amount'] = input_value
         reply_keyboard = [['⬅️ Назад']]
-        await update.message.reply_text('Пожалуйста, введите описание, например, количество монет в соответствии с их номиналом. Укажите номинал монеты и количество. Например: мне нужно 200 монет номиналом 100 сумов.',
-                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        # await update.message.reply_text('Пожалуйста, введите описание, например, количество монет в соответствии с их номиналом. Укажите номинал монеты и количество. Например: мне нужно 200 монет номиналом 100 сумов.',
+        #                                 reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        await update.message.reply_text(
+            'Пожалуйста, введите номинал монеты в числовом формате. Например: 100, 500, 1000 и т.д.',
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
+        )
+
         return bot.COINDESCRIPTION
     except:
         reply_keyboard = [['⬅️ Назад']]
@@ -64,20 +69,24 @@ async def coin_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                                         factory=1)
     fillial_id = fillial_query.id
 
+    try:
+        denomination = int(input_text)
+        description = f"{context.user_data['amount']} монет с номиналом {denomination} сум"
+        data = crud.create_coint_request(
+            user_id=user_query.id,
+            category=default_coin_category,
+            branch_id=fillial_id,
+            description=description,
+            amount=context.user_data['amount']
+        )
 
-    data = crud.create_coint_request(
-        user_id=user_query.id,
-        category=default_coin_category,
-        branch_id=fillial_id,
-        description=input_text,
-        amount=context.user_data['amount']
-                                     )
+        reply_text = f"Спасибо, ваша заявка #{data.id}s на заказ монет создана."
 
-    reply_text = f"Спасибо, ваша заявка #{data.id}s на заказ монет создана."
+        await update.message.reply_text(reply_text,
+                                        reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
+        return bot.MANU
 
-
-
-    await update.message.reply_text(reply_text,
-                                    reply_markup=ReplyKeyboardMarkup(bot.manu_buttons, resize_keyboard=True))
-    return bot.MANU
+    except:
+        await update.message.reply_text('Неверный формат, пожалуйста, введите в числовом формате.')
+        return bot.COINDESCRIPTION
 
