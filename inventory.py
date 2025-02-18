@@ -20,6 +20,3 @@ async def close_invetory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.message.reply_text(f"Спасибо, ваша заявка по Инвентарю📦 принята. Как ваша заявка будет назначена в работу, вы получите уведомление.",reply_markup=ReplyKeyboardMarkup(keyboard=bot.manu_buttons,resize_keyboard=True))
     return bot.MANU
 
-
-
-

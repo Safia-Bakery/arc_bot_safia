@@ -83,9 +83,9 @@ sphere_dict = {'Фабрика': 2, 'Розница': 1}
 
 buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Монеты💰'], ['Официальное оформление 🧾'], ['⬅️ Назад']]
 buttons_sphere_2 = [['Арс Фабрика🛠',"IT🧑‍💻"],['Инвентарь Фабрика📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
-backend_location = '/var/www/arc_backend/'
+# backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
-# backend_location = '/Users/gayratbekakhmedov/projects/backend/arc_backend/'
+backend_location = 'C:/Users/User/Desktop/Projects/Service_Desk/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
@@ -450,10 +450,19 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 department = 2
             else:
                 department = 10
+                context.user_data['type'] = department
+                managers = crud.get_arc_factory_managers()
+                reply_keyboard = transform_list(managers, 2, 'name')
+                reply_keyboard.insert(0, ['⬅️ Назад'])
+                await  update.message.reply_text(
+                    'Выберите своего Бригадира:',
+                    reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+                return ARCFACTORYMANAGER
         else:
             context.user_data['sphere_status'] = 1
             department = 2
 
+        context.user_data['type'] = department
         await update.message.reply_text(
             f"Пожалуйста нажмите кнопку: Инвентарь📦",
 
@@ -464,6 +473,7 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         url=f"{FRONT_URL}tg/inventory-request-add?key={create_access_token(user.username)}&department={department}")
                 ), resize_keyboard=True))
         return INVETORY
+
     elif type_name == 'Видеонаблюдение🎥':
         context.user_data['type'] = 8
         request_db = crud.get_branch_list(sphere_status=int(context.user_data['sphere_status']))
@@ -834,8 +844,14 @@ async def phonenumber(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         context.user_data['phone_number'] = update.message.contact.phone_number
     else:
         context.user_data['phone_number'] = update.message.text
-    await update.message.reply_text('Отправьте фотографию или файл:',
-                                    reply_markup=ReplyKeyboardMarkup([['⬅️ Назад', 'Далее➡️']], resize_keyboard=True))
+
+    if int(context.user_data['type']) != 10:
+        await update.message.reply_text('Отправьте фотографию или файл:',
+                                        reply_markup=ReplyKeyboardMarkup([['⬅️ Назад', 'Далее➡️']], resize_keyboard=True))
+    elif int(context.user_data['type']) == 10:
+        await update.message.reply_text('Отправьте фотографию или файл:',
+                                        reply_markup=ReplyKeyboardMarkup([['⬅️ Назад', 'Пропустить➡️']],
+                                                                         resize_keyboard=True))
     context.user_data['files'] = []
     return FILES
 
@@ -847,8 +863,8 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',
                                             reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
             return DESCRIPTION
-        if update.message.text == 'Далее➡️':
-            if not context.user_data['files']:
+        if update.message.text == 'Далее➡️' or update.message.text == 'Пропустить➡️':
+            if not context.user_data['files'] and int(context.user_data['type']) != 10:
                 await update.message.reply_text('Пожалуйста отправьте фотографию или файл:',
                                                 reply_markup=ReplyKeyboardMarkup([['⬅️ Назад', 'Далее➡️']],
                                                                                  resize_keyboard=True))
@@ -856,7 +872,8 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
             category_query = crud.getcategoryname(name=context.user_data['category'],
                                                   department=int(context.user_data['type']))
-            if int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2:
+            # fillial_id = context.user_data['division_id']
+            if (int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2) or int(context.user_data['type']) == 10:
                 fillial_id = context.user_data['division_id']
             else:
 
@@ -866,9 +883,12 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 fillial_id = fillial_query.id
             user_query = crud.get_user_tel_id(id=update.message.from_user.id)
             list_data = [None, 'АРС🛠', None, 'Маркетингу📈']
+            product = None
             if context.user_data['type'] == 3:
                 product = None
-            if context.user_data['type'] == 1:
+            elif context.user_data['type'] == 1:
+                product = context.user_data['product']
+            elif context.user_data['type'] == 10:
                 product = context.user_data['product']
             if category_query.ftime:
                 finishing_time = datetime.datetime.now(tz=timezonetash)+datetime.timedelta(hours=category_query.ftime)
@@ -886,35 +906,42 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 crud.create_files(request_id=add_request.id, filename=file_url)
                 keyboard.append({'text': 'Посмотреть фото/видео', "url": f"{BASE_URL}{file_url}"})
 
-            formatted_datetime_str = add_request.created_at.strftime("%d.%m.%Y %H:%M")
-            formatted_finishing_time = (add_request.created_at + datetime.timedelta(hours=add_request.sla)).strftime("%d.%m.%Y %H:%M")
-            if add_request.category_sphere_status == 1 and add_request.category_department == 1:
-                fillial_name = f"📍*Филиал*: {add_request.parentfillial_name}"
-            else:
-                fillial_name = f"📍*Бригадир*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
+            if int(context.user_data['type']) != 10:
+                formatted_datetime_str = add_request.created_at.strftime("%d.%m.%Y %H:%M")
+                formatted_finishing_time = (add_request.created_at + datetime.timedelta(hours=add_request.sla)).strftime("%d.%m.%Y %H:%M")
+                if add_request.category_sphere_status == 1 and add_request.category_department == 1:
+                    fillial_name = f"📍*Филиал*: {add_request.parentfillial_name}"
+                else:
+                    fillial_name = f"📍*Бригадир*: {add_request.manager_name}\n📍*Отдел*: {add_request.fillial_name}"
 
-            text = (
-                f"📑*Заявка №* {add_request.id}\n\n"
-                f"{fillial_name}\n"
-                f"🕘*Время поступления*: {formatted_datetime_str}\n"
-                f"🕘*Время выполнения до*: {formatted_finishing_time}\n"
-                f"🔰*Категория проблемы*: {add_request.category.name}\n"
-                f"⚙️*Название оборудования*: {add_request.product}\n"
-                f"💬*Комментарии*: {add_request.description}\n\n"
-            )
+                text = (
+                    f"📑*Заявка №* {add_request.id}\n\n"
+                    f"{fillial_name}\n"
+                    f"🕘*Время поступления*: {formatted_datetime_str}\n"
+                    f"🕘*Время выполнения до*: {formatted_finishing_time}\n"
+                    f"🔰*Категория проблемы*: {add_request.category.name}\n"
+                    f"⚙️*Название оборудования*: {add_request.product}\n"
+                    f"💬*Комментарии*: {add_request.description}\n\n"
+                )
 
-            if add_request.category_sphere_status == 1 and add_request.category_department == 1:
-                sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
-            if add_request.category.sphere_status == 2 and add_request.category.department == 1:
-                sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
-            await update.message.reply_text(
-                f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
-                f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
-                f"Время поступления: {formatted_datetime_str}\n"
-                f"Время выполнения до: {formatted_finishing_time}",
-                reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
+                if add_request.category_sphere_status == 1 and add_request.category_department == 1:
+                    sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001920671327', message_text=text, buttons=keyboard)
+                if add_request.category.sphere_status == 2 and add_request.category.department == 1:
+                    sendtotelegram(bot_token=BOTTOKEN, chat_id='-1001831677963', message_text=text, buttons=keyboard)
+                await update.message.reply_text(
+                    f"Спасибо, ваша заявка #{add_request.id}s по {list_data[context.user_data['type']]} принята. "
+                    f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
+                    f"Время поступления: {formatted_datetime_str}\n"
+                    f"Время выполнения до: {formatted_finishing_time}",
+                    reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True))
 
-
+            elif int(context.user_data['type']) == 10:
+                await update.message.reply_text(
+                    f"Спасибо, ваша заявка #{add_request.id}s по Инвентарь Фабрика принята.\n"
+                    f"Как ваша заявка будет назначена в работу ,вы получите уведомление.\n\n"
+                    f"Ваша заявка: {add_request.description}",
+                    reply_markup=ReplyKeyboardMarkup(manu_buttons, resize_keyboard=True)
+                )
 
 
             if add_request.category_department==3 and add_request.category_telegram is not None:
@@ -963,10 +990,7 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             context.user_data['files'] = []
             return MANU
 
-
-
     else:
-
         # ile = update.message.document.get_file()
         # with open(file, 'rb') as f:
         #    print(f)
