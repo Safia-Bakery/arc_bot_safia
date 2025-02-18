@@ -83,9 +83,9 @@ sphere_dict = {'Фабрика': 2, 'Розница': 1}
 
 buttons_sphere_1 = [['Арс Розница🛠',"IT🧑‍💻"],['Маркетинг📈','Инвентарь Розница📦'],['Запрос машины🚛',"Заявка на форму🥼"],['Видеонаблюдение🎥','Монеты💰'], ['Официальное оформление 🧾'], ['⬅️ Назад']]
 buttons_sphere_2 = [['Арс Фабрика🛠',"IT🧑‍💻"],['Инвентарь Фабрика📦','Запрос машины🚛'],['Видеонаблюдение🎥','Маркетинг📈'],['⬅️ Назад']]
-# backend_location = '/var/www/arc_backend/'
+backend_location = '/var/www/arc_backend/'
 # backend_location='C:/Users/bbc43/Desktop/Жесткий диск - D/PROJECTS/Safia/arc_bot_safia/'
-backend_location = 'C:/Users/User/Desktop/Projects/Service_Desk/arc_backend/'
+# backend_location = 'C:/Users/User/Desktop/Projects/Service_Desk/arc_backend/'
 
 BASE_URL = 'https://api.service.safiabakery.uz/'
 FRONT_URL = 'https://service.safiabakery.uz/'
