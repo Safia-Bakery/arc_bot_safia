@@ -450,13 +450,19 @@ async def types(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 department = 2
             else:
                 department = 10
+                reply_keyboard = [['⬅️ Назад']]
                 context.user_data['type'] = department
                 managers = crud.get_arc_factory_managers()
-                reply_keyboard = transform_list(managers, 2, 'name')
-                reply_keyboard.insert(0, ['⬅️ Назад'])
+                for index, manager in enumerate(managers):
+                    if manager.name == "Офис Учтепа":
+                        reply_keyboard.append([manager.name])
+                        managers.pop(index)
+
+                reply_keyboard.extend(transform_list(managers, 2, 'name'))
                 await  update.message.reply_text(
                     'Выберите своего Бригадира:',
-                    reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+                    reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
+                )
                 return ARCFACTORYMANAGER
         else:
             context.user_data['sphere_status'] = 1
