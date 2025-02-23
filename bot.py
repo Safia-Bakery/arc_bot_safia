@@ -876,8 +876,12 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                                                                                  resize_keyboard=True))
                 return FILES
 
-            category_query = crud.getcategoryname(name=context.user_data['category'],
-                                                  department=int(context.user_data['type']))
+            if int(context.user_data['type']) == 10:
+                category_query = crud.get_category_department(department_id=int(context.user_data['type']))
+            else:
+                category_query = crud.getcategoryname(name=context.user_data['category'],
+                                                      department=int(context.user_data['type']))
+
             # fillial_id = context.user_data['division_id']
             if (int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2) or int(context.user_data['type']) == 10:
                 fillial_id = context.user_data['division_id']
