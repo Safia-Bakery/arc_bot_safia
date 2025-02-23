@@ -805,14 +805,22 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
-        request_db = crud.get_category_list(sphere_status=context.user_data['sphere_status'],
-                                            department=context.user_data['type'])
-        reply_keyboard = transform_list(request_db, 3, 'name')
-        reply_keyboard.insert(0, ['⬅️ Назад'])
-        await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",
-                                        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+        if int(context.user_data['type']) == 10:
+            managers = crud.get_arc_factory_managers()
+            reply_keyboard = transform_list(managers, 2, 'name')
+            reply_keyboard.append(['⬅️ Назад'])
+            await update.message.reply_text('Выберите своего Бригадира:',
+                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
+            return ARCFACTORYMANAGER
+        else:
+            request_db = crud.get_category_list(sphere_status=context.user_data['sphere_status'],
+                                                department=context.user_data['type'])
+            reply_keyboard = transform_list(request_db, 3, 'name')
+            reply_keyboard.insert(0, ['⬅️ Назад'])
+            await update.message.reply_text(f"Пожалуйста выберите категорию проблемы:",
+                                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
 
-        return CATEGORY
+            return CATEGORY
     reply_keyboard = [['⬅️ Назад']]
     context.user_data['product'] = update.message.text
     await update.message.reply_text('Пожалуйста напишите комментарии к заявке ',
