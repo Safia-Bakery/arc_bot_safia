@@ -490,7 +490,12 @@ def get_work_time():
 
 def get_category_department(department_id):
     with SessionLocal() as db:
-        query = db.query(models.Category).filter(models.Category.department==department_id).first()
+        query = db.query(models.Category).filter(
+            and_(
+                models.Category.status == 1,
+                models.Category.department==department_id
+            )
+        ).first()
         CommitDb().get_data(db,query)
         return query
 
