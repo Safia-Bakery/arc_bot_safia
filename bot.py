@@ -806,12 +806,12 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == '⬅️ Назад':
         if int(context.user_data['type']) == 10:
-            managers = crud.get_arc_factory_managers()
-            reply_keyboard = transform_list(managers, 2, 'name')
+            divisions = crud.get_manager_divisions(manager_id=context.user_data['manager'])
+            reply_keyboard = transform_list(divisions, 2, 'name')
             reply_keyboard.append(['⬅️ Назад'])
-            await update.message.reply_text('Выберите своего Бригадира:',
+            await update.message.reply_text('Выберите отдел',
                                             reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True))
-            return ARCFACTORYMANAGER
+            return ARCFACTORYDIVISIONS
         else:
             request_db = crud.get_category_list(sphere_status=context.user_data['sphere_status'],
                                                 department=context.user_data['type'])
