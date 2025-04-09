@@ -894,10 +894,13 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             if (int(context.user_data['type']) == 1 and int(context.user_data['sphere_status']) == 2) or int(context.user_data['type']) == 10:
                 fillial_id = context.user_data['division_id']
             else:
-
+                if int(context.user_data['type']) == 3:
+                    spheres = 1
+                else:
+                    spheres = int(context.user_data['sphere_status'])
                 fillial_query = crud.getchildbranch(fillial=context.user_data['branch'],
                                                     type=int(context.user_data['type']),
-                                                    factory=int(context.user_data['sphere_status']))
+                                                    factory=spheres)
                 fillial_id = fillial_query.id
             user_query = crud.get_user_tel_id(id=update.message.from_user.id)
             list_data = [None, 'АРС🛠', None, 'Маркетингу📈']
