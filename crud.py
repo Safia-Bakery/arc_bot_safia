@@ -108,7 +108,7 @@ def accept_request(id,brigada_id,user_manager):
         if query:
             query.status=1
             query.brigada_id = brigada_id
-            query.started_at = datetime.now(timezonetash)
+            query.started_at = datetime.now(tz=timezonetash)
             query.user_manager=user_manager
             CommitDb().update_data(db,query)
             query.user_telegram_id = query.user.telegram_id
@@ -418,8 +418,11 @@ def get_request_id(id):
 def tg_update_requst_st(requestid,status):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id==requestid).first()
+        now = datetime.now(tz=timezonetash)
         if status == 3 or status == 6:
-            query.finished_at = datetime.now(timezonetash)
+            query.finished_at = now
+        elif status == 1:
+            query.started_at = now
         query.status = status
         CommitDb().update_data(db,query)
         query.category_name = query.category.name
@@ -446,6 +449,11 @@ def tg_update_only_status(requestid,status):
     with SessionLocal() as db:
         query = db.query(models.Requests).filter(models.Requests.id == requestid).first()
         query.status = status
+        now = datetime.now(tz=timezonetash)
+        if status == 1:
+            query.started_at = now
+        elif status in [4, 6]:
+            query.finished_at = now
         CommitDb().update_data(db, query)
         query.category_name = query.category.name
         query.category_department = query.category.department
